@@ -1,0 +1,20 @@
+version: '3.0'
+
+services:
+  # builder:
+  #   container_name: ledger-builder
+  #   image: ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
+  #   privileged: true
+  #   volumes:
+  #   - .:/app
+  speculos:
+    container_name: ledger-speculos
+    image: speculos
+    command: --model nanos ./apps/app.elf --sdk 2.0 --seed "secret" --display headless --apdu-port 40000 --vnc-port 41000
+    volumes:
+    - ./bin:/speculos/apps
+    ports:
+    - "40000:40000"
+    - "41000:41000"
+    - "1234:1234"
+    - "5000:5000"
