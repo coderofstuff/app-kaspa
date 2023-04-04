@@ -99,7 +99,7 @@ int ui_display_transaction() {
     }
     snprintf(g_amount, sizeof(g_amount), "KAS %.*s", sizeof(amount), amount);
     memset(g_address, 0, sizeof(g_address));
-    snprintf(g_address, sizeof(g_address), "0x%.*H", ADDRESS_LEN, G_context.tx_info.transaction.to);
+    snprintf(g_address, sizeof(g_address), "%.*s", ADDRESS_LEN, G_context.tx_info.transaction.to);
 
     // Start review
     nbgl_useCaseReviewStart(&C_stax_app_boilerplate_64px,

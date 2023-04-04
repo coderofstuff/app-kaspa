@@ -26,3 +26,5 @@ jobs:
       with:
         builtin: clear,rare
         check_filenames: true
+        skip: ./.git,./unit-tests/mock_includes
+

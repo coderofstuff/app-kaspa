@@ -3,25 +3,35 @@
 #include <stdbool.h>  // bool
 #include <string.h>   // memmove
 
-#include "os.h"
-#include "cx.h"
-
 #include "address.h"
+#include "cashaddr.h"
 
 #include "transaction/types.h"
 
 bool address_from_pubkey(const uint8_t public_key[static 64], uint8_t *out, size_t out_len) {
-    uint8_t address[32] = {0};
-    cx_sha3_t keccak256;
+    uint8_t address[80] = {0};
 
     if (out_len < ADDRESS_LEN) {
         return false;
     }
 
-    cx_keccak_init(&keccak256, 256);
-    cx_hash((cx_hash_t *) &keccak256, CX_LAST, public_key, 64, address, sizeof(address));
+    char hrp[] = "kaspa";
 
-    memmove(out, address + sizeof(address) - ADDRESS_LEN, ADDRESS_LEN);
+    size_t compressed_pub_size = 32;
+    uint8_t compressed_public_key[32] = {0};
+    int version = 0;  // 0 - to generate address for schnorr. 1 - to generate address for ECDSA
+
+    // Create the relevant compressed public key
+    // For schnorr, compressed public key we care about is the X coordinate
+    memmove(compressed_public_key, public_key, compressed_pub_size);
+
+    // First part of the address is "kaspa:"
+    memmove(address, hrp, sizeof(hrp));
+    address[5] = ':';
+
+    cashaddr_encode(compressed_public_key, compressed_pub_size, address + 6, ADDRESS_LEN, version);
+
+    memmove(out, address, ADDRESS_LEN);
 
     return true;
 }
