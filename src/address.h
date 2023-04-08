@@ -7,7 +7,7 @@
 /**
  * Convert public key to address.
  *
- * address = Keccak256(public_key)[12:32] (20 bytes)
+ * address = Bech32(public_key)[0:31] (67 bytes) => "kaspa:" + 61 bytes
  *
  * @param[in]  public_key
  *   Pointer to byte buffer with public key.

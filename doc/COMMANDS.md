@@ -43,13 +43,30 @@
 
 | CLA | INS | P1 | P2 | Lc | CData |
 | --- | --- | --- | --- | --- | --- |
-| 0xE0 | 0x05 | 0x00 (no display) <br> 0x01 (display) | 0x00 | 1 + 4n | `len(bip32_path) (1)` \|\|<br> `bip32_path{1} (4)` \|\|<br>`...` \|\|<br>`bip32_path{n} (4)` |
+| 0xE0 | 0x05 | 0x00 (no display) <br> 0x01 (display) | 0x00 | 0x15 | `path len (1 byte)` \|\|<br>`purpose (4 bytes)` \|\|<br> `coin_type (4 bytes)` \|\|<br> `account (4 bytes)` \|\|<br> `type (4 bytes)` \|\|<br>`index (4 bytes)` |
+
+Keys for kaspa use the derivation path `m/44'/111111'/<account>'/<type>/<index>`. As such you only need to pass the `type` and `index` here.
+
+| CData Part | Description |
+| --- | --- |
+| `purpose` | Must be `44'` or `80000002c` |
+| `coin_type` | Must be `111111'` or `8001b207` |
+| `account` | Current wallets all use `80000000` for `0'` for default account but any value is accepted |
+| `type` | Either `00000000` for Receive Address or `00000001` for Change Address |
+| `index` | Any value from `00000000` to `11111111` |
 
 ### Response
 
 | Response length (bytes) | SW | RData |
 | --- | --- | --- |
-| var | 0x9000 | `len(public_key) (1)` \|\|<br> `public_key (var)` \|\|<br> `len(chain_code) (1)` \|\|<br> `chain_code (var)` |
+| var | 0x9000 | `len(public_key) (1)` \|\|<br> `public_key (65 bytes)` \|\|<br> `len(chain_code) (1)` \|\|<br> `chain_code (var)` |
+
+`public_key` here will always be `65 bytes`, represending the uncompressed public key in DER encoding.
+It is composed of `0x04` followed by `32 bytes` for the `X` coordinate of the public key, then `32 bytes` for the `Y` coordinate.
+
+In kaspa, you only need the `32 bytes` for the `X` coordinate as the public key to generate addresses whose transactions are signed with Schnorr.
+
+Transactions signed with ECDSA are currently not supported.
 
 ## SIGN_TX
 
@@ -83,4 +100,7 @@
 | 0xB006 | `SW_TX_HASH_FAIL` | Failed to compute hash digest of raw transaction |
 | 0xB007 | `SW_BAD_STATE` | Security issue with bad state |
 | 0xB008 | `SW_SIGNATURE_FAIL` | Signature of raw transaction failed |
+| 0xB009 | `SW_WRONG_BIP32_PURPOSE` | `Purpose` must be `44'` |
+| 0xB00A | `SW_WRONG_BIP32_COIN_TYPE` | `Coin Type` must be `111111'` |
+| 0xB00B | `SW_WRONG_BIP32_TYPE` | `Type` passed is not valid. Must be either `0`  for `Receive` or `1`  for `Change`|
 | 0x9000 | `OK` | Success |

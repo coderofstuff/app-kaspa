@@ -60,3 +60,7 @@
  * Status word for signature fail.
  */
 #define SW_SIGNATURE_FAIL 0xB008
+
+#define SW_WRONG_BIP32_PURPOSE   0xB009
+#define SW_WRONG_BIP32_COIN_TYPE 0xB00A
+#define SW_WRONG_BIP32_TYPE      0xB00B

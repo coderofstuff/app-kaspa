@@ -24,7 +24,7 @@ def test_sign_tx_short_tx(firmware, backend, navigator, test_name):
     # Create the transaction that will be sent to the device for signing
     transaction = Transaction(
         nonce=1,
-        to="0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae",
+        to="kaspa:qqs7krzzwqfgk9kf830smtzg64s9rf3r0khfj76cjynf2pfgrr35saatu88xq",
         value=666,
         memo="For u EthDev"
     ).serialize()
@@ -67,7 +67,7 @@ def test_sign_tx_long_tx(firmware, backend, navigator, test_name):
 
     transaction = Transaction(
         nonce=1,
-        to="0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae",
+        to="kaspa:qqs7krzzwqfgk9kf830smtzg64s9rf3r0khfj76cjynf2pfgrr35saatu88xq",
         value=666,
         memo=("This is a very long memo. "
               "It will force the app client to send the serialized transaction to be sent in chunk. "
@@ -106,7 +106,7 @@ def test_sign_tx_refused(firmware, backend, navigator, test_name):
 
     transaction = Transaction(
         nonce=1,
-        to="0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae",
+        to="kaspa:qqs7krzzwqfgk9kf830smtzg64s9rf3r0khfj76cjynf2pfgrr35saatu88xq",
         value=666,
         memo="This transaction will be refused by the user"
     ).serialize()

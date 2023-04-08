@@ -78,7 +78,7 @@ int ui_display_address() {
     if (!address_from_pubkey(G_context.pk_info.raw_public_key, address, sizeof(address))) {
         return io_send_sw(SW_DISPLAY_ADDRESS_FAIL);
     }
-    snprintf(g_address, sizeof(g_address), "0x%.*H", sizeof(address), address);
+    snprintf(g_address, sizeof(g_address), "%.*s", sizeof(address), address);
 
     nbgl_useCaseReviewStart(&C_stax_app_boilerplate_64px,
                             "Verify KAS address",

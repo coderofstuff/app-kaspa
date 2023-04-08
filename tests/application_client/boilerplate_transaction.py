@@ -16,7 +16,7 @@ class Transaction:
                  memo: str,
                  do_check: bool = True) -> None:
         self.nonce: int = nonce
-        self.to: bytes = bytes.fromhex(to[2:]) if isinstance(to, str) else to
+        self.to: bytes = bytes.fromhex(to.encode('ascii').hex()) if isinstance(to, str) else to
         self.value: int = value
         self.memo: bytes = memo.encode("ascii")
 
@@ -27,7 +27,7 @@ class Transaction:
             if not 0 <= self.value <= UINT64_MAX:
                 raise TransactionError(f"Bad value: '{self.value}'!")
 
-            if len(self.to) != 20:
+            if len(self.to) != 67:
                 raise TransactionError(f"Bad address: '{self.to.hex()}'!")
 
     def serialize(self) -> bytes:
@@ -44,7 +44,7 @@ class Transaction:
         buf: BytesIO = BytesIO(hexa) if isinstance(hexa, bytes) else hexa
 
         nonce: int = read_uint(buf, 64, byteorder="big")
-        to: bytes = read(buf, 20)
+        to: bytes = read(buf, 67)
         value: int = read_uint(buf, 64, byteorder="big")
         memo_len: int = read_varint(buf)
         memo: str = read(buf, memo_len).decode("ascii")

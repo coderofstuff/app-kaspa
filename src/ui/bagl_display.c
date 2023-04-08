@@ -25,7 +25,7 @@
 static action_validate_cb g_validate_callback;
 static char g_amount[30];
 static char g_bip32_path[60];
-static char g_address[43];
+static char g_address[ADDRESS_LEN + 6];
 
 // Validate/Invalidate public key and go back to home
 static void ui_action_validate_pubkey(bool choice) {
@@ -104,7 +104,7 @@ int ui_display_address() {
     if (!address_from_pubkey(G_context.pk_info.raw_public_key, address, sizeof(address))) {
         return io_send_sw(SW_DISPLAY_ADDRESS_FAIL);
     }
-    snprintf(g_address, sizeof(g_address), "0x%.*H", sizeof(address), address);
+    snprintf(g_address, sizeof(g_address), "%.*s", sizeof(address), address);
 
     g_validate_callback = &ui_action_validate_pubkey;
 
@@ -159,7 +159,7 @@ int ui_display_transaction() {
     PRINTF("Amount: %s\n", g_amount);
 
     memset(g_address, 0, sizeof(g_address));
-    snprintf(g_address, sizeof(g_address), "0x%.*H", ADDRESS_LEN, G_context.tx_info.transaction.to);
+    snprintf(g_address, sizeof(g_address), "%.*s", ADDRESS_LEN, G_context.tx_info.transaction.to);
 
     g_validate_callback = &ui_action_validate_transaction;
 
