@@ -31,8 +31,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         printf("address: %s\n", address);
         format_fpu64(amount, sizeof(amount), tx.value, 3);  // exponent of smallest unit is 3
         printf("amount: %s\n", amount);
-        transaction_utils_format_memo(tx.memo, tx.memo_len, tx_memo, sizeof(tx_memo));
-        printf("memo: %s\n", tx_memo);
     }
 
     return 0;

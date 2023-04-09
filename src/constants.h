@@ -24,12 +24,13 @@
 /**
  * Maximum transaction length (bytes).
  */
-#define MAX_TRANSACTION_LEN 510
+#define MAX_TRANSACTION_LEN 1410
 
 /**
  * Maximum signature length (bytes).
+ * Schnorr signatures only have 64 bytes
  */
-#define MAX_DER_SIG_LEN 72
+#define MAX_DER_SIG_LEN 64
 
 /**
  * Exponent used to convert sompi to KAS unit (N KAS = N * 10^8 sompi).

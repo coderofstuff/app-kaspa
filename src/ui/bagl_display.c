@@ -18,6 +18,7 @@
 #include "../address.h"
 #include "action/validate.h"
 #include "../transaction/types.h"
+#include "../transaction/utils.h"
 #include "../common/bip32.h"
 #include "../common/format.h"
 #include "../menu.h"
@@ -26,6 +27,7 @@ static action_validate_cb g_validate_callback;
 static char g_amount[30];
 static char g_bip32_path[60];
 static char g_address[ADDRESS_LEN + 6];
+static char g_fees[30];
 
 // Validate/Invalidate public key and go back to home
 static void ui_action_validate_pubkey(bool choice) {
@@ -128,16 +130,25 @@ UX_STEP_NOCB(ux_display_amount_step,
                  .text = g_amount,
              });
 
+UX_STEP_NOCB(ux_display_fees_step,
+             bnnn_paging,
+             {
+                 .title = "Max Fees",
+                 .text = g_fees,
+             });
+
 // FLOW to display transaction information:
 // #1 screen : eye icon + "Review Transaction"
-// #2 screen : display amount
-// #3 screen : display destination address
-// #4 screen : approve button
-// #5 screen : reject button
+// #2 screen : display address
+// #3 screen : display amount
+// #4 screen : display fees
+// #5 screen : approve button
+// #6 screen : reject button
 UX_FLOW(ux_display_transaction_flow,
         &ux_display_review_step,
         &ux_display_address_step,
         &ux_display_amount_step,
+        &ux_display_fees_step,
         &ux_display_approve_step,
         &ux_display_reject_step);
 
@@ -151,15 +162,33 @@ int ui_display_transaction() {
     char amount[30] = {0};
     if (!format_fpu64(amount,
                       sizeof(amount),
-                      G_context.tx_info.transaction.value,
+                      G_context.tx_info.transaction.tx_outputs[0].value,
                       EXPONENT_SMALLEST_UNIT)) {
         return io_send_sw(SW_DISPLAY_AMOUNT_FAIL);
     }
     snprintf(g_amount, sizeof(g_amount), "KAS %.*s", sizeof(amount), amount);
     PRINTF("Amount: %s\n", g_amount);
 
+    memset(g_fees, 0, sizeof(g_fees));
+    char fees[30] = {0};
+    if (!format_fpu64(fees,
+                      sizeof(fees),
+                      calc_fees(G_context.tx_info.transaction.tx_inputs,
+                                G_context.tx_info.transaction.tx_input_len,
+                                G_context.tx_info.transaction.tx_outputs,
+                                G_context.tx_info.transaction.tx_output_len                      
+                      ),
+                      EXPONENT_SMALLEST_UNIT)) {
+        return io_send_sw(SW_DISPLAY_AMOUNT_FAIL);
+    }
+    snprintf(g_fees, sizeof(g_fees), "KAS %.*s", sizeof(fees), fees);
+
     memset(g_address, 0, sizeof(g_address));
-    snprintf(g_address, sizeof(g_address), "%.*s", ADDRESS_LEN, G_context.tx_info.transaction.to);
+
+    uint8_t address[ADDRESS_LEN] = {0};
+
+    script_public_key_to_address(address, G_context.tx_info.transaction.tx_outputs[0].script_public_key);
+    snprintf(g_address, sizeof(g_address), "%.*s", ADDRESS_LEN, address);
 
     g_validate_callback = &ui_action_validate_transaction;
 

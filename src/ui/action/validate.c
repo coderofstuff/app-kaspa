@@ -19,7 +19,8 @@ void validate_transaction(bool choice) {
     if (choice) {
         G_context.state = STATE_APPROVED;
 
-        if (crypto_sign_message() != 0) {
+        int error = crypto_sign_message();
+        if (error != 0) {
             G_context.state = STATE_NONE;
             io_send_sw(SW_SIGNATURE_FAIL);
         } else {

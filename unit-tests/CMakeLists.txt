@@ -76,14 +76,16 @@ target_link_libraries(test_tx_parser PUBLIC
                       bip32
                       cmocka
                       gcov
+                      varint
                       write
                       read
-                      varint
                       transaction_utils)
 target_link_libraries(test_tx_utils PUBLIC
                       cmocka
                       gcov
-                      transaction_utils)
+                      transaction_utils
+                      address
+                      cashaddr)
 
 add_test(test_address test_address)
 add_test(test_base58 test_base58)
