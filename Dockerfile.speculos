@@ -1,0 +1,7 @@
+FROM speculos:latest
+
+COPY ./tests/requirements.txt /tmp/requirements.txt
+
+RUN apt update
+RUN apt install build-essential -y
+RUN pip install --extra-index-url https://test.pypi.org/simple/ -r /tmp/requirements.txt

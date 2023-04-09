@@ -18,3 +18,24 @@ services:
     - "41000:41000"
     - "1234:1234"
     - "5000:5000"
+  
+  # functional test
+  ftest:
+    container_name: ledger-functional-tests
+    build:
+      context: .
+      dockerfile: Dockerfile.speculos
+    volumes:
+    - ./bin:/speculos/app
+    - ./:/tmp/kaspa
+    entrypoint: bash
+    command: -c "cd /tmp/kaspa/tests && pytest --tb=short --device ${TEST_DEVICE}"
+
+  # unit tests
+  utest:
+    container_name: ledger-unit-tests
+    image: ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
+    entrypoint: bash
+    command: -c "cd /app/unit-tests && cmake -Bbuild -H. && make -C build && CTEST_OUTPUT_ON_FAILURE=1 make -C build test"
+    volumes:
+    - .:/app
