@@ -36,3 +36,9 @@
  * Exponent used to convert sompi to KAS unit (N KAS = N * 10^8 sompi).
  */
 #define EXPONENT_SMALLEST_UNIT 8
+
+/**
+ * Normally should be 34 with schnorr addresses but can be 35 with ecdsa addresses
+ * Cannot be any longer than 35 in any case
+ */
+#define MAX_INPUT_SCRIPT_PUBLIC_KEY_LEN 35

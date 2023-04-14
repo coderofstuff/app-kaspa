@@ -48,7 +48,6 @@ typedef struct {
 
 typedef struct {
     uint64_t value;
-    // uint16_t version;
     uint8_t* script_public_key; // In hex: 20 + public_key_hex + ac
 } transaction_output_t;
 
