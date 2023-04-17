@@ -1,5 +1,5 @@
-from application_client.boilerplate_command_sender import KaspaCommandSender, Errors
-from application_client.boilerplate_response_unpacker import unpack_get_public_key_response
+from application_client.kaspa_command_sender import KaspaCommandSender, Errors
+from application_client.kaspa_response_unpacker import unpack_get_public_key_response
 from ragger.bip import calculate_public_key_and_chaincode, CurveChoice
 from ragger.backend import RaisePolicy
 from ragger.navigator import NavInsID, NavIns
