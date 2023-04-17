@@ -2,6 +2,8 @@ from enum import IntEnum
 from typing import Generator, List, Optional
 from contextlib import contextmanager
 
+from .kaspa_transaction import Transaction
+
 from ragger.backend.interface import BackendInterface, RAPDU
 from ragger.bip import pack_derivation_path
 
@@ -99,28 +101,35 @@ class KaspaCommandSender:
 
 
     @contextmanager
-    def sign_tx(self, path: str, transaction: bytes) -> Generator[None, None, None]:
+    def sign_tx(self, transaction: Transaction) -> Generator[None, None, None]:
         self.backend.exchange(cla=CLA,
                               ins=InsType.SIGN_TX,
                               p1=P1.P1_START,
                               p2=P2.P2_MORE,
-                              data=pack_derivation_path(path))
-        messages = split_message(transaction, MAX_APDU_LEN)
-        idx: int = P1.P1_START + 1
+                              data=transaction.serialize_first_chunk())
 
-        for msg in messages[:-1]:
+        for output in transaction.outputs:
             self.backend.exchange(cla=CLA,
                                   ins=InsType.SIGN_TX,
-                                  p1=idx,
+                                  p1=1,
                                   p2=P2.P2_MORE,
-                                  data=msg)
-            idx += 1
+                                  data=output.serialize())
 
+        for i, input in enumerate(transaction.inputs):
+            if i < len(transaction.inputs) - 1:
+                self.backend.exchange(cla=CLA,
+                                    ins=InsType.SIGN_TX,
+                                    p1=2,
+                                    p2=P2.P2_MORE,
+                                    data=input.serialize())
+
+        # Last input, we'll end here
         with self.backend.exchange_async(cla=CLA,
-                                         ins=InsType.SIGN_TX,
-                                         p1=idx,
-                                         p2=P2.P2_LAST,
-                                         data=messages[-1]) as response:
+                                    ins=InsType.SIGN_TX,
+                                    p1=2,
+                                    p2=P2.P2_LAST,
+                                    data=input.serialize()) as response:
+
             yield response
 
     def get_async_response(self) -> Optional[RAPDU]:

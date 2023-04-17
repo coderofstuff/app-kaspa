@@ -19,21 +19,8 @@
 bool transaction_utils_check_encoding(const uint8_t *memo, uint64_t memo_len);
 
 /**
- * Format memo as string.
- *
- * @param[in]  memo
- *   Pointer to input byte buffer.
- * @param[in]  memo_len
- *   Length of input byte buffer.
- * @param[out] dst
- *   Pointer to output string.
- * @param[in]  dst_len
- *   Length of output string.
- *
- * @return true if success, false otherwise.
- *
+ * Translates a given Script Public Key to it's Kaspa Address.
  */
-bool transaction_utils_format_memo(const uint8_t *memo,
-                                   uint64_t memo_len,
-                                   char *dst,
-                                   uint64_t dst_len);
+void script_public_key_to_address(uint8_t* out_address, uint8_t* in_script_public_key);
+
+int calc_fees(transaction_input_t* inputs, size_t input_len, transaction_output_t* outputs, size_t output_len);

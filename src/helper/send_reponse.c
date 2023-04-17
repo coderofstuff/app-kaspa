@@ -30,7 +30,6 @@ int helper_send_response_sig() {
     resp[offset++] = G_context.tx_info.signature_len;
     memmove(resp + offset, G_context.tx_info.signature, G_context.tx_info.signature_len);
     offset += G_context.tx_info.signature_len;
-    resp[offset++] = (uint8_t) G_context.tx_info.v;
 
     return io_send_response(&(const buffer_t){.ptr = resp, .size = offset, .offset = 0}, SW_OK);
 }

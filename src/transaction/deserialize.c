@@ -3,43 +3,93 @@
 #include "types.h"
 #include "../common/buffer.h"
 
+int deserialize_output(buffer_t *buf, transaction_output_t *txout) {
+    if (!buffer_read_u64(buf, &txout->value, BE)) {
+        return -70;
+    }
+
+    txout->script_public_key = (uint8_t *) (buf->ptr + buf->offset);
+
+    if (!buffer_seek_cur(buf, 34)) {
+        return -80;
+    }
+
+    return 1;
+}
+
+int deserialize_input(buffer_t *buf, transaction_input_t *txin) {
+    if (!buffer_read_u64(buf, &txin->value, BE)) {
+        return 0;
+    }
+
+    txin->tx_id = (uint8_t *) (buf->ptr + buf->offset);
+
+    if (!buffer_seek_cur(buf, 32)) {
+        return 0;
+    }
+
+    uint8_t address_type = -1;
+    buffer_read_u8(buf, &address_type);
+
+    uint32_t address_index = -1;
+    buffer_read_u32(buf, &address_index, BE);
+
+    if (address_type < 0 || address_index < 0) {
+        return 0;
+    }
+
+    return 1;
+}
+
 parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
-    if (buf->size > MAX_TX_LEN) {
-        return WRONG_LENGTH_ERROR;
+    // Version, 2 bytes
+    if (!buffer_read_u16(buf, &tx->version, BE)) {
+        return VERSION_PARSING_ERROR;
     }
 
-    // nonce
-    if (!buffer_read_u64(buf, &tx->nonce, BE)) {
-        return NONCE_PARSING_ERROR;
+    uint8_t n_output = 0;
+    if (!buffer_read_u8(buf, &n_output)) {
+        return OUTPUTS_LENGTH_PARSING_ERROR;
     }
 
-    tx->to = (uint8_t *) (buf->ptr + buf->offset);
+    tx->tx_output_len = n_output;
 
-    // TO address
-    if (!buffer_seek_cur(buf, ADDRESS_LEN)) {
-        return TO_PARSING_ERROR;
+    // Must be 1 or 2 outputs
+    if (tx->tx_output_len < 1 || tx->tx_output_len > 2) {
+        return OUTPUTS_LENGTH_PARSING_ERROR;
     }
 
-    // amount value
-    if (!buffer_read_u64(buf, &tx->value, BE)) {
-        return VALUE_PARSING_ERROR;
+    uint8_t n_input = 0;
+    if (!buffer_read_u8(buf, &n_input)) {
+        return INPUTS_LENGTH_PARSING_ERROR;
     }
 
-    // length of memo
-    if (!buffer_read_varint(buf, &tx->memo_len) && tx->memo_len > MAX_MEMO_LEN) {
-        return MEMO_LENGTH_ERROR;
+    tx->tx_input_len = n_input;
+
+    if (tx->tx_input_len < 1 || tx->tx_input_len > 2) {
+        return INPUTS_LENGTH_PARSING_ERROR;
     }
 
-    // memo
-    tx->memo = (uint8_t *) (buf->ptr + buf->offset);
-
-    if (!buffer_seek_cur(buf, tx->memo_len)) {
-        return MEMO_PARSING_ERROR;
+    for (int i = 0; i < (int) tx->tx_output_len && i < 2; i++) {
+        int res = deserialize_output(buf, &tx->tx_outputs[i]);
+        if (res < 0) {
+            return res;
+        }
     }
 
-    if (!transaction_utils_check_encoding(tx->memo, tx->memo_len)) {
-        return MEMO_ENCODING_ERROR;
+    for (int i = 0; i < (int) tx->tx_input_len; i++) {
+        if (!deserialize_input(buf, &tx->tx_inputs[i])) {
+            return INPUTS_PARSING_ERROR;
+        }
     }
 
-    return (buf->offset == buf->size) ? PARSING_OK : WRONG_LENGTH_ERROR;
+    uint32_t lastbits = 0;
+    int diff = buf->size - buf->offset;
+    if (buf->size - buf->offset == 4) {
+        buffer_read_u32(buf, &lastbits, BE);
+    } else {
+        lastbits = buf->size - buf->offset;
+    }
+
+    return diff == 0 ? PARSING_OK : lastbits;
 }

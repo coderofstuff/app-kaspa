@@ -1,8 +1,8 @@
-# BOLOK Transaction Serialization
+# Kaspa Transaction Serialization
 
 ## Overview
 
-The custom transaction serialization presented is for the purely fictitious BOLOK *chain* which has been inspired by other popular blockchain (see [Links](#links)).
+The custom transaction serialization presented is for Kaspa.
 
 ## Amount units
 
@@ -10,7 +10,7 @@ The base unit in Kaspa is the KAS and the smallest unit used in raw transaction 
 
 ## Address format
 
-BOLOK addresses are hexadecimal numbers, identifiers derived from the last 20 bytes of the Keccak-256 hash of the public key.
+Kaspa addresses begin with `kaspa:` followed by 61 base32 characters for a total of `67` bytes.
 
 ## Structure
 
@@ -18,14 +18,42 @@ BOLOK addresses are hexadecimal numbers, identifiers derived from the last 20 by
 
 | Field | Size (bytes) | Description |
 | --- | :---: | --- |
-| `nonce` | 8 | A sequence number used to prevent message replay |
-| `to` | 20 | The destination address |
-| `value` | 8 | The amount in mBOL to send to the destination address |
-| `memo_len` | 1-9 | length of the memo as [varint](#variablelenghtinteger) |
-| `memo` | var | A text ASCII-encoded of length `memo_len` to show your love |
-| `v` | 1 | 0x01 if y-coordinate of R is odd, 0x00 otherwise |
-| `r` | 32 | x-coordinate of R in ECDSA signature |
-| `s` | 32 | x-coordinate of S in ECDSA signature |
+| `version` | 2 | The version of the transaction being signed |
+| `n_inputs` | 1 | The number of inputs. Max 255.
+| `inputs[]` | n_inputs * 69 | Array of `Transaction Inputs` |
+| `n_outputs` | 1 | The number of outputs. Max 255.
+| `outputs[]` | n_outputs * 42 | Array of `Transaction Outputs` |
+
+### Transaction Input
+
+Total bytes: 69
+
+| Field | Size (bytes) | Description |
+| --- | --- | --- |
+| `value` | 8 | The amount of KAS in sompi in this input |
+| `prev_tx_id` | 32 | The transaction ID in bytes |
+| `derivation_path` | 20 | BIP32 path of the address |
+| `sequence` | 8 | The sequence number of this input |
+| `sig_op_count` | 1 | The sig op count. Usually `1` |
+
+### Transaction Output
+
+Total bytes: 42
+
+| Field | Size (bytes) | Description |
+| --- | --- | --- |
+| `value` | 8 | The amount of KAS in sompi that will go send to the address |
+| `script_public_key` | 34 | `20` + public_key (32 bytes) + `ac`
+
+### Transaction Requirements
+- Fee = (total inputs amount) - (total outputs amount)
+- (total inputs amount) > (total outputs amount)
+- There must be at least 1 input
+- There must be exactly 1 or 2 outputs
+  - If there is only 1 output, it is assumed to be the send address
+  - If there are 2 outputs, the first output is assumed to be the `send` address and the second output is where the `change` will go
+
+
 
 ### Variable length integer (varint)
 

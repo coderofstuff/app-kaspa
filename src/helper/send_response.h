@@ -31,8 +31,7 @@ int helper_send_response_pubkey(void);
  * y-coordinate of R).
  *
  * response = G_context.tx_info.signature_len (1) ||
- *            G_context.tx_info.signature (G_context.tx_info.signature_len) ||
- *            G_context.tx_info.v (1)
+ *            G_context.tx_info.signature (G_context.tx_info.signature_len)
  *
  * @return zero or positive integer if success, -1 otherwise.
  *

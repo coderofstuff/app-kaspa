@@ -35,7 +35,9 @@
 
 | Response length (bytes) | SW | RData |
 | --- | --- | --- |
-| var | 0x9000 | `APPNAME (var)` |
+| 5 | 0x9000 | `Kaspa (5 bytes)` |
+
+Raw response looks like: `4b617370619000`
 
 ## GET_PUBLIC_KEY
 
@@ -80,7 +82,7 @@ Transactions signed with ECDSA are currently not supported.
 
 | Response length (bytes) | SW | RData |
 | --- | --- | --- |
-| var | 0x9000 | `len(signature) (1)` \|\| <br> `signature (var)` \|\| <br> `v (1)`|
+| var | 0x9000 | `len(signature_count) (1)` \|\| <br> `len(signature{1})` \|\| <br> `signature{n} (var)` \|\| <br> ... \|\| <br> `len(signature{n})` \|\| <br> `signature{n} (var)` |
 
 ## Status Words
 

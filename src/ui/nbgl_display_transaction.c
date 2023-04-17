@@ -93,13 +93,17 @@ int ui_display_transaction() {
     char amount[30] = {0};
     if (!format_fpu64(amount,
                       sizeof(amount),
-                      G_context.tx_info.transaction.value,
+                      G_context.tx_info.transaction.tx_outputs[0].value,
                       EXPONENT_SMALLEST_UNIT)) {
         return io_send_sw(SW_DISPLAY_AMOUNT_FAIL);
     }
     snprintf(g_amount, sizeof(g_amount), "KAS %.*s", sizeof(amount), amount);
     memset(g_address, 0, sizeof(g_address));
-    snprintf(g_address, sizeof(g_address), "%.*s", ADDRESS_LEN, G_context.tx_info.transaction.to);
+
+    uint8_t address[ADDRESS_LEN] = {0};
+
+    script_public_key_to_address(address, G_context.tx_info.transaction.tx_outputs[0].script_public_key);
+    snprintf(g_address, sizeof(g_address), "%.*s", ADDRESS_LEN, address);
 
     // Start review
     nbgl_useCaseReviewStart(&C_stax_app_boilerplate_64px,
