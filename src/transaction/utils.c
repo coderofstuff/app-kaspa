@@ -2,6 +2,7 @@
 #include <stdbool.h>  // bool
 #include <string.h>   // memmove
 
+#include "address.h"
 #include "types.h"
 
 bool transaction_utils_check_encoding(const uint8_t *memo, uint64_t memo_len) {
@@ -25,11 +26,11 @@ void script_public_key_to_address(uint8_t* out_address, uint8_t* in_script_publi
 int calc_fees(transaction_input_t* inputs, size_t input_len, transaction_output_t* outputs, size_t output_len) {
     int fees = 0;
     
-    for (int i = 0; i < input_len; i++) {
+    for (size_t i = 0; i < input_len; i++) {
         fees += inputs[i].value;
     }
 
-    for (int i = 0; i < output_len; i++) {
+    for (size_t i = 0; i < output_len; i++) {
         fees -= outputs[i].value;
     }
 
