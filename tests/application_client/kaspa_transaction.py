@@ -1,7 +1,4 @@
-from io import BytesIO
-from typing import Union
-
-from .kaspa_utils import read, read_uint, read_varint, write_varint, UINT64_MAX
+from .kaspa_utils import UINT64_MAX
 
 
 class TransactionError(Exception):
@@ -17,7 +14,7 @@ class TransactionInput:
         self.tx_id: bytes = bytes.fromhex(tx_id) # 32 bytes
         self.address_type: int = address_type    # 1 byte
         self.address_index:int  = address_index  # 4 bytes
-    
+
     def serialize(self) -> bytes:
         return b"".join([
             self.value.to_bytes(8, byteorder="big"),
@@ -32,7 +29,7 @@ class TransactionOutput:
                  script_public_key: str):
         self.value = value
         self.script_public_key: bytes = bytes.fromhex(script_public_key)
-    
+
     def serialize(self) -> bytes:
         return b"".join([
             self.value.to_bytes(8, byteorder="big"),
@@ -52,12 +49,6 @@ class Transaction:
         if do_check:
             if not 0 <= self.version <= UINT64_MAX:
                 raise TransactionError(f"Bad version: '{self.version}'!")
-
-            # if not 0 <= self.value <= UINT64_MAX:
-            #     raise TransactionError(f"Bad value: '{self.value}'!")
-
-            # if len(self.to) != 67:
-            #     raise TransactionError(f"Bad address: '{self.to.hex()}'!")
     
     def serialize_first_chunk(self) -> bytes:
         return b"".join([

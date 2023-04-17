@@ -2,7 +2,7 @@ from enum import IntEnum
 from typing import Generator, List, Optional
 from contextlib import contextmanager
 
-from .kaspa_transaction import Transaction, TransactionInput, TransactionOutput
+from .kaspa_transaction import Transaction
 
 from ragger.backend.interface import BackendInterface, RAPDU
 from ragger.bip import pack_derivation_path
@@ -101,14 +101,12 @@ class KaspaCommandSender:
 
 
     @contextmanager
-    def sign_tx(self, path: str, transaction: Transaction) -> Generator[None, None, None]:
+    def sign_tx(self, transaction: Transaction) -> Generator[None, None, None]:
         self.backend.exchange(cla=CLA,
                               ins=InsType.SIGN_TX,
                               p1=P1.P1_START,
                               p2=P2.P2_MORE,
                               data=transaction.serialize_first_chunk())
-        # messages = split_message(transaction, MAX_APDU_LEN)
-        # idx: int = P1.P1_START + 1
 
         for output in transaction.outputs:
             self.backend.exchange(cla=CLA,
@@ -116,8 +114,7 @@ class KaspaCommandSender:
                                   p1=1,
                                   p2=P2.P2_MORE,
                                   data=output.serialize())
-            # idx += 1
-        
+
         for i, input in enumerate(transaction.inputs):
             if i < len(transaction.inputs) - 1:
                 self.backend.exchange(cla=CLA,
@@ -125,23 +122,15 @@ class KaspaCommandSender:
                                     p1=2,
                                     p2=P2.P2_MORE,
                                     data=input.serialize())
-        print("Ready to go")
+
         # Last input, we'll end here
         with self.backend.exchange_async(cla=CLA,
                                     ins=InsType.SIGN_TX,
                                     p1=2,
                                     p2=P2.P2_LAST,
                                     data=input.serialize()) as response:
-            print("Sent the last output. Waiting")
-            yield response
-                
 
-        # with self.backend.exchange_async(cla=CLA,
-        #                                  ins=InsType.SIGN_TX,
-        #                                  p1=3,
-        #                                  p2=P2.P2_LAST,
-        #                                  data=messages[-1]) as response:
-        #     yield response
+            yield response
 
     def get_async_response(self) -> Optional[RAPDU]:
         return self.backend.last_async_response
