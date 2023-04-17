@@ -21,7 +21,7 @@ def test_get_public_key_no_confirm(backend):
 # In this test we check that the GET_PUBLIC_KEY works in confirmation mode
 def test_get_public_key_confirm_accepted(firmware, backend, navigator, test_name):
     client = KaspaCommandSender(backend)
-    path = "m/44'/0'/0'/0/0"
+    path = "m/44'/111111'/0'/0/0"
     with client.get_public_key_with_confirmation(path=path):
         if firmware.device.startswith("nano"):
             navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
@@ -52,7 +52,7 @@ def test_get_public_key_confirm_accepted(firmware, backend, navigator, test_name
 # In this test we check that the GET_PUBLIC_KEY in confirmation mode replies an error if the user refuses
 def test_get_public_key_confirm_refused(firmware, backend, navigator, test_name):
     client = KaspaCommandSender(backend)
-    path = "m/44'/0'/0'/0/0"
+    path = "m/44'/111111'/0'/0/0"
 
     if firmware.device.startswith("nano"):
         with client.get_public_key_with_confirmation(path=path):

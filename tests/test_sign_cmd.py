@@ -1,4 +1,4 @@
-from application_client.kaspa_transaction import Transaction
+from application_client.kaspa_transaction import Transaction, TransactionInput, TransactionOutput
 from application_client.kaspa_command_sender import KaspaCommandSender, Errors
 from application_client.kaspa_response_unpacker import unpack_get_public_key_response, unpack_sign_tx_response
 from ragger.backend import RaisePolicy
@@ -15,7 +15,7 @@ def test_sign_tx_short_tx(firmware, backend, navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     # The path used for this entire test
-    path: str = "m/44'/0'/0'/0/0"
+    path: str = "m/44'/111111'/0'/0/0"
 
     # First we need to get the public key of the device in order to build the transaction
     rapdu = client.get_public_key(path=path)
@@ -23,11 +23,22 @@ def test_sign_tx_short_tx(firmware, backend, navigator, test_name):
 
     # Create the transaction that will be sent to the device for signing
     transaction = Transaction(
-        nonce=1,
-        to="kaspa:qqs7krzzwqfgk9kf830smtzg64s9rf3r0khfj76cjynf2pfgrr35saatu88xq",
-        value=666,
-        memo="For u EthDev"
-    ).serialize()
+        version=1,
+        inputs=[
+            TransactionInput(
+                value=100000,
+                tx_id="e119d53514c1b0e2efce7a89e3d1d5d6cd73582ea20687641c8fdccb6060a9ad",
+                address_type=0,
+                address_index=0
+            )
+        ],
+        outputs=[
+            TransactionOutput(
+                value=90000,
+                script_public_key="20e9edf67a325868ecc7cd8519e6ca5265e65b7d10f56066461ceabf0c2bc1c5adac"
+            )
+        ]
+    )
 
     # Send the sign device instruction.
     # As it requires on-screen validation, the function is asynchronous.
@@ -60,20 +71,28 @@ def test_sign_tx_short_tx(firmware, backend, navigator, test_name):
 def test_sign_tx_long_tx(firmware, backend, navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
-    path: str = "m/44'/0'/0'/0/0"
+    path: str = "m/44'/111111'/0'/0/0"
 
     rapdu = client.get_public_key(path=path)
     _, public_key, _, _ = unpack_get_public_key_response(rapdu.data)
 
     transaction = Transaction(
-        nonce=1,
-        to="kaspa:qqs7krzzwqfgk9kf830smtzg64s9rf3r0khfj76cjynf2pfgrr35saatu88xq",
-        value=666,
-        memo=("This is a very long memo. "
-              "It will force the app client to send the serialized transaction to be sent in chunk. "
-              "As the maximum chunk size is 255 bytes we will make this memo greater than 255 characters. "
-              "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam.")
-    ).serialize()
+        version=1,
+        inputs=[
+            TransactionInput(
+                value=100000,
+                tx_id="e119d53514c1b0e2efce7a89e3d1d5d6cd73582ea20687641c8fdccb6060a9ad",
+                address_type=0,
+                address_index=0
+            )
+        ],
+        outputs=[
+            TransactionOutput(
+                value=90000,
+                script_public_key="20e9edf67a325868ecc7cd8519e6ca5265e65b7d10f56066461ceabf0c2bc1c5adac"
+            )
+        ]
+    )
 
     with client.sign_tx(path=path, transaction=transaction):
         if firmware.device.startswith("nano"):
@@ -99,17 +118,28 @@ def test_sign_tx_long_tx(firmware, backend, navigator, test_name):
 def test_sign_tx_refused(firmware, backend, navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
-    path: str = "m/44'/0'/0'/0/0"
+    path: str = "m/44'/111111'/0'/0/0"
 
     rapdu = client.get_public_key(path=path)
     _, pub_key, _, _ = unpack_get_public_key_response(rapdu.data)
 
     transaction = Transaction(
-        nonce=1,
-        to="kaspa:qqs7krzzwqfgk9kf830smtzg64s9rf3r0khfj76cjynf2pfgrr35saatu88xq",
-        value=666,
-        memo="This transaction will be refused by the user"
-    ).serialize()
+        version=1,
+        inputs=[
+            TransactionInput(
+                value=100000,
+                tx_id="e119d53514c1b0e2efce7a89e3d1d5d6cd73582ea20687641c8fdccb6060a9ad",
+                address_type=0,
+                address_index=0
+            )
+        ],
+        outputs=[
+            TransactionOutput(
+                value=90000,
+                script_public_key="20e9edf67a325868ecc7cd8519e6ca5265e65b7d10f56066461ceabf0c2bc1c5adac"
+            )
+        ]
+    )
 
     if firmware.device.startswith("nano"):
         with client.sign_tx(path=path, transaction=transaction):
