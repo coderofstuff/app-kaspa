@@ -1,7 +1,7 @@
 from io import BytesIO
 from typing import Union
 
-from .boilerplate_utils import read, read_uint, read_varint, write_varint, UINT64_MAX
+from .kaspa_utils import read, read_uint, read_varint, write_varint, UINT64_MAX
 
 
 class TransactionError(Exception):

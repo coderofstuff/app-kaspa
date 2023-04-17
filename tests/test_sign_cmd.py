@@ -1,6 +1,6 @@
-from application_client.boilerplate_transaction import Transaction
-from application_client.boilerplate_command_sender import KaspaCommandSender, Errors
-from application_client.boilerplate_response_unpacker import unpack_get_public_key_response, unpack_sign_tx_response
+from application_client.kaspa_transaction import Transaction
+from application_client.kaspa_command_sender import KaspaCommandSender, Errors
+from application_client.kaspa_response_unpacker import unpack_get_public_key_response, unpack_sign_tx_response
 from ragger.backend import RaisePolicy
 from ragger.navigator import NavInsID
 from utils import ROOT_SCREENSHOT_PATH, check_signature_validity
