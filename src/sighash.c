@@ -1,12 +1,14 @@
 #include <stdint.h>
 #include <string.h>
+
+#include "cx.h"
+
 #include "./transaction/types.h"
 #include "./common/buffer.h"
 #include "./common/write.h"
-#include "cx.h"
 
 const cx_hash_info_t cx_blake2b_info;
-const char* key = "TransactionSigningHash";
+const char* signing_key = "TransactionSigningHash";
 
 static cx_err_t cx_blake2b_init3_no_throw(cx_blake2b_t* hash,
                                           size_t size,
@@ -36,7 +38,7 @@ err:
 
 static void calc_prev_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
     cx_blake2b_t inner_hash_writer;
-    cx_blake2b_init3_no_throw(&inner_hash_writer, 256, (uint8_t*) key, 22);
+    cx_blake2b_init3_no_throw(&inner_hash_writer, 256, (uint8_t*) signing_key, 22);
 
     for (size_t i = 0; i < tx->tx_input_len; i++) {
         uint8_t output_index_le[4] = {tx->tx_inputs[i].index, 0x00, 0x00, 0x00};
@@ -50,7 +52,7 @@ static void calc_prev_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
 
 static void calc_sequences_hash(transaction_t* tx, uint8_t* out_hash) {
     cx_blake2b_t inner_hash_writer;
-    cx_blake2b_init3_no_throw(&inner_hash_writer, 256, (uint8_t*) key, 22);
+    cx_blake2b_init3_no_throw(&inner_hash_writer, 256, (uint8_t*) signing_key, 22);
 
     uint8_t curr_sequences_hash[8] = {0};
 
@@ -65,7 +67,7 @@ static void calc_sequences_hash(transaction_t* tx, uint8_t* out_hash) {
 
 static void calc_sig_op_count_hash(transaction_t* tx, uint8_t* out_hash) {
     cx_blake2b_t inner_hash_writer;
-    cx_blake2b_init3_no_throw(&inner_hash_writer, 256, (uint8_t*) key, 22);
+    cx_blake2b_init3_no_throw(&inner_hash_writer, 256, (uint8_t*) signing_key, 22);
 
     for (size_t i = 0; i < tx->tx_input_len; i++) {
         uint8_t dummy_sig_op_count[1] = {0x01};
@@ -78,7 +80,7 @@ static void calc_sig_op_count_hash(transaction_t* tx, uint8_t* out_hash) {
 
 static void calc_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
     cx_blake2b_t inner_hash_writer;
-    cx_blake2b_init3_no_throw(&inner_hash_writer, 256, (uint8_t*) key, 22);
+    cx_blake2b_init3_no_throw(&inner_hash_writer, 256, (uint8_t*) signing_key, 22);
 
     uint8_t buf[8] = {0};
 
@@ -107,7 +109,7 @@ void calc_sighash(transaction_t* tx, transaction_input_t* txin, uint8_t* out_has
 
     cx_blake2b_t sighash;
 
-    cx_blake2b_init3_no_throw(&sighash, 256, (uint8_t*) key, 22);
+    cx_blake2b_init3_no_throw(&sighash, 256, (uint8_t*) signing_key, 22);
 
     // Write version, little endian, 2 bytes
     write_u16_le(buf, 0, tx->version);
