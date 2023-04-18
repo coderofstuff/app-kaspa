@@ -75,7 +75,8 @@ int crypto_sign_message(void) {
     BEGIN_TRY {
         TRY {
             // FIXME: implement signing here:
-            // from BTC: https://github.com/LedgerHQ/app-bitcoin-new/blob/b2c624769c3b863b38dd133e8facabb3d7b5b76c/src/handler/sign_psbt.c
+            // from BTC:
+            // https://github.com/LedgerHQ/app-bitcoin-new/blob/b2c624769c3b863b38dd133e8facabb3d7b5b76c/src/handler/sign_psbt.c
             // err = cx_ecschnorr_sign_no_throw(&private_key,
             //                              CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
             //                              CX_SHA256,
@@ -83,8 +84,9 @@ int crypto_sign_message(void) {
             //                              32,
             //                              sig,
             //                              &sig_len);
-            // from doc: https://developers.ledger.com/docs/embedded-app/crypto-api/lcx__ecschnorr_8h/#a2aa2454ece11c17373539d7178d26a98
-            // static int cx_ecschnorr_sign 	( 
+            // from doc:
+            // https://developers.ledger.com/docs/embedded-app/crypto-api/lcx__ecschnorr_8h/#a2aa2454ece11c17373539d7178d26a98
+            // static int cx_ecschnorr_sign 	(
             //  const cx_ecfp_private_key_t *  	pvkey,
             // 	int  	mode,
             // 	cx_md_t  	hashID,
@@ -92,7 +94,7 @@ int crypto_sign_message(void) {
             // 	unsigned int  	msg_len,
             // 	unsigned char *  	sig,
             // 	size_t  	sig_len,
-            // 	unsigned int *  	info 
+            // 	unsigned int *  	info
             // )
 
             // sig_len = cx_ecschnorr_sign(&private_key,

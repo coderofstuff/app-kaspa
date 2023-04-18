@@ -5,7 +5,7 @@
 #include "address.h"
 #include "types.h"
 
-bool transaction_utils_check_encoding(const uint8_t *memo, uint64_t memo_len) {
+bool transaction_utils_check_encoding(const uint8_t* memo, uint64_t memo_len) {
     for (uint64_t i = 0; i < memo_len; i++) {
         if (memo[i] > 0x7F) {
             return false;
@@ -23,9 +23,12 @@ void script_public_key_to_address(uint8_t* out_address, uint8_t* in_script_publi
     address_from_pubkey(public_key, out_address, ADDRESS_LEN);
 }
 
-int calc_fees(transaction_input_t* inputs, size_t input_len, transaction_output_t* outputs, size_t output_len) {
+int calc_fees(transaction_input_t* inputs,
+              size_t input_len,
+              transaction_output_t* outputs,
+              size_t output_len) {
     int fees = 0;
-    
+
     for (size_t i = 0; i < input_len; i++) {
         fees += inputs[i].value;
     }

@@ -24,9 +24,7 @@ int handler_sign_tx(buffer_t *cdata, uint8_t chunk, bool more) {
         if (G_context.tx_info.raw_tx_len + cdata->size > sizeof(G_context.tx_info.raw_tx)) {
             return io_send_sw(SW_WRONG_TX_LENGTH);
         }
-        if (!buffer_move(cdata,
-                         G_context.tx_info.raw_tx,
-                         cdata->size)) {
+        if (!buffer_move(cdata, G_context.tx_info.raw_tx, cdata->size)) {
             return io_send_sw(SW_TX_PARSING_FAIL);
         }
 
@@ -65,10 +63,11 @@ int handler_sign_tx(buffer_t *cdata, uint8_t chunk, bool more) {
             BEGIN_TRY {
                 TRY {
                     status = transaction_deserialize(&buf, &G_context.tx_info.transaction);
-                } CATCH_OTHER(e) {
+                }
+                CATCH_OTHER(e) {
                     status = e;
-                } FINALLY {
-
+                }
+                FINALLY {
                 }
             }
             END_TRY;

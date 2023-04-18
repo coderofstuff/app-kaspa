@@ -1,10 +1,10 @@
 #pragma once
 
-#include <stddef.h>  // size_t
-#include <stdint.h>  // uint*_t
-#include <stdbool.h> // bool
+#include <stddef.h>   // size_t
+#include <stdint.h>   // uint*_t
+#include <stdbool.h>  // bool
 
-#define ADDRESS_LEN  67
+#define ADDRESS_LEN 67
 
 typedef enum {
     PARSING_OK = 1,
@@ -20,35 +20,35 @@ typedef enum {
 } parser_status_e;
 
 typedef enum {
-    RECEIVE = 0,    // For receive addresses
-    CHANGE = 1      // For change addresses
+    RECEIVE = 0,  // For receive addresses
+    CHANGE = 1    // For change addresses
 } derive_type_e;
 
 typedef struct {
     uint8_t tx_id[32];  // 32 bytes
-    uint8_t index;      // check if uint8_t might suffice. in practice, we don't need 32bits for index
+    uint8_t index;  // check if uint8_t might suffice. in practice, we don't need 32bits for index
 } outpoint_t;
 
 typedef struct {
-	uint64_t value;
-	uint8_t* script_public_key;
-	// uint64_t block_daa_score;   // FIXME: verify if needed in signing
-	// bool     is_coinbase;       // FIXME: verify if needed in signing
+    uint64_t value;
+    uint8_t* script_public_key;
+    // uint64_t block_daa_score;   // FIXME: verify if needed in signing
+    // bool     is_coinbase;       // FIXME: verify if needed in signing
 } utxo_entry_t;
 
 typedef struct {
-    uint32_t        derivation_path[2];
-    uint64_t        sequence;
-    uint8_t         sig_op_count;
-    uint64_t        value;
-	uint8_t*        script_public_key;
-    uint8_t*        tx_id;  // 32 bytes
-    uint8_t         index;      // check if uint8_t might suffice. in practice, we don't need 32bits for index
+    uint32_t derivation_path[2];
+    uint64_t sequence;
+    uint8_t sig_op_count;
+    uint64_t value;
+    uint8_t* script_public_key;
+    uint8_t* tx_id;  // 32 bytes
+    uint8_t index;   // check if uint8_t might suffice. in practice, we don't need 32bits for index
 } transaction_input_t;
 
 typedef struct {
     uint64_t value;
-    uint8_t* script_public_key; // In hex: 20 + public_key_hex + ac
+    uint8_t* script_public_key;  // In hex: 20 + public_key_hex + ac
 } transaction_output_t;
 
 typedef struct {
@@ -56,16 +56,17 @@ typedef struct {
     // uint64_t amount;    // Amount to send
     // uint64_t fees;      // Fees to pay
     // uint8_t* sendto;    // (67-bytes) Address to send to. Must be the first output.
-    // uint8_t* changeto;  // (67-bytes) Address to give back change to. Must be the second output if it exists.
+    // uint8_t* changeto;  // (67-bytes) Address to give back change to. Must be the second output
+    // if it exists.
 
     // For signature purposes:
     // Based on: https://kaspa-mdbook.aspectron.com/transactions/constraints/size.html
     uint16_t version;
-    uint64_t tx_input_len; // check
+    uint64_t tx_input_len;  // check
     uint64_t tx_output_len;
 
     transaction_output_t tx_outputs[2];
-    transaction_input_t tx_inputs[14]; // array of inputs
+    transaction_input_t tx_inputs[14];  // array of inputs
 
     // uint64_t lock_time;      // Don't support this yet
     // uint8_t* subnetwork_id;  // Don't support this yet
@@ -76,5 +77,5 @@ typedef struct {
 
 typedef struct {
     uint8_t input_index;
-    uint8_t signature_script[64]; // FIXME: Ensure correct hard length
+    uint8_t signature_script[64];  // FIXME: Ensure correct hard length
 } signed_input_t;
