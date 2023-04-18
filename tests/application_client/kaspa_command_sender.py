@@ -2,10 +2,10 @@ from enum import IntEnum
 from typing import Generator, List, Optional
 from contextlib import contextmanager
 
-from .kaspa_transaction import Transaction
-
 from ragger.backend.interface import BackendInterface, RAPDU
 from ragger.bip import pack_derivation_path
+
+from .kaspa_transaction import Transaction
 
 
 MAX_APDU_LEN: int = 255
@@ -108,27 +108,28 @@ class KaspaCommandSender:
                               p2=P2.P2_MORE,
                               data=transaction.serialize_first_chunk())
 
-        for output in transaction.outputs:
+        for txoutput in transaction.outputs:
             self.backend.exchange(cla=CLA,
                                   ins=InsType.SIGN_TX,
                                   p1=1,
                                   p2=P2.P2_MORE,
-                                  data=output.serialize())
+                                  data=txoutput.serialize())
 
-        for i, input in enumerate(transaction.inputs):
+        txinput = None # used again after the loop for the last value
+        for i, txinput in enumerate(transaction.inputs):
             if i < len(transaction.inputs) - 1:
                 self.backend.exchange(cla=CLA,
                                     ins=InsType.SIGN_TX,
                                     p1=2,
                                     p2=P2.P2_MORE,
-                                    data=input.serialize())
+                                    data=txinput.serialize())
 
         # Last input, we'll end here
         with self.backend.exchange_async(cla=CLA,
                                     ins=InsType.SIGN_TX,
                                     p1=2,
                                     p2=P2.P2_LAST,
-                                    data=input.serialize()) as response:
+                                    data=txinput.serialize()) as response:
 
             yield response
 
