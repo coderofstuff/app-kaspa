@@ -1,4 +1,7 @@
-from .kaspa_utils import UINT64_MAX
+from io import BytesIO
+from typing import Union
+
+from .kaspa_utils import read, read_uint, UINT64_MAX
 
 
 class TransactionError(Exception):
@@ -23,6 +26,17 @@ class TransactionInput:
             self.address_index.to_bytes(4, byteorder="big")
         ])
 
+    @classmethod
+    def from_bytes(cls, hexa: Union[bytes, BytesIO]):
+        buf: BytesIO = BytesIO(hexa) if isinstance(hexa, bytes) else hexa
+
+        value: int = read_uint(buf, 8, 'big')
+        tx_id: str = read(buf, 32).decode("hex")
+        address_type: int = read_uint(buf, 1, 'big')
+        address_index: int = read_uint(buf, 4, 'big')
+
+        return cls(value=value, tx_id=tx_id, address_type=address_type, address_index=address_index)
+
 class TransactionOutput:
     def __init__(self,
                  value: int,
@@ -35,6 +49,15 @@ class TransactionOutput:
             self.value.to_bytes(8, byteorder="big"),
             self.script_public_key
         ])
+
+    @classmethod
+    def from_bytes(cls, hexa: Union[bytes, BytesIO]):
+        buf: BytesIO = BytesIO(hexa) if isinstance(hexa, bytes) else hexa
+
+        value: int = read_uint(buf, 8, 'big')
+        script_public_key: str = read(buf, 34).decode("hex")
+
+        return cls(value=value, script_public_key=script_public_key)
 
 class Transaction:
     def __init__(self,
@@ -49,7 +72,7 @@ class Transaction:
         if do_check:
             if not 0 <= self.version <= UINT64_MAX:
                 raise TransactionError(f"Bad version: '{self.version}'!")
-    
+
     def serialize_first_chunk(self) -> bytes:
         return b"".join([
             self.version.to_bytes(2, byteorder="big"),

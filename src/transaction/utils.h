@@ -16,11 +16,14 @@
  * @return true if success, false otherwise.
  *
  */
-bool transaction_utils_check_encoding(const uint8_t *memo, uint64_t memo_len);
+bool transaction_utils_check_encoding(const uint8_t* memo, uint64_t memo_len);
 
 /**
  * Translates a given Script Public Key to it's Kaspa Address.
  */
 void script_public_key_to_address(uint8_t* out_address, uint8_t* in_script_public_key);
 
-int calc_fees(transaction_input_t* inputs, size_t input_len, transaction_output_t* outputs, size_t output_len);
+int calc_fees(transaction_input_t* inputs,
+              size_t input_len,
+              transaction_output_t* outputs,
+              size_t output_len);

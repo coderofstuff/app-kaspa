@@ -43,7 +43,7 @@ def test_sign_tx_short_tx(firmware, backend, navigator, test_name):
     # Send the sign device instruction.
     # As it requires on-screen validation, the function is asynchronous.
     # It will yield the result when the navigation is done
-    with client.sign_tx(path=path, transaction=transaction):
+    with client.sign_tx(transaction=transaction):
         # Validate the on-screen request by performing the navigation appropriate for this device
         if firmware.device.startswith("nano"):
             navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
@@ -94,7 +94,7 @@ def test_sign_tx_long_tx(firmware, backend, navigator, test_name):
         ]
     )
 
-    with client.sign_tx(path=path, transaction=transaction):
+    with client.sign_tx(transaction=transaction):
         if firmware.device.startswith("nano"):
             navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
                                                       [NavInsID.BOTH_CLICK],
@@ -142,7 +142,7 @@ def test_sign_tx_refused(firmware, backend, navigator, test_name):
     )
 
     if firmware.device.startswith("nano"):
-        with client.sign_tx(path=path, transaction=transaction):
+        with client.sign_tx(transaction=transaction):
             # Disable raising when trying to unpack an error APDU
             backend.raise_policy = RaisePolicy.RAISE_NOTHING
             navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
@@ -158,7 +158,7 @@ def test_sign_tx_refused(firmware, backend, navigator, test_name):
             instructions += [NavInsID.USE_CASE_REVIEW_REJECT,
                              NavInsID.USE_CASE_CHOICE_CONFIRM,
                              NavInsID.USE_CASE_STATUS_DISMISS]
-            with client.sign_tx(path=path, transaction=transaction):
+            with client.sign_tx(transaction=transaction):
                 backend.raise_policy = RaisePolicy.RAISE_NOTHING
                 navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
                                                test_name + f"/part{i}",
