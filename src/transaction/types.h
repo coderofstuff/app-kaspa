@@ -20,6 +20,10 @@ typedef enum {
 } parser_status_e;
 
 typedef enum {
+    SIGHASH_PARSING_OK = 1
+} sighash_status_e;
+
+typedef enum {
     RECEIVE = 0,  // For receive addresses
     CHANGE = 1    // For change addresses
 } derive_type_e;
@@ -37,11 +41,12 @@ typedef struct {
 } utxo_entry_t;
 
 typedef struct {
+    // uint8_t* address_type;
+    // uint32_t* address_index;
+    // uint8_t sig_op_count;
     uint32_t derivation_path[2];
     uint64_t sequence;
-    uint8_t sig_op_count;
     uint64_t value;
-    uint8_t* script_public_key;
     uint8_t* tx_id;  // 32 bytes
     uint8_t index;   // check if uint8_t might suffice. in practice, we don't need 32bits for index
 } transaction_input_t;
@@ -66,7 +71,7 @@ typedef struct {
     uint64_t tx_output_len;
 
     transaction_output_t tx_outputs[2];
-    transaction_input_t tx_inputs[14];  // array of inputs
+    transaction_input_t tx_inputs[2];  // array of inputs
 
     // uint64_t lock_time;      // Don't support this yet
     // uint8_t* subnetwork_id;  // Don't support this yet

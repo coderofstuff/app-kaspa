@@ -6,6 +6,8 @@
 
 #include "globals.h"
 
+#include "sighash.h"
+
 int crypto_derive_private_key(cx_ecfp_private_key_t *private_key,
                               uint8_t chain_code[static 32],
                               const uint32_t *bip32_path,
@@ -51,15 +53,15 @@ void crypto_init_public_key(cx_ecfp_private_key_t *private_key,
 int crypto_sign_message(void) {
     cx_ecfp_private_key_t private_key = {0};
     uint8_t chain_code[32] = {0};
-    // uint32_t info = 0;
+    uint32_t info = 0;
     int sig_len = 0;
 
-    // FIXME: Forced 44'/111111'/0'/0/0
+    // 44'/111111'/0'/ address_type / address_index
     G_context.bip32_path[0] = 0x8000002C;
     G_context.bip32_path[1] = 0x8001b207;
     G_context.bip32_path[2] = 0x80000000;
-    G_context.bip32_path[3] = 0x00000000;
-    G_context.bip32_path[4] = 0x00000000;
+    G_context.bip32_path[3] = G_context.tx_info.transaction.tx_inputs[0].derivation_path[0];
+    G_context.bip32_path[4] = G_context.tx_info.transaction.tx_inputs[0].derivation_path[1];
 
     G_context.bip32_path_len = 5;
 
@@ -74,6 +76,7 @@ int crypto_sign_message(void) {
 
     BEGIN_TRY {
         TRY {
+            calc_sighash(&G_context.tx_info.transaction, G_context.tx_info.transaction.tx_inputs, G_context.sighash);
             // FIXME: implement signing here:
             // from BTC:
             // https://github.com/LedgerHQ/app-bitcoin-new/blob/b2c624769c3b863b38dd133e8facabb3d7b5b76c/src/handler/sign_psbt.c
@@ -99,9 +102,9 @@ int crypto_sign_message(void) {
 
             // sig_len = cx_ecschnorr_sign(&private_key,
             //                         CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
-            //                         CX_SHA256,
-            //                         "somemessagefixme",
-            //                         sizeof("somemessagefixme"),
+            //                         CX_BLAKE2B,
+            //                         G_context.sighash,
+            //                         sizeof(G_context.sighash),
             //                         G_context.tx_info.signature,
             //                         sizeof(G_context.tx_info.signature),
             //                         &info);

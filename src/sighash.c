@@ -1,29 +1,22 @@
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
-#include "cx.h"
+#include "./import/blake2-impl.h"
+#include "./import/blake2b.h"
 
 #include "./transaction/types.h"
 #include "./common/buffer.h"
 #include "./common/write.h"
+#include "./crypto.h"
+#include "globals.h"
+#include "./constants.h"
 
-const cx_hash_info_t cx_blake2b_info;
-const char* signing_key = "TransactionSigningHash";
+// const cx_hash_info_t cx_blake2b_info;
+uint8_t outer_buffer[32] = {0};
+uint8_t inner_buffer[32] = {0};
 
-static void hash_update(cx_blake2b_t* hash, uint8_t* data, size_t len) {
-    // cx_hash(hash, 0, data, len, NULL, 0);
-    cx_blake2b_update(hash, data, len);
-}
-
-static void hash_finalize(cx_blake2b_t* hash, uint8_t* out) {
-    // cx_hash(hash, CX_LAST, NULL, 0, out, 32);
-    cx_blake2b_final(hash, out);
-}
-
-static cx_err_t cx_blake2b_init3_no_throw(cx_blake2b_t* hash,
-                                          size_t size,
-                                          uint8_t* key,
-                                          size_t key_len) {
+static int hash_init(blake2b_state* hash, size_t size, uint8_t* key, size_t key_len) {
     if (key == NULL && key_len != 0) {
         goto err;
     }
@@ -31,161 +24,201 @@ static cx_err_t cx_blake2b_init3_no_throw(cx_blake2b_t* hash,
     if (size % 8 != 0 || size < 8 || size > 512) {
         goto err;
     }
-    memset(hash, 0, sizeof(cx_blake2b_t));
+    memset(hash, 0, sizeof(blake2b_state));
 
     size = size / 8;
-    hash->output_size = size;
-    hash->header.info = &cx_blake2b_info;
+    // hash->output_size = size;
+    // hash->header.info = &cx_blake2b_info;
 
-    if (blake2b_init_key(&hash->ctx, size, key, key_len) < 0) {
+    if (blake2b_init_key(hash, size, key, key_len) < 0) {
         goto err;
     }
-    return CX_OK;
+    return 0;
 
 err:
-    return CX_INVALID_PARAMETER;
+    return -1;
+}
+
+static void hash_update(blake2b_state* hash, uint8_t* data, size_t len) {
+    // cx_hash(hash, 0, data, len, NULL, 0);
+    // cx_blake2b_update(hash, data, len);
+    blake2b_update(hash, data, len);
+}
+
+static void hash_finalize(blake2b_state* hash, uint8_t* out) {
+    // cx_hash(hash, CX_LAST, NULL, 0, out, 32);
+    // cx_blake2b_final(hash, out);
+    blake2b_final(hash, out, 32);
 }
 
 static void calc_prev_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
-    cx_blake2b_t inner_hash_writer;
-    cx_blake2b_init3_no_throw(&inner_hash_writer, 256, (uint8_t*) signing_key, 22);
+    blake2b_state inner_hash_writer;
+    hash_init(&inner_hash_writer, 256, (uint8_t*) SIGNING_KEY, 22);
 
     for (size_t i = 0; i < tx->tx_input_len; i++) {
-        uint8_t output_index_le[4] = {tx->tx_inputs[i].index, 0x00, 0x00, 0x00};
-
+        memset(inner_buffer, 0, sizeof(inner_buffer));
+        write_u32_le(inner_buffer, 0, tx->tx_inputs[i].index);
         hash_update(&inner_hash_writer, tx->tx_inputs[i].tx_id, 32);
-        hash_update(&inner_hash_writer, output_index_le, 4);
+        hash_update(&inner_hash_writer, inner_buffer, 4);
     }
 
     hash_finalize(&inner_hash_writer, out_hash);
 }
 
 static void calc_sequences_hash(transaction_t* tx, uint8_t* out_hash) {
-    cx_blake2b_t inner_hash_writer;
-    cx_blake2b_init3_no_throw(&inner_hash_writer, 256, (uint8_t*) signing_key, 22);
-
-    uint8_t curr_sequences_hash[8] = {0};
+    blake2b_state inner_hash_writer;
+    hash_init(&inner_hash_writer, 256, (uint8_t*) SIGNING_KEY, 22);
 
     for (size_t i = 0; i < tx->tx_input_len; i++) {
-        write_u64_le(curr_sequences_hash, 0, tx->tx_inputs[i].sequence);
-        hash_update(&inner_hash_writer, curr_sequences_hash, 8);
-        memset(curr_sequences_hash, 0, sizeof(curr_sequences_hash));
+        memset(inner_buffer, 0, sizeof(inner_buffer));
+        write_u64_le(inner_buffer, 0, tx->tx_inputs[i].sequence);
+        hash_update(&inner_hash_writer, inner_buffer, 8);
+        memset(inner_buffer, 0, sizeof(inner_buffer));
     }
 
     hash_finalize(&inner_hash_writer, out_hash);
 }
 
 static void calc_sig_op_count_hash(transaction_t* tx, uint8_t* out_hash) {
-    cx_blake2b_t inner_hash_writer;
-    cx_blake2b_init3_no_throw(&inner_hash_writer, 256, (uint8_t*) signing_key, 22);
+    blake2b_state inner_hash_writer;
+    hash_init(&inner_hash_writer, 256, (uint8_t*) SIGNING_KEY, 22);
 
     for (size_t i = 0; i < tx->tx_input_len; i++) {
-        uint8_t dummy_sig_op_count[1] = {0x01};
-
-        hash_update(&inner_hash_writer, dummy_sig_op_count, 1);
+        memset(inner_buffer, 1, 1);
+        hash_update(&inner_hash_writer, inner_buffer, 1);
+        memset(inner_buffer, 0, sizeof(inner_buffer));
     }
 
     hash_finalize(&inner_hash_writer, out_hash);
 }
 
 static void calc_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
-    cx_blake2b_t inner_hash_writer;
-    cx_blake2b_init3_no_throw(&inner_hash_writer, 256, (uint8_t*) signing_key, 22);
-
-    uint8_t buf[8] = {0};
+    blake2b_state inner_hash_writer;
+    hash_init(&inner_hash_writer, 256, (uint8_t*) SIGNING_KEY, 22);
 
     for (size_t i = 0; i < tx->tx_output_len; i++) {
-        memset(buf, 0, sizeof(buf));
+        memset(inner_buffer, 0, sizeof(inner_buffer));
 
-        write_u64_le(buf, 0, tx->tx_outputs[i].value);
-        hash_update(&inner_hash_writer, buf, 8);  // Write the output value
-        memset(buf, 0, sizeof(buf));
+        write_u64_le(inner_buffer, 0, tx->tx_outputs[i].value);
+        hash_update(&inner_hash_writer, inner_buffer, 8);  // Write the output value
+        memset(inner_buffer, 0, sizeof(inner_buffer));
 
-        hash_update(&inner_hash_writer, buf, 2);  // Write the output script version, assume 0
+        hash_update(&inner_hash_writer, inner_buffer, 2);  // Write the output script version, assume 0
 
         // First byte is always the length of the following public key
         // Last byte is always 0xac (op code for normal transactions)
         uint8_t script_len = tx->tx_outputs[i].script_public_key[0] + 2;
-        write_u64_le(buf, 0, script_len);  // Write the number of bytes of the script public key
-        hash_update(&inner_hash_writer, buf, 8);
+        write_u64_le(inner_buffer, 0, script_len);  // Write the number of bytes of the script public key
+        hash_update(&inner_hash_writer, inner_buffer, 8);
         hash_update(&inner_hash_writer, tx->tx_outputs[i].script_public_key, script_len);
     }
 
     hash_finalize(&inner_hash_writer, out_hash);
 }
 
+static bool calc_txin_script_public_key(transaction_input_t* txin, uint8_t* out_hash) {
+    cx_ecfp_private_key_t private_key = {0};
+    cx_ecfp_public_key_t public_key = {0};
+
+    G_context.bip32_path[0] = 0x8000002C;
+    G_context.bip32_path[1] = 0x8001b207;
+    G_context.bip32_path[2] = 0x80000000;
+    G_context.bip32_path[3] = txin->derivation_path[0];
+    G_context.bip32_path[4] = txin->derivation_path[1];
+
+    G_context.bip32_path_len = 5;
+
+    // derive private key according to BIP32 path
+    int error = crypto_derive_private_key(&private_key,
+                                          G_context.pk_info.chain_code,
+                                          G_context.bip32_path,
+                                          G_context.bip32_path_len);
+    if (error != 0) {
+        // TODO: Do something here
+        // return io_send_sw(error);
+    }
+    // generate corresponding public key
+    crypto_init_public_key(&private_key, &public_key, G_context.pk_info.raw_public_key);
+
+    out_hash[0] = 0x20;
+    memmove(out_hash + 1, G_context.pk_info.raw_public_key, 32);
+    out_hash[33] = 0xac;
+
+    return true;
+}
+
 void calc_sighash(transaction_t* tx, transaction_input_t* txin, uint8_t* out_hash) {
-    uint8_t buf[32] = {0};
+    blake2b_state sighash;
 
-    cx_blake2b_t sighash;
-
-    cx_blake2b_init3_no_throw(&sighash, 256, (uint8_t*) signing_key, 22);
+    hash_init(&sighash, 256, (uint8_t*) SIGNING_KEY, 22);
 
     // Write version, little endian, 2 bytes
-    write_u16_le(buf, 0, tx->version);
-    hash_update(&sighash, buf, 2);
-    memset(buf, 0, sizeof(buf));
+    write_u16_le(outer_buffer, 0, tx->version);
+    hash_update(&sighash, outer_buffer, 2);
+    memset(outer_buffer, 0, sizeof(outer_buffer));
 
     // Write previous outputs hash
-    calc_prev_outputs_hash(tx, buf);
-    hash_update(&sighash, buf, 32);
-    memset(buf, 0, sizeof(buf));
+    calc_prev_outputs_hash(tx, outer_buffer);
+    hash_update(&sighash, outer_buffer, 32);
+    memset(outer_buffer, 0, sizeof(outer_buffer));
 
     // Write sequence hash
-    calc_sequences_hash(tx, buf);
-    hash_update(&sighash, buf, 32);
-    memset(buf, 0, sizeof(buf));
+    calc_sequences_hash(tx, outer_buffer);
+    hash_update(&sighash, outer_buffer, 32);
+    memset(outer_buffer, 0, sizeof(outer_buffer));
 
     // Write sig op count hash
-    calc_sig_op_count_hash(tx, buf);
-    hash_update(&sighash, buf, 32);
-    memset(buf, 0, sizeof(buf));
+    calc_sig_op_count_hash(tx, outer_buffer);
+    hash_update(&sighash, outer_buffer, 32);
+    memset(outer_buffer, 0, sizeof(outer_buffer));
 
     // Write Hash of the outpoint
     hash_update(&sighash, txin->tx_id, 32);
-    write_u32_le(buf, 0, txin->index);
-    hash_update(&sighash, buf, 4);
-    memset(buf, 0, sizeof(buf));
+    write_u32_le(outer_buffer, 0, txin->index);
+    hash_update(&sighash, outer_buffer, 4);
+    memset(outer_buffer, 0, sizeof(outer_buffer));
 
-    hash_update(&sighash, buf, 2);  // Write input script version, assume 0
+    hash_update(&sighash, outer_buffer, 2);  // Write input script version, assume 0
 
     // Write input's script_public_key. Length as uint64_t followed by script
     // count (1 byte) + public key (32/33 byte) + op (1 byte)
-    uint8_t script_len = txin->script_public_key[0] + 2;
-    write_u64_le(buf, 0, script_len);
-    hash_update(&sighash, buf, 8);
-    hash_update(&sighash, txin->script_public_key, script_len);
-    memset(buf, 0, sizeof(buf));
+    uint64_t script_len = 34;
+    write_u64_le(outer_buffer, 0, script_len);
+    hash_update(&sighash, outer_buffer, 8);
+
+    calc_txin_script_public_key(txin, outer_buffer);
+    hash_update(&sighash, outer_buffer, script_len);
+    memset(outer_buffer, 0, sizeof(outer_buffer));
 
     // Write input's value
-    write_u64_le(buf, 0, txin->value);
-    hash_update(&sighash, buf, 8);
-    memset(buf, 0, sizeof(buf));
+    write_u64_le(outer_buffer, 0, txin->value);
+    hash_update(&sighash, outer_buffer, 8);
+    memset(outer_buffer, 0, sizeof(outer_buffer));
 
     // Write input's sequence number
-    write_u64_le(buf, 0, txin->sequence);
-    hash_update(&sighash, buf, 8);
-    memset(buf, 0, sizeof(buf));
+    write_u64_le(outer_buffer, 0, txin->sequence);
+    hash_update(&sighash, outer_buffer, 8);
+    memset(outer_buffer, 0, sizeof(outer_buffer));
 
     // Write sigopcount, assume 1
-    buf[0] = 0x01;
-    hash_update(&sighash, buf, 1);
-    memset(buf, 0, sizeof(buf));
+    outer_buffer[0] = 0x01;
+    hash_update(&sighash, outer_buffer, 1);
+    memset(outer_buffer, 0, sizeof(outer_buffer));
 
     // Write outputs hash
-    calc_outputs_hash(tx, buf);
-    hash_update(&sighash, buf, 32);
-    memset(buf, 0, sizeof(buf));
+    calc_outputs_hash(tx, outer_buffer);
+    hash_update(&sighash, outer_buffer, 32);
+    memset(outer_buffer, 0, sizeof(outer_buffer));
 
     // Write last bits of data, assuming 0
-    hash_update(&sighash, buf, 8);   // Write locktime of 0
-    hash_update(&sighash, buf, 20);  // Write subnetwork Id, assume zero hash
-    hash_update(&sighash, buf, 8);   // Write gas, assume 0
-    hash_update(&sighash, buf, 32);  // Write payload hash, assume 0
+    hash_update(&sighash, outer_buffer, 8);   // Write locktime of 0
+    hash_update(&sighash, outer_buffer, 20);  // Write subnetwork Id, assume zero hash
+    hash_update(&sighash, outer_buffer, 8);   // Write gas, assume 0
+    hash_update(&sighash, outer_buffer, 32);  // Write payload hash, assume 0
 
     // Write sighash type, assume SigHashAll => 0x01
-    buf[0] = 0x01;
-    hash_update(&sighash, buf, 1);
+    outer_buffer[0] = 0x01;
+    hash_update(&sighash, outer_buffer, 1);
 
     hash_finalize(&sighash, out_hash);
 }

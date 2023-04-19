@@ -38,6 +38,9 @@ int deserialize_input(buffer_t *buf, transaction_input_t *txin) {
         return 0;
     }
 
+    txin->derivation_path[0] = (uint32_t) address_type;
+    txin->derivation_path[1] = address_index;
+
     return 1;
 }
 
