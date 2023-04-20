@@ -77,37 +77,14 @@ int crypto_sign_message(void) {
     BEGIN_TRY {
         TRY {
             calc_sighash(&G_context.tx_info.transaction, G_context.tx_info.transaction.tx_inputs, G_context.sighash);
-            // FIXME: implement signing here:
-            // from BTC:
-            // https://github.com/LedgerHQ/app-bitcoin-new/blob/b2c624769c3b863b38dd133e8facabb3d7b5b76c/src/handler/sign_psbt.c
-            // err = cx_ecschnorr_sign_no_throw(&private_key,
-            //                              CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
-            //                              CX_SHA256,
-            //                              sighash,
-            //                              32,
-            //                              sig,
-            //                              &sig_len);
-            // from doc:
-            // https://developers.ledger.com/docs/embedded-app/crypto-api/lcx__ecschnorr_8h/#a2aa2454ece11c17373539d7178d26a98
-            // static int cx_ecschnorr_sign 	(
-            //  const cx_ecfp_private_key_t *  	pvkey,
-            // 	int  	mode,
-            // 	cx_md_t  	hashID,
-            // 	const unsigned char *  	msg,
-            // 	unsigned int  	msg_len,
-            // 	unsigned char *  	sig,
-            // 	size_t  	sig_len,
-            // 	unsigned int *  	info
-            // )
-
-            // sig_len = cx_ecschnorr_sign(&private_key,
-            //                         CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
-            //                         CX_BLAKE2B,
-            //                         G_context.sighash,
-            //                         sizeof(G_context.sighash),
-            //                         G_context.tx_info.signature,
-            //                         sizeof(G_context.tx_info.signature),
-            //                         &info);
+            sig_len = cx_ecschnorr_sign(&private_key,
+                                         CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
+                                         CX_SHA256,
+                                         G_context.sighash,
+                                         32,
+                                         G_context.tx_info.signature,
+                                         sizeof(G_context.tx_info.signature),
+                                         &info);
             PRINTF("Signature: %.*H\n", sig_len, G_context.tx_info.signature);
         }
         CATCH_OTHER(e) {
