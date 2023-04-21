@@ -13,9 +13,7 @@
 #include "types.h"
 
 /* Start hacks */
-void os_longjmp(unsigned int exception) {
-//   longjmp(try_context_get()->jmp_buf, exception);
-}
+void os_longjmp(unsigned int exception) {}
 
 struct cx_xblake_s {
     cx_blake2b_t blake2b;
@@ -70,11 +68,11 @@ static void test_sighash(void **state) {
     transaction_output_t txout;
     transaction_t tx;
 
-    txin.tx_id = input_prev_tx_id;
+    memcpy(txin.tx_id, input_prev_tx_id, sizeof(input_prev_tx_id));
     txin.index = 1;
     txin.value = 2;
 
-    txout.script_public_key = output_script_public_key;
+    memcpy(txout.script_public_key, output_script_public_key, sizeof(output_script_public_key));
     txout.value = txin.value; // Assume no fee
 
     tx.version = 1;
