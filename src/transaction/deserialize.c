@@ -29,7 +29,11 @@ parser_status_e transaction_input_deserialize(buffer_t *buf, transaction_input_t
         return INPUTS_PARSING_ERROR;
     }
 
-    // txin->tx_id = (uint8_t *) (buf->ptr + buf->offset);
+    if (buf->offset + 32 > buf->size) {
+        // Not enough input
+        return INPUTS_PARSING_ERROR;
+    }
+
     memcpy(txin->tx_id, buf->ptr, 32);
 
     if (!buffer_seek_cur(buf, 32)) {
@@ -48,6 +52,8 @@ parser_status_e transaction_input_deserialize(buffer_t *buf, transaction_input_t
 
     txin->derivation_path[0] = (uint32_t) address_type;
     txin->derivation_path[1] = address_index;
+
+    buffer_read_u8(buf, &txin->index);
 
     return PARSING_OK;
 }

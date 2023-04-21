@@ -22,7 +22,7 @@ void validate_transaction(bool choice) {
         int error = crypto_sign_message();
         if (error != 0) {
             G_context.state = STATE_NONE;
-            io_send_sw(SW_SIGNATURE_FAIL);
+            io_send_sw(error);
         } else {
             helper_send_response_sig();
         }
