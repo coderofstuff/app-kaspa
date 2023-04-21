@@ -14,6 +14,10 @@
  * Parameter 1 for first APDU number.
  */
 #define P1_START 0x00
+
+#define P1_OUTPUTS 0x01
+
+#define P1_INPUTS 0x02
 /**
  * Parameter 1 for maximum APDU number.
  */

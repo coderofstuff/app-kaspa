@@ -47,13 +47,13 @@ typedef struct {
     uint32_t derivation_path[2];
     uint64_t sequence;
     uint64_t value;
-    uint8_t* tx_id;  // 32 bytes
+    uint8_t tx_id[32];  // 32 bytes
     uint8_t index;   // check if uint8_t might suffice. in practice, we don't need 32bits for index
 } transaction_input_t;
 
 typedef struct {
     uint64_t value;
-    uint8_t* script_public_key;  // In hex: 20 + public_key_hex + ac
+    uint8_t script_public_key[35];  // In hex: 20 + public_key_hex + ac (34/35 bytes total)
 } transaction_output_t;
 
 typedef struct {
@@ -71,7 +71,7 @@ typedef struct {
     uint64_t tx_output_len;
 
     transaction_output_t tx_outputs[2];
-    transaction_input_t tx_inputs[2];  // array of inputs
+    transaction_input_t tx_inputs[14];  // array of inputs
 
     // uint64_t lock_time;      // Don't support this yet
     // uint8_t* subnetwork_id;  // Don't support this yet

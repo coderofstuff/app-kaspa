@@ -24,7 +24,7 @@
 /**
  * Maximum transaction length (bytes).
  */
-#define MAX_TRANSACTION_LEN 512
+#define MAX_TRANSACTION_LEN 128
 
 /**
  * Maximum signature length (bytes).

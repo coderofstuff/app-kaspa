@@ -1,31 +1,39 @@
+#include <string.h>
 #include "deserialize.h"
 #include "utils.h"
 #include "types.h"
 #include "../common/buffer.h"
 
-int deserialize_output(buffer_t *buf, transaction_output_t *txout) {
+parser_status_e transaction_output_deserialize(buffer_t *buf, transaction_output_t *txout) {
     if (!buffer_read_u64(buf, &txout->value, BE)) {
         return -70;
     }
 
-    txout->script_public_key = (uint8_t *) (buf->ptr + buf->offset);
+    size_t len = (size_t) *(buf->ptr + buf->offset);
+    // Can only be length 32 or 33. Fail it otherwise:
+    if (len == 0x20 || len == 0x21) {
+        memcpy(txout->script_public_key, buf->ptr + buf->offset, len + 2);
+    } else {
+        return -90;
+    }
 
-    if (!buffer_seek_cur(buf, 34)) {
+    if (!buffer_seek_cur(buf, len + 2)) {
         return -80;
     }
 
     return 1;
 }
 
-int deserialize_input(buffer_t *buf, transaction_input_t *txin) {
+parser_status_e transaction_input_deserialize(buffer_t *buf, transaction_input_t *txin) {
     if (!buffer_read_u64(buf, &txin->value, BE)) {
-        return 0;
+        return INPUTS_PARSING_ERROR;
     }
 
-    txin->tx_id = (uint8_t *) (buf->ptr + buf->offset);
+    // txin->tx_id = (uint8_t *) (buf->ptr + buf->offset);
+    memcpy(txin->tx_id, buf->ptr, 32);
 
     if (!buffer_seek_cur(buf, 32)) {
-        return 0;
+        return INPUTS_PARSING_ERROR;
     }
 
     uint8_t address_type = -1;
@@ -35,13 +43,13 @@ int deserialize_input(buffer_t *buf, transaction_input_t *txin) {
     buffer_read_u32(buf, &address_index, BE);
 
     if (address_type < 0 || address_index < 0) {
-        return 0;
+        return INPUTS_PARSING_ERROR;
     }
 
     txin->derivation_path[0] = (uint32_t) address_type;
     txin->derivation_path[1] = address_index;
 
-    return 1;
+    return PARSING_OK;
 }
 
 parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
@@ -55,10 +63,8 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
         return OUTPUTS_LENGTH_PARSING_ERROR;
     }
 
-    tx->tx_output_len = n_output;
-
-    // Must be 1 or 2 outputs
-    if (tx->tx_output_len < 1 || tx->tx_output_len > 2) {
+    // Must be 1 or 2 outputs, must match the number of outputs we parsed
+    if (tx->tx_output_len < 1 || tx->tx_output_len > 2 || n_output != tx->tx_output_len) {
         return OUTPUTS_LENGTH_PARSING_ERROR;
     }
 
@@ -67,23 +73,9 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
         return INPUTS_LENGTH_PARSING_ERROR;
     }
 
-    tx->tx_input_len = n_input;
-
-    if (tx->tx_input_len < 1 || tx->tx_input_len > 2) {
+    // Must be at least 1, must match the number of inputs we parsed
+    if (tx->tx_input_len < 1 || n_input != tx->tx_input_len) {
         return INPUTS_LENGTH_PARSING_ERROR;
-    }
-
-    for (int i = 0; i < (int) tx->tx_output_len && i < 2; i++) {
-        int res = deserialize_output(buf, &tx->tx_outputs[i]);
-        if (res < 0) {
-            return res;
-        }
-    }
-
-    for (int i = 0; i < (int) tx->tx_input_len; i++) {
-        if (!deserialize_input(buf, &tx->tx_inputs[i])) {
-            return INPUTS_PARSING_ERROR;
-        }
     }
 
     uint32_t lastbits = 0;
