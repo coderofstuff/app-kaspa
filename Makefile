@@ -65,6 +65,7 @@ endif
 
 DEBUG ?= 0
 ifneq ($(DEBUG),0)
+    DEFINES += HAVE_DEBUG_APDU
     DEFINES += HAVE_PRINTF
     ifeq ($(TARGET_NAME),TARGET_NANOS)
         DEFINES += PRINTF=screen_printf

@@ -13,6 +13,10 @@
 #include "../handler/get_public_key.h"
 #include "../handler/sign_tx.h"
 
+#ifdef HAVE_DEBUG_APDU
+#include "../handler/debug.h"
+#endif
+
 int apdu_dispatcher(const command_t *cmd) {
     if (cmd->cla != CLA) {
         return io_send_sw(SW_CLA_NOT_SUPPORTED);
@@ -63,6 +67,10 @@ int apdu_dispatcher(const command_t *cmd) {
             buf.offset = 0;
 
             return handler_sign_tx(&buf, cmd->p1, (bool) (cmd->p2 & P2_MORE));
+#ifdef HAVE_DEBUG_APDU
+        case DEBUG_APDU:
+            return handler_debug(cmd->p1);
+#endif
         default:
             return io_send_sw(SW_INS_NOT_SUPPORTED);
     }
