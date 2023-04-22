@@ -24,7 +24,7 @@
 /**
  * Maximum transaction length (bytes).
  */
-#define MAX_TRANSACTION_LEN 1410
+#define MAX_TRANSACTION_LEN 128
 
 /**
  * Maximum signature length (bytes).
@@ -42,3 +42,8 @@
  * Cannot be any longer than 35 in any case
  */
 #define MAX_INPUT_SCRIPT_PUBLIC_KEY_LEN 35
+
+/**
+ * The signing key used for sighash
+ */
+#define SIGNING_KEY "TransactionSigningHash"

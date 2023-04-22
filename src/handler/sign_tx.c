@@ -7,6 +7,7 @@
 #include "cx.h"
 
 #include "sign_tx.h"
+#include "../apdu/dispatcher.h"
 #include "../sw.h"
 #include "../globals.h"
 #include "../crypto.h"
@@ -15,8 +16,8 @@
 #include "../transaction/types.h"
 #include "../transaction/deserialize.h"
 
-int handler_sign_tx(buffer_t *cdata, uint8_t chunk, bool more) {
-    if (chunk == 0) {  // first APDU, parse BIP32 path
+int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
+    if (type == 0) {  // first APDU, parse BIP32 path
         explicit_bzero(&G_context, sizeof(G_context));
         G_context.req_type = CONFIRM_TRANSACTION;
         G_context.state = STATE_NONE;
@@ -40,12 +41,41 @@ int handler_sign_tx(buffer_t *cdata, uint8_t chunk, bool more) {
         if (G_context.tx_info.raw_tx_len + cdata->size > sizeof(G_context.tx_info.raw_tx)) {
             return io_send_sw(SW_WRONG_TX_LENGTH);
         }
-        if (!buffer_move(cdata,
-                         G_context.tx_info.raw_tx + G_context.tx_info.raw_tx_len,
-                         cdata->size)) {
-            return io_send_sw(SW_TX_PARSING_FAIL);
+
+        // Parse as we go
+        if (type == P1_OUTPUTS) {
+            // Outputs
+            if (G_context.tx_info.transaction.tx_output_len >= sizeof(G_context.tx_info.transaction.tx_outputs)) {
+                // Too many outputs!
+                return io_send_sw(SW_TX_PARSING_FAIL);
+            }
+
+            parser_status_e err = transaction_output_deserialize(cdata, &G_context.tx_info.transaction.tx_outputs[G_context.tx_info.transaction.tx_output_len]);
+
+            if (err != PARSING_OK) {
+                return io_send_sw(err);
+            } else {
+                G_context.tx_info.transaction.tx_output_len++;
+            }
+            
+        } else if (type == P1_INPUTS) {
+            // Inputs
+            if (G_context.tx_info.transaction.tx_input_len >= sizeof(G_context.tx_info.transaction.tx_inputs)) {
+                // Too many inputs!
+                return io_send_sw(SW_TX_PARSING_FAIL);
+            }
+
+            parser_status_e err = transaction_input_deserialize(cdata, &G_context.tx_info.transaction.tx_inputs[G_context.tx_info.transaction.tx_input_len]);
+
+            if (err < 0) {
+                return io_send_sw(SW_TX_PARSING_FAIL);
+            } else {
+                G_context.tx_info.transaction.tx_input_len++;
+            }
+
+        } else {
+            return io_send_sw(SW_WRONG_P1P2);
         }
-        G_context.tx_info.raw_tx_len += cdata->size;
 
         if (more) {
             // more APDUs with transaction part are expected.

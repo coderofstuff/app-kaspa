@@ -15,6 +15,8 @@ CLA: int = 0xE0
 class P1(IntEnum):
     # Parameter 1 for first APDU number.
     P1_START = 0x00
+    P1_OUTPUTS = 0x01
+    P1_INPUTS = 0x02
     # Parameter 1 for maximum APDU number.
     P1_MAX   = 0x03
     # Parameter 1 for screen confirmation for GET_PUBLIC_KEY.
@@ -111,7 +113,7 @@ class KaspaCommandSender:
         for txoutput in transaction.outputs:
             self.backend.exchange(cla=CLA,
                                   ins=InsType.SIGN_TX,
-                                  p1=1,
+                                  p1=P1.P1_OUTPUTS,
                                   p2=P2.P2_MORE,
                                   data=txoutput.serialize())
 
@@ -120,14 +122,14 @@ class KaspaCommandSender:
             if i < len(transaction.inputs) - 1:
                 self.backend.exchange(cla=CLA,
                                     ins=InsType.SIGN_TX,
-                                    p1=2,
+                                    p1=P1.P1_INPUTS,
                                     p2=P2.P2_MORE,
                                     data=txinput.serialize())
 
         # Last input, we'll end here
         with self.backend.exchange_async(cla=CLA,
                                     ins=InsType.SIGN_TX,
-                                    p1=2,
+                                    p1=P1.P1_INPUTS,
                                     p2=P2.P2_LAST,
                                     data=txinput.serialize()) as response:
 

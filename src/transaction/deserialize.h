@@ -15,3 +15,7 @@
  *
  */
 parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx);
+
+parser_status_e transaction_output_deserialize(buffer_t *buf, transaction_output_t *txout);
+
+parser_status_e transaction_input_deserialize(buffer_t *buf, transaction_input_t *txin);

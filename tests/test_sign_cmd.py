@@ -23,19 +23,20 @@ def test_sign_tx_short_tx(firmware, backend, navigator, test_name):
 
     # Create the transaction that will be sent to the device for signing
     transaction = Transaction(
-        version=1,
+        version=0,
         inputs=[
             TransactionInput(
-                value=100000,
-                tx_id="e119d53514c1b0e2efce7a89e3d1d5d6cd73582ea20687641c8fdccb6060a9ad",
+                value=1100000,
+                tx_id="40b022362f1a303518e2b49f86f87a317c87b514ca0f3d08ad2e7cf49d08cc70",
                 address_type=0,
-                address_index=0
+                address_index=0,
+                index=0
             )
         ],
         outputs=[
             TransactionOutput(
-                value=90000,
-                script_public_key="20e9edf67a325868ecc7cd8519e6ca5265e65b7d10f56066461ceabf0c2bc1c5adac"
+                value=1090000,
+                script_public_key="2011a7215f668e921013eb7aac9b7e64b9ec6e757c1b648e89388c919f676aa88cac"
             )
         ]
     )
@@ -77,19 +78,20 @@ def test_sign_tx_long_tx(firmware, backend, navigator, test_name):
     _, public_key, _, _ = unpack_get_public_key_response(rapdu.data)
 
     transaction = Transaction(
-        version=1,
+        version=0,
         inputs=[
             TransactionInput(
-                value=100000,
-                tx_id="e119d53514c1b0e2efce7a89e3d1d5d6cd73582ea20687641c8fdccb6060a9ad",
+                value=1100000,
+                tx_id="40b022362f1a303518e2b49f86f87a317c87b514ca0f3d08ad2e7cf49d08cc70",
                 address_type=0,
-                address_index=0
+                address_index=0,
+                index=0
             )
         ],
         outputs=[
             TransactionOutput(
-                value=90000,
-                script_public_key="20e9edf67a325868ecc7cd8519e6ca5265e65b7d10f56066461ceabf0c2bc1c5adac"
+                value=1090000,
+                script_public_key="2011a7215f668e921013eb7aac9b7e64b9ec6e757c1b648e89388c919f676aa88cac"
             )
         ]
     )
@@ -124,19 +126,20 @@ def test_sign_tx_refused(firmware, backend, navigator, test_name):
     _, pub_key, _, _ = unpack_get_public_key_response(rapdu.data)
 
     transaction = Transaction(
-        version=1,
+        version=0,
         inputs=[
             TransactionInput(
-                value=100000,
-                tx_id="e119d53514c1b0e2efce7a89e3d1d5d6cd73582ea20687641c8fdccb6060a9ad",
+                value=1100000,
+                tx_id="40b022362f1a303518e2b49f86f87a317c87b514ca0f3d08ad2e7cf49d08cc70",
                 address_type=0,
-                address_index=0
+                address_index=0,
+                index=0
             )
         ],
         outputs=[
             TransactionOutput(
-                value=90000,
-                script_public_key="20e9edf67a325868ecc7cd8519e6ca5265e65b7d10f56066461ceabf0c2bc1c5adac"
+                value=1090000,
+                script_public_key="2011a7215f668e921013eb7aac9b7e64b9ec6e757c1b648e89388c919f676aa88cac"
             )
         ]
     )
