@@ -8,7 +8,6 @@
 #include "./transaction/types.h"
 #include "./common/buffer.h"
 #include "./common/write.h"
-#include "./crypto.h"
 #include "globals.h"
 #include "./constants.h"
 
@@ -116,38 +115,16 @@ static void calc_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
     hash_finalize(&inner_hash_writer, out_hash);
 }
 
-static bool calc_txin_script_public_key(transaction_input_t* txin, uint8_t* out_hash) {
-    cx_ecfp_private_key_t private_key = {0};
-    cx_ecfp_public_key_t public_key = {0};
-
-    G_context.bip32_path[0] = 0x8000002C;
-    G_context.bip32_path[1] = 0x8001b207;
-    G_context.bip32_path[2] = 0x80000000;
-    G_context.bip32_path[3] = txin->derivation_path[0];
-    G_context.bip32_path[4] = txin->derivation_path[1];
-
-    G_context.bip32_path_len = 5;
-
-    // derive private key according to BIP32 path
-    int error = crypto_derive_private_key(&private_key,
-                                          G_context.pk_info.chain_code,
-                                          G_context.bip32_path,
-                                          G_context.bip32_path_len);
-    if (error != 0) {
-        // TODO: Do something here
-        // return io_send_sw(error);
-    }
-    // generate corresponding public key
-    crypto_init_public_key(&private_key, &public_key, G_context.pk_info.raw_public_key);
-
+static bool calc_txin_script_public_key(transaction_input_t* txin, uint8_t* public_key, uint8_t* out_hash) {
+    // Assume schnorr
     out_hash[0] = 0x20;
-    memmove(out_hash + 1, G_context.pk_info.raw_public_key, 32);
+    memmove(out_hash + 1, public_key, 32);
     out_hash[33] = 0xac;
 
     return true;
 }
 
-void calc_sighash(transaction_t* tx, transaction_input_t* txin, uint8_t* out_hash) {
+void calc_sighash(transaction_t* tx, transaction_input_t* txin, uint8_t* public_key, uint8_t* out_hash) {
     blake2b_state sighash;
 
     hash_init(&sighash, 256, (uint8_t*) SIGNING_KEY, 22);
@@ -186,7 +163,7 @@ void calc_sighash(transaction_t* tx, transaction_input_t* txin, uint8_t* out_has
     write_u64_le(outer_buffer, 0, script_len);
     hash_update(&sighash, outer_buffer, 8);
 
-    calc_txin_script_public_key(txin, outer_buffer);
+    calc_txin_script_public_key(txin, public_key, outer_buffer);
     hash_update(&sighash, outer_buffer, script_len);
     memset(outer_buffer, 0, sizeof(outer_buffer));
 

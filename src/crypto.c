@@ -52,6 +52,7 @@ void crypto_init_public_key(cx_ecfp_private_key_t *private_key,
 
 int crypto_sign_message(void) {
     cx_ecfp_private_key_t private_key = {0};
+    cx_ecfp_public_key_t public_key = {0};
     uint8_t chain_code[32] = {0};
     uint32_t info = 0;
     int sig_len = 0;
@@ -76,7 +77,11 @@ int crypto_sign_message(void) {
 
     BEGIN_TRY {
         TRY {
-            calc_sighash(&G_context.tx_info.transaction, G_context.tx_info.transaction.tx_inputs, G_context.sighash);
+            crypto_init_public_key(&private_key, &public_key, G_context.pk_info.raw_public_key);
+            calc_sighash(&G_context.tx_info.transaction,
+                         G_context.tx_info.transaction.tx_inputs,
+                         G_context.pk_info.raw_public_key,
+                         G_context.sighash);
             sig_len = cx_ecschnorr_sign(&private_key,
                                          CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
                                          CX_SHA256,
@@ -91,6 +96,7 @@ int crypto_sign_message(void) {
             error = e;
         }
         FINALLY {
+            explicit_bzero(G_context.pk_info.raw_public_key, 64);
             explicit_bzero(&private_key, sizeof(private_key));
         }
     }
