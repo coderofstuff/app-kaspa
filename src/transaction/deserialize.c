@@ -46,7 +46,7 @@ parser_status_e transaction_input_deserialize(buffer_t *buf, transaction_input_t
     }
 
     // 32 bytes
-    memcpy(txin->tx_id, buf->ptr, 32);
+    memcpy(txin->tx_id, buf->ptr + buf->offset, 32);
 
     if (!buffer_seek_cur(buf, 32)) {
         return INPUTS_PARSING_ERROR;
