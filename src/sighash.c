@@ -115,7 +115,7 @@ static void calc_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
     hash_finalize(&inner_hash_writer, out_hash);
 }
 
-static bool calc_txin_script_public_key(transaction_input_t* txin, uint8_t* public_key, uint8_t* out_hash) {
+static bool calc_txin_script_public_key(uint8_t* public_key, uint8_t* out_hash) {
     // Assume schnorr
     out_hash[0] = 0x20;
     memmove(out_hash + 1, public_key, 32);
@@ -163,7 +163,7 @@ void calc_sighash(transaction_t* tx, transaction_input_t* txin, uint8_t* public_
     write_u64_le(outer_buffer, 0, script_len);
     hash_update(&sighash, outer_buffer, 8);
 
-    calc_txin_script_public_key(txin, public_key, outer_buffer);
+    calc_txin_script_public_key(public_key, outer_buffer);
     hash_update(&sighash, outer_buffer, script_len);
     memset(outer_buffer, 0, sizeof(outer_buffer));
 
