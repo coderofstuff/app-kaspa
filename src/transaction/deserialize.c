@@ -52,24 +52,15 @@ parser_status_e transaction_input_deserialize(buffer_t *buf, transaction_input_t
         return INPUTS_PARSING_ERROR;
     }
 
-    uint8_t address_type = -1;
     // 1 byte
-    if (!buffer_read_u8(buf, &address_type)) {
+    if (!buffer_read_u8(buf, &txin->address_type)) {
         return INPUTS_PARSING_ERROR;
     }
 
-    uint32_t address_index = -1;
     // 4 bytes
-    if (!buffer_read_u32(buf, &address_index, BE)) {
+    if (!buffer_read_u32(buf, &txin->address_index, BE)) {
         return INPUTS_PARSING_ERROR;
     }
-
-    if (address_type < 0 || address_index < 0) {
-        return INPUTS_PARSING_ERROR;
-    }
-
-    txin->derivation_path[0] = (uint32_t) address_type;
-    txin->derivation_path[1] = address_index;
 
     // 1 byte
     if (!buffer_read_u8(buf, &txin->index)) {
