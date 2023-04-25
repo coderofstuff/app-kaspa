@@ -1,7 +1,6 @@
 #pragma once
 
 /**
- * FIXME - change to kaspa's own CLA. This one is from Boilerplate
  * Instruction class of the Kaspa application.
  */
 #define CLA 0xE0
