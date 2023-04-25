@@ -21,7 +21,7 @@ typedef enum {
  */
 typedef enum {
 #ifdef HAVE_DEBUG_APDU
-    DEBUG_APDU = 0xde,      /// debug test cases
+    DEBUG_APDU = 0xde,  /// debug test cases
 #endif
     GET_VERSION = 0x03,     /// version of the application
     GET_APP_NAME = 0x04,    /// name of the application

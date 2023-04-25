@@ -10,7 +10,7 @@ parser_status_e transaction_output_deserialize(buffer_t *buf, transaction_output
         return OUTPUTS_PARSING_ERROR;
     }
 
-    size_t script_len = (size_t) *(buf->ptr + buf->offset);
+    size_t script_len = (size_t) * (buf->ptr + buf->offset);
     // Can only be length 32 or 33. Fail it otherwise:
     if (script_len == 0x20 || script_len == 0x21) {
         if (!buffer_can_read(buf, script_len + 2)) {

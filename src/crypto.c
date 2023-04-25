@@ -83,13 +83,13 @@ int crypto_sign_message(void) {
                          G_context.pk_info.raw_public_key,
                          G_context.sighash);
             sig_len = cx_ecschnorr_sign(&private_key,
-                                         CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
-                                         CX_SHA256,
-                                         G_context.sighash,
-                                         sizeof(G_context.sighash),
-                                         G_context.tx_info.signature,
-                                         sizeof(G_context.tx_info.signature),
-                                         &info);
+                                        CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
+                                        CX_SHA256,
+                                        G_context.sighash,
+                                        sizeof(G_context.sighash),
+                                        G_context.tx_info.signature,
+                                        sizeof(G_context.tx_info.signature),
+                                        &info);
             PRINTF("Signature: %.*H\n", sig_len, G_context.tx_info.signature);
         }
         CATCH_OTHER(e) {
