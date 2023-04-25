@@ -39,7 +39,13 @@ class TransactionInput:
         address_index: int = read_uint(buf, 4, 'big')
         index: int = read_uint(buf, 1, 'big')
 
-        return cls(value=value, tx_id=tx_id, address_type=address_type, address_index=address_index, index=index)
+        return cls(
+            value=value,
+            tx_id=tx_id,
+            address_type=address_type,
+            address_index=address_index,
+            index=index
+        )
 
 class TransactionOutput:
     def __init__(self,
