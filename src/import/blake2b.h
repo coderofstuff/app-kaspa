@@ -12,6 +12,7 @@
    More information about the BLAKE2 hash function can be found at
    https://blake2.net.
 */
+// clang-format off
 #ifndef BLAKE2_H
 #define BLAKE2_H
 
