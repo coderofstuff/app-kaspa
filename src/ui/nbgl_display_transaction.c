@@ -19,6 +19,7 @@
 #include "../address.h"
 #include "action/validate.h"
 #include "../transaction/types.h"
+#include "../transaction/utils.h"
 #include "../common/bip32.h"
 #include "../common/format.h"
 #include "../menu.h"
