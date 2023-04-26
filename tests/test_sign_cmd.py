@@ -9,9 +9,8 @@ from utils import ROOT_SCREENSHOT_PATH, check_signature_validity
 
 
 # In this test se send to the device a transaction to sign and validate it on screen
-# The transaction is short and will be sent in one chunk
 # We will ensure that the displayed information is correct by using screenshots comparison
-def test_sign_tx_short_tx(firmware, backend, navigator, test_name):
+def test_sign_tx_simple(firmware, backend, navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     # The path used for this entire test
@@ -67,9 +66,8 @@ def test_sign_tx_short_tx(firmware, backend, navigator, test_name):
 
 
 # In this test se send to the device a transaction to sign and validate it on screen
-# This test is mostly the same as the previous one but with different values.
-# In particular the long memo will force the transaction to be sent in multiple chunks
-def test_sign_tx_long_tx(firmware, backend, navigator, test_name):
+# This test uses the maximum supported number of inputs per device type
+def test_sign_tx_max(firmware, backend, navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     path: str = "m/44'/111111'/0'/0/0"
@@ -77,20 +75,23 @@ def test_sign_tx_long_tx(firmware, backend, navigator, test_name):
     rapdu = client.get_public_key(path=path)
     _, public_key, _, _ = unpack_get_public_key_response(rapdu.data)
 
-    transaction = Transaction(
-        version=0,
-        inputs=[
-            TransactionInput(
+    max_input_count = 15 if firmware.device == "nanos" else 128
+
+    inputs = [TransactionInput(
                 value=1100000,
-                tx_id="40b022362f1a303518e2b49f86f87a317c87b514ca0f3d08ad2e7cf49d08cc70",
+                tx_id="40b022362f1a303518e2b49f86f87a317c87b514ca0f3d08ad2e7cf49d08cc" + input_index.to_bytes(1, 'big').hex(),
                 address_type=0,
                 address_index=0,
                 index=0
-            )
-        ],
+            ) for input_index in range(max_input_count)]
+    output_value = 1090000 * max_input_count
+
+    transaction = Transaction(
+        version=0,
+        inputs=inputs,
         outputs=[
             TransactionOutput(
-                value=1090000,
+                value=output_value,
                 script_public_key="2011a7215f668e921013eb7aac9b7e64b9ec6e757c1b648e89388c919f676aa88cac"
             )
         ]
@@ -120,10 +121,6 @@ def test_sign_tx_long_tx(firmware, backend, navigator, test_name):
 def test_sign_tx_refused(firmware, backend, navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
-    path: str = "m/44'/111111'/0'/0/0"
-
-    rapdu = client.get_public_key(path=path)
-    _, pub_key, _, _ = unpack_get_public_key_response(rapdu.data)
 
     transaction = Transaction(
         version=0,
