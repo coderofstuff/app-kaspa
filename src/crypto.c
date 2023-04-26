@@ -102,9 +102,5 @@ int crypto_sign_message(void) {
     }
     END_TRY;
 
-    if (error == 0) {
-        G_context.tx_info.signature_len = sig_len;
-    }
-
     return error;
 }
