@@ -30,8 +30,8 @@ int helper_send_response_pubkey(void);
  * Helper to send APDU response with signature and v (parity of
  * y-coordinate of R).
  *
- * response = G_context.tx_info.signature_len (1) ||
- *            G_context.tx_info.signature (G_context.tx_info.signature_len)
+ * response = MAX_DER_SIG_LEN (1) ||
+ *            G_context.tx_info.signature (MAX_DER_SIG_LEN)
  *
  * @return zero or positive integer if success, -1 otherwise.
  *

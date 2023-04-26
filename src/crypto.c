@@ -54,15 +54,18 @@ int crypto_sign_message(void) {
     cx_ecfp_private_key_t private_key = {0};
     cx_ecfp_public_key_t public_key = {0};
     uint8_t chain_code[32] = {0};
+    uint8_t sighash[32] = {0};
     uint32_t info = 0;
-    int sig_len = 0;
+
+    transaction_input_t *txin =
+        &G_context.tx_info.transaction.tx_inputs[G_context.tx_info.signing_input_index];
 
     // 44'/111111'/0'/ address_type / address_index
     G_context.bip32_path[0] = 0x8000002C;
     G_context.bip32_path[1] = 0x8001b207;
     G_context.bip32_path[2] = 0x80000000;
-    G_context.bip32_path[3] = (uint32_t) G_context.tx_info.transaction.tx_inputs[0].address_type;
-    G_context.bip32_path[4] = G_context.tx_info.transaction.tx_inputs[0].address_index;
+    G_context.bip32_path[3] = (uint32_t)(txin->address_type);
+    G_context.bip32_path[4] = txin->address_index;
 
     G_context.bip32_path_len = 5;
 
@@ -77,34 +80,27 @@ int crypto_sign_message(void) {
 
     BEGIN_TRY {
         TRY {
-            crypto_init_public_key(&private_key, &public_key, G_context.pk_info.raw_public_key);
-            calc_sighash(&G_context.tx_info.transaction,
-                         G_context.tx_info.transaction.tx_inputs,
-                         G_context.pk_info.raw_public_key,
-                         G_context.sighash);
-            sig_len = cx_ecschnorr_sign(&private_key,
-                                        CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
-                                        CX_SHA256,
-                                        G_context.sighash,
-                                        sizeof(G_context.sighash),
-                                        G_context.tx_info.signature,
-                                        sizeof(G_context.tx_info.signature),
-                                        &info);
+            cx_ecfp_generate_pair(CX_CURVE_256K1, &public_key, &private_key, 1);
+            calc_sighash(&G_context.tx_info.transaction, txin, public_key.W + 1, sighash);
+            cx_ecschnorr_sign(&private_key,
+                              CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
+                              CX_SHA256,
+                              sighash,
+                              sizeof(sighash),
+                              G_context.tx_info.signature,
+                              sizeof(G_context.tx_info.signature),
+                              &info);
             PRINTF("Signature: %.*H\n", sig_len, G_context.tx_info.signature);
         }
         CATCH_OTHER(e) {
             error = e;
         }
         FINALLY {
-            explicit_bzero(G_context.pk_info.raw_public_key, 64);
+            explicit_bzero(&public_key, sizeof(public_key));
             explicit_bzero(&private_key, sizeof(private_key));
         }
     }
     END_TRY;
-
-    if (error == 0) {
-        G_context.tx_info.signature_len = sig_len;
-    }
 
     return error;
 }

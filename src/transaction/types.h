@@ -27,22 +27,12 @@ typedef enum {
 } derive_type_e;
 
 typedef struct {
-    uint8_t tx_id[32];  // 32 bytes
-    uint8_t index;  // check if uint8_t might suffice. in practice, we don't need 32bits for index
-} outpoint_t;
-
-typedef struct {
-    uint64_t value;
-    uint8_t* script_public_key;
-} utxo_entry_t;
-
-typedef struct {
     uint8_t address_type;
     uint32_t address_index;
     uint64_t sequence;
     uint64_t value;
-    uint8_t tx_id[32];  // 32 bytes
-    uint8_t index;  // check if uint8_t might suffice. in practice, we don't need 32bits for index
+    uint8_t tx_id[32];
+    uint8_t index;
 } transaction_input_t;
 
 typedef struct {
@@ -51,13 +41,6 @@ typedef struct {
 } transaction_output_t;
 
 typedef struct {
-    // For display purposes:
-    // uint64_t amount;    // Amount to send
-    // uint64_t fees;      // Fees to pay
-    // uint8_t* sendto;    // (67-bytes) Address to send to. Must be the first output.
-    // uint8_t* changeto;  // (67-bytes) Address to give back change to. Must be the second output
-    // if it exists.
-
     // For signature purposes:
     // Based on: https://kaspa-mdbook.aspectron.com/transactions/constraints/size.html
     uint16_t version;
@@ -65,7 +48,7 @@ typedef struct {
     uint64_t tx_output_len;
 
     transaction_output_t tx_outputs[2];
-    transaction_input_t tx_inputs[14];  // array of inputs
+    transaction_input_t tx_inputs[MAX_INPUT_COUNT];  // array of inputs
 
     // uint64_t lock_time;      // Don't support this yet
     // uint8_t* subnetwork_id;  // Don't support this yet
@@ -73,8 +56,3 @@ typedef struct {
     // uin64_t  payload_len;     // Don't support this yet
     // uint8_t* payload;        // Don't support this yet
 } transaction_t;
-
-typedef struct {
-    uint8_t input_index;
-    uint8_t signature_script[64];  // FIXME: Ensure correct hard length
-} signed_input_t;

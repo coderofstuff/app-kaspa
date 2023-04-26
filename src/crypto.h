@@ -46,7 +46,7 @@ void crypto_init_public_key(cx_ecfp_private_key_t *private_key,
 /**
  * Sign message hash in global context.
  *
- * @see G_context.bip32_path, G_context.tx_info.m_hash,
+ * @see G_context.bip32_path,
  * G_context.tx_info.signature.
  *
  * @return 0 on success, error number otherwise.

@@ -20,10 +20,13 @@ APPVERSION_P = 1
 APPVERSION   = "$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)"
 
 ifeq ($(TARGET_NAME),TARGET_NANOS)
+    DEFINES += MAX_INPUT_COUNT=15
     ICONNAME=icons/nanos_kaspa_logo.gif
 else ifeq ($(TARGET_NAME),TARGET_STAX)
+    DEFINES += MAX_INPUT_COUNT=128
     ICONNAME=icons/stax_kaspa_logo_32px.gif
 else
+    DEFINES += MAX_INPUT_COUNT=128
     ICONNAME=icons/nanox_kaspa_logo.gif
 endif
 
