@@ -58,14 +58,14 @@ int crypto_sign_message(void) {
     uint32_t info = 0;
     int sig_len = 0;
 
-    transaction_input_t* txin = &G_context.tx_info.transaction
-        .tx_inputs[G_context.tx_info.signing_input_index];
+    transaction_input_t *txin =
+        &G_context.tx_info.transaction.tx_inputs[G_context.tx_info.signing_input_index];
 
     // 44'/111111'/0'/ address_type / address_index
     G_context.bip32_path[0] = 0x8000002C;
     G_context.bip32_path[1] = 0x8001b207;
     G_context.bip32_path[2] = 0x80000000;
-    G_context.bip32_path[3] = (uint32_t) (txin->address_type);
+    G_context.bip32_path[3] = (uint32_t)(txin->address_type);
     G_context.bip32_path[4] = txin->address_index;
 
     G_context.bip32_path_len = 5;
@@ -82,10 +82,7 @@ int crypto_sign_message(void) {
     BEGIN_TRY {
         TRY {
             cx_ecfp_generate_pair(CX_CURVE_256K1, &public_key, &private_key, 1);
-            calc_sighash(&G_context.tx_info.transaction,
-                         txin,
-                         public_key.W + 1,
-                         sighash);
+            calc_sighash(&G_context.tx_info.transaction, txin, public_key.W + 1, sighash);
             sig_len = cx_ecschnorr_sign(&private_key,
                                         CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
                                         CX_SHA256,
