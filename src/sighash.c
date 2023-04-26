@@ -102,12 +102,16 @@ static void calc_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
         hash_update(&inner_hash_writer, inner_buffer, 8);  // Write the output value
         memset(inner_buffer, 0, sizeof(inner_buffer));
 
-        hash_update(&inner_hash_writer, inner_buffer, 2);  // Write the output script version, assume 0
+        hash_update(&inner_hash_writer,
+                    inner_buffer,
+                    2);  // Write the output script version, assume 0
 
         // First byte is always the length of the following public key
         // Last byte is always 0xac (op code for normal transactions)
         uint8_t script_len = tx->tx_outputs[i].script_public_key[0] + 2;
-        write_u64_le(inner_buffer, 0, script_len);  // Write the number of bytes of the script public key
+        write_u64_le(inner_buffer,
+                     0,
+                     script_len);  // Write the number of bytes of the script public key
         hash_update(&inner_hash_writer, inner_buffer, 8);
         hash_update(&inner_hash_writer, tx->tx_outputs[i].script_public_key, script_len);
     }
@@ -115,7 +119,7 @@ static void calc_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
     hash_finalize(&inner_hash_writer, out_hash);
 }
 
-static bool calc_txin_script_public_key(transaction_input_t* txin, uint8_t* public_key, uint8_t* out_hash) {
+static bool calc_txin_script_public_key(uint8_t* public_key, uint8_t* out_hash) {
     // Assume schnorr
     out_hash[0] = 0x20;
     memmove(out_hash + 1, public_key, 32);
@@ -124,7 +128,10 @@ static bool calc_txin_script_public_key(transaction_input_t* txin, uint8_t* publ
     return true;
 }
 
-void calc_sighash(transaction_t* tx, transaction_input_t* txin, uint8_t* public_key, uint8_t* out_hash) {
+void calc_sighash(transaction_t* tx,
+                  transaction_input_t* txin,
+                  uint8_t* public_key,
+                  uint8_t* out_hash) {
     blake2b_state sighash;
 
     hash_init(&sighash, 256, (uint8_t*) SIGNING_KEY, 22);
@@ -163,7 +170,7 @@ void calc_sighash(transaction_t* tx, transaction_input_t* txin, uint8_t* public_
     write_u64_le(outer_buffer, 0, script_len);
     hash_update(&sighash, outer_buffer, 8);
 
-    calc_txin_script_public_key(txin, public_key, outer_buffer);
+    calc_txin_script_public_key(public_key, outer_buffer);
     hash_update(&sighash, outer_buffer, script_len);
     memset(outer_buffer, 0, sizeof(outer_buffer));
 

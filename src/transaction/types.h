@@ -19,9 +19,7 @@ typedef enum {
     INPUTS_LENGTH_PARSING_ERROR = -9
 } parser_status_e;
 
-typedef enum {
-    SIGHASH_PARSING_OK = 1
-} sighash_status_e;
+typedef enum { SIGHASH_PARSING_OK = 1 } sighash_status_e;
 
 typedef enum {
     RECEIVE = 0,  // For receive addresses
@@ -36,19 +34,15 @@ typedef struct {
 typedef struct {
     uint64_t value;
     uint8_t* script_public_key;
-    // uint64_t block_daa_score;   // FIXME: verify if needed in signing
-    // bool     is_coinbase;       // FIXME: verify if needed in signing
 } utxo_entry_t;
 
 typedef struct {
-    // uint8_t* address_type;
-    // uint32_t* address_index;
-    // uint8_t sig_op_count;
-    uint32_t derivation_path[2];
+    uint8_t address_type;
+    uint32_t address_index;
     uint64_t sequence;
     uint64_t value;
     uint8_t tx_id[32];  // 32 bytes
-    uint8_t index;   // check if uint8_t might suffice. in practice, we don't need 32bits for index
+    uint8_t index;  // check if uint8_t might suffice. in practice, we don't need 32bits for index
 } transaction_input_t;
 
 typedef struct {

@@ -61,8 +61,8 @@ int crypto_sign_message(void) {
     G_context.bip32_path[0] = 0x8000002C;
     G_context.bip32_path[1] = 0x8001b207;
     G_context.bip32_path[2] = 0x80000000;
-    G_context.bip32_path[3] = G_context.tx_info.transaction.tx_inputs[0].derivation_path[0];
-    G_context.bip32_path[4] = G_context.tx_info.transaction.tx_inputs[0].derivation_path[1];
+    G_context.bip32_path[3] = (uint32_t) G_context.tx_info.transaction.tx_inputs[0].address_type;
+    G_context.bip32_path[4] = G_context.tx_info.transaction.tx_inputs[0].address_index;
 
     G_context.bip32_path_len = 5;
 
@@ -83,13 +83,13 @@ int crypto_sign_message(void) {
                          G_context.pk_info.raw_public_key,
                          G_context.sighash);
             sig_len = cx_ecschnorr_sign(&private_key,
-                                         CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
-                                         CX_SHA256,
-                                         G_context.sighash,
-                                         32,
-                                         G_context.tx_info.signature,
-                                         sizeof(G_context.tx_info.signature),
-                                         &info);
+                                        CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
+                                        CX_SHA256,
+                                        G_context.sighash,
+                                        sizeof(G_context.sighash),
+                                        G_context.tx_info.signature,
+                                        sizeof(G_context.tx_info.signature),
+                                        &info);
             PRINTF("Signature: %.*H\n", sig_len, G_context.tx_info.signature);
         }
         CATCH_OTHER(e) {

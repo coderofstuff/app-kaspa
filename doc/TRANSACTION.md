@@ -26,24 +26,28 @@ Kaspa addresses begin with `kaspa:` followed by 61 base32 characters for a total
 
 ### Transaction Input
 
-Total bytes: 69
+Total bytes: 46
 
 | Field | Size (bytes) | Description |
 | --- | --- | --- |
+| `address_type` | 1 | 0x00 for RECEIVE or 0x01 for CHANGE address |
+| `address_index` | 4 | The index of this address in the derivation path |
 | `value` | 8 | The amount of KAS in sompi in this input |
+| `index` | 1 | The index of this outpoint |
 | `prev_tx_id` | 32 | The transaction ID in bytes |
-| `derivation_path` | 20 | BIP32 path of the address |
+<!--
 | `sequence` | 8 | The sequence number of this input |
 | `sig_op_count` | 1 | The sig op count. Usually `1` |
+-->
 
 ### Transaction Output
 
-Total bytes: 42
+Total bytes: 43 (max)
 
 | Field | Size (bytes) | Description |
 | --- | --- | --- |
 | `value` | 8 | The amount of KAS in sompi that will go send to the address |
-| `script_public_key` | 34 | `20` + public_key (32 bytes) + `ac`
+| `script_public_key` | 35 | Schnorr: `20` + public_key (32 bytes) + `ac` <br/> ECDSA: `20` + public_key (33 bytes) + `ad` |
 
 ### Transaction Requirements
 - Fee = (total inputs amount) - (total outputs amount)

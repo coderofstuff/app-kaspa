@@ -45,27 +45,35 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
         // Parse as we go
         if (type == P1_OUTPUTS) {
             // Outputs
-            if (G_context.tx_info.transaction.tx_output_len >= sizeof(G_context.tx_info.transaction.tx_outputs)) {
+            if (G_context.tx_info.transaction.tx_output_len >=
+                sizeof(G_context.tx_info.transaction.tx_outputs)) {
                 // Too many outputs!
                 return io_send_sw(SW_TX_PARSING_FAIL);
             }
 
-            parser_status_e err = transaction_output_deserialize(cdata, &G_context.tx_info.transaction.tx_outputs[G_context.tx_info.transaction.tx_output_len]);
+            parser_status_e err = transaction_output_deserialize(
+                cdata,
+                &G_context.tx_info.transaction
+                     .tx_outputs[G_context.tx_info.transaction.tx_output_len]);
 
             if (err != PARSING_OK) {
                 return io_send_sw(err);
             } else {
                 G_context.tx_info.transaction.tx_output_len++;
             }
-            
+
         } else if (type == P1_INPUTS) {
             // Inputs
-            if (G_context.tx_info.transaction.tx_input_len >= sizeof(G_context.tx_info.transaction.tx_inputs)) {
+            if (G_context.tx_info.transaction.tx_input_len >=
+                sizeof(G_context.tx_info.transaction.tx_inputs)) {
                 // Too many inputs!
                 return io_send_sw(SW_TX_PARSING_FAIL);
             }
 
-            parser_status_e err = transaction_input_deserialize(cdata, &G_context.tx_info.transaction.tx_inputs[G_context.tx_info.transaction.tx_input_len]);
+            parser_status_e err = transaction_input_deserialize(
+                cdata,
+                &G_context.tx_info.transaction
+                     .tx_inputs[G_context.tx_info.transaction.tx_input_len]);
 
             if (err < 0) {
                 return io_send_sw(SW_TX_PARSING_FAIL);
