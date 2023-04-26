@@ -56,7 +56,6 @@ int crypto_sign_message(void) {
     uint8_t chain_code[32] = {0};
     uint8_t sighash[32] = {0};
     uint32_t info = 0;
-    int sig_len = 0;
 
     transaction_input_t *txin =
         &G_context.tx_info.transaction.tx_inputs[G_context.tx_info.signing_input_index];
@@ -83,14 +82,14 @@ int crypto_sign_message(void) {
         TRY {
             cx_ecfp_generate_pair(CX_CURVE_256K1, &public_key, &private_key, 1);
             calc_sighash(&G_context.tx_info.transaction, txin, public_key.W + 1, sighash);
-            sig_len = cx_ecschnorr_sign(&private_key,
-                                        CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
-                                        CX_SHA256,
-                                        sighash,
-                                        sizeof(sighash),
-                                        G_context.tx_info.signature,
-                                        sizeof(G_context.tx_info.signature),
-                                        &info);
+            cx_ecschnorr_sign(&private_key,
+                              CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
+                              CX_SHA256,
+                              sighash,
+                              sizeof(sighash),
+                              G_context.tx_info.signature,
+                              sizeof(G_context.tx_info.signature),
+                              &info);
             PRINTF("Signature: %.*H\n", sig_len, G_context.tx_info.signature);
         }
         CATCH_OTHER(e) {
