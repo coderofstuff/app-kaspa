@@ -28,7 +28,8 @@ int helper_send_response_sig() {
     size_t offset = 0;
 
     // has_more -> 1 byte
-    resp[offset++] = G_context.tx_info.transaction.tx_input_len - G_context.tx_info.signing_input_index - 1;
+    resp[offset++] =
+        G_context.tx_info.transaction.tx_input_len - G_context.tx_info.signing_input_index - 1;
     // input_index -> 1 byte
     resp[offset++] = G_context.tx_info.signing_input_index;
     // len(sig) -> 1 byte
