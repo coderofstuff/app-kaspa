@@ -119,6 +119,67 @@ def test_sign_tx_invalid_io_len(firmware, backend):
         data=bytes.fromhex("00000100")
     ).status == Errors.SW_TX_PARSING_FAIL
 
+def test_sign_tx_inconsistent_input_length_and_data(backend):
+    backend.raise_policy = RaisePolicy.RAISE_NOTHING
+
+    # Use the app interface instead of raw interface
+    client = KaspaCommandSender(backend)
+
+    tx_input = TransactionInput(
+        value=1100000,
+        tx_id="40b022362f1a303518e2b49f86f87a317c87b514ca0f3d08ad2e7cf49d08cc70",
+        address_type=0,
+        address_index=0,
+        index=0
+    )
+
+    # Initialize, setting input length to 1
+    client.send_raw_apdu(InsType.SIGN_TX, p1=P1.P1_START, p2=P2.P2_MORE, data=bytes.fromhex("00000101"))
+
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_INPUTS,
+        p2=P2.P2_MORE,
+        data=tx_input.serialize()
+    ).status == 0x9000
+
+    # Try sending a second input
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_INPUTS,
+        p2=P2.P2_MORE,
+        data=tx_input.serialize()
+    ).status == Errors.SW_TX_PARSING_FAIL
+
+def test_sign_tx_inconsistent_output_length_and_data(backend):
+    backend.raise_policy = RaisePolicy.RAISE_NOTHING
+
+    # Use the app interface instead of raw interface
+    client = KaspaCommandSender(backend)
+
+    output = TransactionOutput(
+        value=1,
+        script_public_key="2011a7215f668e921013eb7aac9b7e64b9ec6e757c1b648e89388c919f676aa88cac"
+    )
+
+    # Initialize, setting output length to 1
+    client.send_raw_apdu(InsType.SIGN_TX, p1=P1.P1_START, p2=P2.P2_MORE, data=bytes.fromhex("00000101"))
+
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_OUTPUTS,
+        p2=P2.P2_MORE,
+        data=output.serialize()
+    ).status == 0x9000
+
+    # Try sending a second output
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_OUTPUTS,
+        p2=P2.P2_MORE,
+        data=output.serialize()
+    ).status == Errors.SW_TX_PARSING_FAIL
+
 
 # In this test se send to the device a transaction to sign and validate it on screen
 # This test uses the maximum supported number of inputs per device type

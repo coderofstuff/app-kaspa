@@ -56,7 +56,9 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
         if (type == P1_OUTPUTS) {
             // Outputs
             if (G_context.tx_info.parsing_output_index >=
-                sizeof(G_context.tx_info.transaction.tx_outputs)) {
+                sizeof(G_context.tx_info.transaction.tx_outputs) ||
+                G_context.tx_info.parsing_output_index >=
+                G_context.tx_info.transaction.tx_output_len) {
                 // Too many outputs!
                 return io_send_sw(SW_TX_PARSING_FAIL);
             }
@@ -77,7 +79,9 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
         } else if (type == P1_INPUTS) {
             // Inputs
             if (G_context.tx_info.parsing_input_index >=
-                sizeof(G_context.tx_info.transaction.tx_inputs)) {
+                sizeof(G_context.tx_info.transaction.tx_inputs) ||
+                G_context.tx_info.parsing_input_index >=
+                G_context.tx_info.transaction.tx_input_len) {
                 // Too many inputs!
                 return io_send_sw(SW_TX_PARSING_FAIL);
             }
