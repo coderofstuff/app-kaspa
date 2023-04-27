@@ -25,6 +25,7 @@ void validate_transaction(bool choice) {
             io_send_sw(error);
         } else {
             helper_send_response_sig();
+            G_context.tx_info.signing_input_index++;
         }
     } else {
         G_context.state = STATE_NONE;

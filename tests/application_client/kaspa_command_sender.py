@@ -17,6 +17,7 @@ class P1(IntEnum):
     P1_START = 0x00
     P1_OUTPUTS = 0x01
     P1_INPUTS = 0x02
+    P1_NEXT_SIGNATURE = 0x03
     # Parameter 1 for maximum APDU number.
     P1_MAX   = 0x03
     # Parameter 1 for screen confirmation for GET_PUBLIC_KEY.
@@ -135,5 +136,18 @@ class KaspaCommandSender:
 
             yield response
 
+    def get_next_signature(self) -> RAPDU:
+        return self.backend.exchange(cla=CLA,
+                                    ins=InsType.SIGN_TX,
+                                    p1=P1.P1_NEXT_SIGNATURE,
+                                    p2=P2.P2_LAST)
+
     def get_async_response(self) -> Optional[RAPDU]:
         return self.backend.last_async_response
+
+    def send_raw_apdu(self, ins, p1=0x00, p2=0x00, data=b"") -> RAPDU:
+        return self.backend.exchange(cla=CLA,
+                                     ins=ins,
+                                     p1=p1,
+                                     p2=p2,
+                                     data=data)

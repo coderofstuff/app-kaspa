@@ -75,6 +75,8 @@ typedef struct {
     transaction_t transaction;            /// structured transaction
     uint8_t signature[MAX_DER_SIG_LEN];   /// transaction input signature encoded in DER
     uint8_t signing_input_index;          /// The input index currently being signed
+    size_t parsing_input_index;
+    size_t parsing_output_index;
 } transaction_ctx_t;
 
 /**

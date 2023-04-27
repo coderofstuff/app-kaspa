@@ -1,5 +1,5 @@
 from application_client.kaspa_transaction import Transaction, TransactionInput, TransactionOutput
-from application_client.kaspa_command_sender import KaspaCommandSender, Errors
+from application_client.kaspa_command_sender import KaspaCommandSender, Errors, InsType, P1, P2
 from application_client.kaspa_response_unpacker import unpack_get_public_key_response, unpack_sign_tx_response
 from ragger.backend import RaisePolicy
 from ragger.navigator import NavInsID
@@ -61,8 +61,124 @@ def test_sign_tx_simple(firmware, backend, navigator, test_name):
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
-    _, der_sig, _ = unpack_sign_tx_response(response)
+    _, _, _, der_sig = unpack_sign_tx_response(response)
     assert check_signature_validity(public_key, der_sig, transaction)
+
+def test_sign_tx_invalid_io_len(firmware, backend):
+    backend.raise_policy = RaisePolicy.RAISE_NOTHING
+
+    # Use the app interface instead of raw interface
+    client = KaspaCommandSender(backend)
+
+    # Outputs must be len 1 or 2 exactly
+    # Output is 0xFF
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_START,
+        p2=P2.P2_MORE,
+        data=bytes.fromhex("0000FF01")
+    ).status == Errors.SW_TX_PARSING_FAIL
+
+    # Output is 3
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_START,
+        p2=P2.P2_MORE,
+        data=bytes.fromhex("00000301")
+    ).status == Errors.SW_TX_PARSING_FAIL
+
+    # Output is 0
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_START,
+        p2=P2.P2_MORE,
+        data=bytes.fromhex("00000001")
+    ).status == Errors.SW_TX_PARSING_FAIL
+
+    # Input must be at least 1
+    # Input is greater than device supports. 15 for Nano S, 128 for Nano SP and Nano X
+    if firmware.device == "nanos":
+        assert client.send_raw_apdu(
+            InsType.SIGN_TX,
+            p1=P1.P1_START,
+            p2=P2.P2_MORE,
+            data=bytes.fromhex("00000110")
+        ).status == Errors.SW_TX_PARSING_FAIL
+    else:
+        assert client.send_raw_apdu(
+            InsType.SIGN_TX,
+            p1=P1.P1_START,
+            p2=P2.P2_MORE,
+            data=bytes.fromhex("00000181")
+        ).status == Errors.SW_TX_PARSING_FAIL
+
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_START,
+        p2=P2.P2_MORE,
+        data=bytes.fromhex("00000100")
+    ).status == Errors.SW_TX_PARSING_FAIL
+
+def test_sign_tx_inconsistent_input_length_and_data(backend):
+    backend.raise_policy = RaisePolicy.RAISE_NOTHING
+
+    # Use the app interface instead of raw interface
+    client = KaspaCommandSender(backend)
+
+    tx_input = TransactionInput(
+        value=1100000,
+        tx_id="40b022362f1a303518e2b49f86f87a317c87b514ca0f3d08ad2e7cf49d08cc70",
+        address_type=0,
+        address_index=0,
+        index=0
+    )
+
+    # Initialize, setting input length to 1
+    client.send_raw_apdu(InsType.SIGN_TX, p1=P1.P1_START, p2=P2.P2_MORE, data=bytes.fromhex("00000101"))
+
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_INPUTS,
+        p2=P2.P2_MORE,
+        data=tx_input.serialize()
+    ).status == 0x9000
+
+    # Try sending a second input
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_INPUTS,
+        p2=P2.P2_MORE,
+        data=tx_input.serialize()
+    ).status == Errors.SW_TX_PARSING_FAIL
+
+def test_sign_tx_inconsistent_output_length_and_data(backend):
+    backend.raise_policy = RaisePolicy.RAISE_NOTHING
+
+    # Use the app interface instead of raw interface
+    client = KaspaCommandSender(backend)
+
+    output = TransactionOutput(
+        value=1,
+        script_public_key="2011a7215f668e921013eb7aac9b7e64b9ec6e757c1b648e89388c919f676aa88cac"
+    )
+
+    # Initialize, setting output length to 1
+    client.send_raw_apdu(InsType.SIGN_TX, p1=P1.P1_START, p2=P2.P2_MORE, data=bytes.fromhex("00000101"))
+
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_OUTPUTS,
+        p2=P2.P2_MORE,
+        data=output.serialize()
+    ).status == 0x9000
+
+    # Try sending a second output
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_OUTPUTS,
+        p2=P2.P2_MORE,
+        data=output.serialize()
+    ).status == Errors.SW_TX_PARSING_FAIL
 
 
 # In this test se send to the device a transaction to sign and validate it on screen
@@ -111,10 +227,21 @@ def test_sign_tx_max(firmware, backend, navigator, test_name):
                                                       "Hold to sign",
                                                       ROOT_SCREENSHOT_PATH,
                                                       test_name)
+    
+    idx = 0
     response = client.get_async_response().data
-    _, der_sig, _ = unpack_sign_tx_response(response)
+    has_more, _, _, der_sig = unpack_sign_tx_response(response)
     assert check_signature_validity(public_key, der_sig, transaction)
 
+    while has_more > 0:
+        idx = idx + 1
+
+        if idx > 200:
+            break
+
+        response = client.get_next_signature().data
+        has_more, _, _, der_sig = unpack_sign_tx_response(response)
+        assert check_signature_validity(public_key, der_sig, transaction)
 
 # Transaction signature refused test
 # The test will ask for a transaction signature that will be refused on screen
