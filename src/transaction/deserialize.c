@@ -97,7 +97,7 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
     tx->tx_input_len = n_input;
 
     // Must be at least 1, must match the number of inputs we parsed
-    if (tx->tx_input_len < 1) {
+    if (tx->tx_input_len < 1 || tx->tx_input_len > MAX_INPUT_COUNT) {
         return INPUTS_LENGTH_PARSING_ERROR;
     }
 

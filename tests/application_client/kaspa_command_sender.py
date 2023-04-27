@@ -144,3 +144,10 @@ class KaspaCommandSender:
 
     def get_async_response(self) -> Optional[RAPDU]:
         return self.backend.last_async_response
+
+    def send_raw_apdu(self, ins, p1=0x00, p2=0x00, data=b"") -> RAPDU:
+        return self.backend.exchange(cla=CLA,
+                                     ins=ins,
+                                     p1=p1,
+                                     p2=p2,
+                                     data=data)

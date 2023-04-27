@@ -38,7 +38,8 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
 
         parser_status_e status = transaction_deserialize(cdata, &G_context.tx_info.transaction);
 
-        PRINTF("Parsing status: %d.\n", status);
+        PRINTF("Header Parsing status: %d.\n", status);
+
         if (status != PARSING_OK) {
             return io_send_sw(SW_TX_PARSING_FAIL);
         }
@@ -65,6 +66,8 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
                 &G_context.tx_info.transaction
                      .tx_outputs[G_context.tx_info.parsing_output_index]);
 
+            PRINTF("Output Parsing status: %d.\n", status);
+
             if (err != PARSING_OK) {
                 return io_send_sw(err);
             } else {
@@ -83,6 +86,8 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
                 cdata,
                 &G_context.tx_info.transaction
                      .tx_inputs[G_context.tx_info.parsing_input_index]);
+            
+            PRINTF("Input Parsing status: %d.\n", status);
 
             if (err < 0) {
                 return io_send_sw(SW_TX_PARSING_FAIL);

@@ -1,5 +1,5 @@
 from application_client.kaspa_transaction import Transaction, TransactionInput, TransactionOutput
-from application_client.kaspa_command_sender import KaspaCommandSender, Errors
+from application_client.kaspa_command_sender import KaspaCommandSender, Errors, InsType, P1, P2
 from application_client.kaspa_response_unpacker import unpack_get_public_key_response, unpack_sign_tx_response
 from ragger.backend import RaisePolicy
 from ragger.navigator import NavInsID
@@ -63,6 +63,61 @@ def test_sign_tx_simple(firmware, backend, navigator, test_name):
     response = client.get_async_response().data
     _, _, _, der_sig = unpack_sign_tx_response(response)
     assert check_signature_validity(public_key, der_sig, transaction)
+
+def test_sign_tx_invalid_io_len(firmware, backend):
+    backend.raise_policy = RaisePolicy.RAISE_NOTHING
+
+    # Use the app interface instead of raw interface
+    client = KaspaCommandSender(backend)
+
+    # Outputs must be len 1 or 2 exactly
+    # Output is 0xFF
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_START,
+        p2=P2.P2_MORE,
+        data=bytes.fromhex("0000FF01")
+    ).status == Errors.SW_TX_PARSING_FAIL
+
+    # Output is 3
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_START,
+        p2=P2.P2_MORE,
+        data=bytes.fromhex("00000301")
+    ).status == Errors.SW_TX_PARSING_FAIL
+
+    # Output is 0
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_START,
+        p2=P2.P2_MORE,
+        data=bytes.fromhex("00000001")
+    ).status == Errors.SW_TX_PARSING_FAIL
+
+    # Input must be at least 1
+    # Input is greater than device supports. 15 for Nano S, 128 for Nano SP and Nano X
+    if firmware.device == "nanos":
+        assert client.send_raw_apdu(
+            InsType.SIGN_TX,
+            p1=P1.P1_START,
+            p2=P2.P2_MORE,
+            data=bytes.fromhex("00000110")
+        ).status == Errors.SW_TX_PARSING_FAIL
+    else:
+        assert client.send_raw_apdu(
+            InsType.SIGN_TX,
+            p1=P1.P1_START,
+            p2=P2.P2_MORE,
+            data=bytes.fromhex("00000181")
+        ).status == Errors.SW_TX_PARSING_FAIL
+
+    assert client.send_raw_apdu(
+        InsType.SIGN_TX,
+        p1=P1.P1_START,
+        p2=P2.P2_MORE,
+        data=bytes.fromhex("00000100")
+    ).status == Errors.SW_TX_PARSING_FAIL
 
 
 # In this test se send to the device a transaction to sign and validate it on screen
