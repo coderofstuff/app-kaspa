@@ -15,9 +15,23 @@
 #include "../common/buffer.h"
 #include "../transaction/types.h"
 #include "../transaction/deserialize.h"
+#include "../helper/send_response.h"
+
+static int sign_input_and_send() {
+    int error = crypto_sign_message();
+    if (error != 0) {
+        G_context.state = STATE_NONE;
+        io_send_sw(error);
+    } else {
+        helper_send_response_sig();
+        G_context.tx_info.signing_input_index++;
+    }
+
+    return error;
+}
 
 int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
-    if (type == 0) {  // first APDU, parse BIP32 path
+    if (type == 0) {
         explicit_bzero(&G_context, sizeof(G_context));
         G_context.req_type = CONFIRM_TRANSACTION;
         G_context.state = STATE_NONE;
@@ -33,7 +47,7 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
 
         return io_send_sw(SW_OK);
 
-    } else {  // parse transaction
+    } else if (type == 1 || type == 2) {  // parse transaction
 
         if (G_context.req_type != CONFIRM_TRANSACTION) {
             return io_send_sw(SW_BAD_STATE);
@@ -119,6 +133,18 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
 
             return ui_display_transaction();
         }
+    } else if (type == 3) {
+        if (G_context.req_type != CONFIRM_TRANSACTION || G_context.state != STATE_APPROVED) {
+            explicit_bzero(&G_context, sizeof(G_context));
+            G_context.state = STATE_NONE;
+            return io_send_sw(SW_BAD_STATE);
+        }
+
+        sign_input_and_send();
+    } else {
+        explicit_bzero(&G_context, sizeof(G_context));
+        G_context.state = STATE_NONE;
+        return io_send_sw(SW_WRONG_P1P2);
     }
 
     return 0;

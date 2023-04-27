@@ -58,13 +58,18 @@ def unpack_get_public_key_response(response: bytes) -> Tuple[int, bytes, int, by
     return pub_key_len, pub_key, chain_code_len, chain_code
 
 # Unpack from response:
-# response = der_sig_len (1)
-#            der_sig (var)
-#            v (1)
-def unpack_sign_tx_response(response: bytes) -> Tuple[int, bytes, int]:
+# response = has_more (1)
+#            input_index (1)
+#            der_sig_len (1)
+#            der_sig (64)
+def unpack_sign_tx_response(response: bytes) -> Tuple[int, int, int, bytes]:
+    response, has_more = pop_sized_buf_from_buffer(response, 1)
+    response, input_index = pop_sized_buf_from_buffer(response, 1)
     response, der_sig_len, der_sig = pop_size_prefixed_buf_from_buf(response)
-    response, v = pop_sized_buf_from_buffer(response, 1)
 
     assert len(response) == 0
 
-    return der_sig_len, der_sig, int.from_bytes(v, byteorder='big')
+    return int.from_bytes(has_more, byteorder='big'), \
+           int.from_bytes(input_index, byteorder='big'), \
+           der_sig_len, \
+           der_sig

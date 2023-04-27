@@ -18,6 +18,8 @@
 #define P1_OUTPUTS 0x01
 
 #define P1_INPUTS 0x02
+
+#define P1_NEXT_SIGNATURE 0x03
 /**
  * Parameter 1 for maximum APDU number.
  */

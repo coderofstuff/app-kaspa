@@ -61,7 +61,7 @@ def test_sign_tx_simple(firmware, backend, navigator, test_name):
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
-    _, der_sig, _ = unpack_sign_tx_response(response)
+    _, _, _, der_sig = unpack_sign_tx_response(response)
     assert check_signature_validity(public_key, der_sig, transaction)
 
 
@@ -111,10 +111,21 @@ def test_sign_tx_max(firmware, backend, navigator, test_name):
                                                       "Hold to sign",
                                                       ROOT_SCREENSHOT_PATH,
                                                       test_name)
+    
+    idx = 0
     response = client.get_async_response().data
-    _, der_sig, _ = unpack_sign_tx_response(response)
+    has_more, _, _, der_sig = unpack_sign_tx_response(response)
     assert check_signature_validity(public_key, der_sig, transaction)
 
+    while has_more > 0:
+        idx = idx + 1
+
+        if idx > 200:
+            break
+
+        response = client.get_next_signature().data
+        has_more, _, _, der_sig = unpack_sign_tx_response(response)
+        assert check_signature_validity(public_key, der_sig, transaction)
 
 # Transaction signature refused test
 # The test will ask for a transaction signature that will be refused on screen

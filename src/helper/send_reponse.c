@@ -24,10 +24,16 @@ int helper_send_response_pubkey() {
 }
 
 int helper_send_response_sig() {
-    uint8_t resp[1 + MAX_DER_SIG_LEN + 1] = {0};
+    uint8_t resp[3 + MAX_DER_SIG_LEN + 1] = {0};
     size_t offset = 0;
 
+    // has_more -> 1 byte
+    resp[offset++] = G_context.tx_info.transaction.tx_input_len - G_context.tx_info.signing_input_index - 1;
+    // input_index -> 1 byte
+    resp[offset++] = G_context.tx_info.signing_input_index;
+    // len(sig) -> 1 byte
     resp[offset++] = MAX_DER_SIG_LEN;
+    // sig -> 64 bytes
     memmove(resp + offset, G_context.tx_info.signature, MAX_DER_SIG_LEN);
     offset += MAX_DER_SIG_LEN;
 
