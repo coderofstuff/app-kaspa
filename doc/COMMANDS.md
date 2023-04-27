@@ -19,7 +19,7 @@
 
 ### Response
 
-| Response length (bytes) | SW | RData |
+| Length <br/>(bytes) | SW | RData |
 | --- | --- | --- |
 | 3 | 0x9000 | `MAJOR (1)` \|\| `MINOR (1)` \|\| `PATCH (1)` |
 
@@ -33,7 +33,7 @@
 
 ### Response
 
-| Response length (bytes) | SW | RData |
+| Length <br/>(bytes) | SW | RData |
 | --- | --- | --- |
 | 5 | 0x9000 | `Kaspa (5 bytes)` |
 
@@ -59,7 +59,7 @@ Keys for kaspa use the derivation path `m/44'/111111'/<account>'/<type>/<index>`
 
 ### Response
 
-| Response length (bytes) | SW | RData |
+| Length <br/>(bytes) | SW | RData |
 | --- | --- | --- |
 | var | 0x9000 | `len(public_key) (1)` \|\|<br> `public_key (65 bytes)` \|\|<br> `len(chain_code) (1)` \|\|<br> `chain_code (var)` |
 
@@ -76,13 +76,48 @@ Transactions signed with ECDSA are currently not supported.
 
 | CLA | INS | P1 | P2 | Lc | CData |
 | --- | --- | --- | --- | --- | --- |
-| 0xE0 | 0x06 | 0x00-0x03 (chunk index) | 0x00 (more) <br> 0x80 (last) | 1 + 4n | `len(bip32_path) (1)` \|\|<br> `bip32_path{1} (4)` \|\|<br>`...` \|\|<br>`bip32_path{n} (4)` |
+| 0xE0 | 0x06 | 0x00-0x03 | 0x80 or 0x00 | var | See below |
 
+#### P1 Breakdown
+
+| P1 Value | Usage | CData |
+| --- | --- | --- |
+| 0x00 | Sending transaction metadata | `version (2)` \|\| `output_len (1)` \|\| `input_len (1)` |
+| 0x01 | Sending a tx output | `value (8)` \|\| `script_public_key (32/33)` |
+| 0x02 | Sending a tx input | `value (8)` \|\| `tx_id (32)` \|\| `address_type (1)` \|\| `address_index (4)` \|\| `outpoint_index (1)` |
+| 0x03 | Requesting for next signature | - |
+
+#### P2 Breakdown
+| P2 Value | Usage |
+| --- | --- |
+| 0x80 | Indicates that there will be more APDU sent by the client |
+| 0x00 | Incdicates that this is the last APDU sent by the client |
+
+`P2` value is used only if `P1 in {0x00, 0x01, 0x02}`.
+
+#### Flow
+1. Send the first APDU `P1 = 0x00` with the version, output length and input length
+2. For each output (up to 2), send `P1 = 0x01` with the output CData
+3. For each UTXO input send `P1 = 0x02` with the input CData. When sending the last UTXO input set `P2 = 0x00` to indicate that it is the last APDU. The signatures will later be sent back to you in the same order these inputs come in.
+4. [Display] User will be able to view the transaction info and choose to `Approve` or `Reject`.
+5. If approved, the first RAPDU with the signature of the first input index will be sent back to the user.
+6. While `has_more` is non-zero, send the `sign_tx` APDU with `P1 = 0x03` to ask for the next signature.
+7. When there are no more signatures, `has_more` in the RAPDU will be `0x00` and the context will be reset.
 ### Response
 
-| Response length (bytes) | SW | RData |
+| Length <br/>(bytes) | SW | RData |
 | --- | --- | --- |
-| var | 0x9000 | `len(signature_count) (1)` \|\| <br> `len(signature{1})` \|\| <br> `signature{n} (var)` \|\| <br> ... \|\| <br> `len(signature{n})` \|\| <br> `signature{n} (var)` |
+| 67 | 0x9000 | `has_more (1)` \|\| <br/>`input_index (1)` \|\| <br/>`len(sig) (1)` \|\| <br/> `sig (64)` |
+
+#### Response Breakdown
+| Data | Description |
+| --- | --- |
+| `has_more`* | Non-zero if there are more signatures to be sent back, `0x00` otherwise |
+| `input_index` | The input index in the current transaction that this signature is for |
+| `len(sig)` | The length of the signature. Always 64 bytes with Schnorr |
+| `sig` | The signature |
+
+\* While `has_more` is non-zero, you can ask for the next signature by sending another APDU back
 
 ## Status Words
 
