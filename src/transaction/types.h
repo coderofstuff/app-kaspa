@@ -16,7 +16,8 @@ typedef enum {
     MEMO_ENCODING_ERROR = -6,
     WRONG_LENGTH_ERROR = -7,
     OUTPUTS_LENGTH_PARSING_ERROR = -8,
-    INPUTS_LENGTH_PARSING_ERROR = -9
+    INPUTS_LENGTH_PARSING_ERROR = -9,
+    HEADER_PARSING_ERROR = -10
 } parser_status_e;
 
 typedef enum { SIGHASH_PARSING_OK = 1 } sighash_status_e;
@@ -44,8 +45,8 @@ typedef struct {
     // For signature purposes:
     // Based on: https://kaspa-mdbook.aspectron.com/transactions/constraints/size.html
     uint16_t version;
-    uint64_t tx_input_len;  // check
-    uint64_t tx_output_len;
+    size_t tx_input_len;  // check
+    size_t tx_output_len;
 
     transaction_output_t tx_outputs[2];
     transaction_input_t tx_inputs[MAX_INPUT_COUNT];  // array of inputs

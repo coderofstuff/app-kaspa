@@ -82,8 +82,10 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
         return OUTPUTS_LENGTH_PARSING_ERROR;
     }
 
+    tx->tx_output_len = n_output;
+
     // Must be 1 or 2 outputs, must match the number of outputs we parsed
-    if (tx->tx_output_len < 1 || tx->tx_output_len > 2 || n_output != tx->tx_output_len) {
+    if (tx->tx_output_len < 1 || tx->tx_output_len > 2) {
         return OUTPUTS_LENGTH_PARSING_ERROR;
     }
 
@@ -92,18 +94,12 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
         return INPUTS_LENGTH_PARSING_ERROR;
     }
 
+    tx->tx_input_len = n_input;
+
     // Must be at least 1, must match the number of inputs we parsed
-    if (tx->tx_input_len < 1 || n_input != tx->tx_input_len) {
+    if (tx->tx_input_len < 1) {
         return INPUTS_LENGTH_PARSING_ERROR;
     }
 
-    uint32_t lastbits = 0;
-    int diff = buf->size - buf->offset;
-    if (buf->size - buf->offset == 4) {
-        buffer_read_u32(buf, &lastbits, BE);
-    } else {
-        lastbits = buf->size - buf->offset;
-    }
-
-    return diff == 0 ? PARSING_OK : lastbits;
+    return buf->size - buf->offset == 0 ? PARSING_OK : HEADER_PARSING_ERROR;
 }

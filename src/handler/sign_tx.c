@@ -36,14 +36,12 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
         G_context.req_type = CONFIRM_TRANSACTION;
         G_context.state = STATE_NONE;
 
-        if (G_context.tx_info.raw_tx_len + cdata->size > sizeof(G_context.tx_info.raw_tx)) {
-            return io_send_sw(SW_WRONG_TX_LENGTH);
-        }
-        if (!buffer_move(cdata, G_context.tx_info.raw_tx, cdata->size)) {
+        parser_status_e status = transaction_deserialize(cdata, &G_context.tx_info.transaction);
+
+        PRINTF("Parsing status: %d.\n", status);
+        if (status != PARSING_OK) {
             return io_send_sw(SW_TX_PARSING_FAIL);
         }
-
-        G_context.tx_info.raw_tx_len = cdata->size;
 
         return io_send_sw(SW_OK);
 
@@ -52,14 +50,11 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
         if (G_context.req_type != CONFIRM_TRANSACTION) {
             return io_send_sw(SW_BAD_STATE);
         }
-        if (G_context.tx_info.raw_tx_len + cdata->size > sizeof(G_context.tx_info.raw_tx)) {
-            return io_send_sw(SW_WRONG_TX_LENGTH);
-        }
 
         // Parse as we go
         if (type == P1_OUTPUTS) {
             // Outputs
-            if (G_context.tx_info.transaction.tx_output_len >=
+            if (G_context.tx_info.parsing_output_index >=
                 sizeof(G_context.tx_info.transaction.tx_outputs)) {
                 // Too many outputs!
                 return io_send_sw(SW_TX_PARSING_FAIL);
@@ -68,17 +63,17 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
             parser_status_e err = transaction_output_deserialize(
                 cdata,
                 &G_context.tx_info.transaction
-                     .tx_outputs[G_context.tx_info.transaction.tx_output_len]);
+                     .tx_outputs[G_context.tx_info.parsing_output_index]);
 
             if (err != PARSING_OK) {
                 return io_send_sw(err);
             } else {
-                G_context.tx_info.transaction.tx_output_len++;
+                G_context.tx_info.parsing_output_index++;
             }
 
         } else if (type == P1_INPUTS) {
             // Inputs
-            if (G_context.tx_info.transaction.tx_input_len >=
+            if (G_context.tx_info.parsing_input_index >=
                 sizeof(G_context.tx_info.transaction.tx_inputs)) {
                 // Too many inputs!
                 return io_send_sw(SW_TX_PARSING_FAIL);
@@ -87,12 +82,12 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
             parser_status_e err = transaction_input_deserialize(
                 cdata,
                 &G_context.tx_info.transaction
-                     .tx_inputs[G_context.tx_info.transaction.tx_input_len]);
+                     .tx_inputs[G_context.tx_info.parsing_input_index]);
 
             if (err < 0) {
                 return io_send_sw(SW_TX_PARSING_FAIL);
             } else {
-                G_context.tx_info.transaction.tx_input_len++;
+                G_context.tx_info.parsing_input_index++;
             }
 
         } else {
@@ -106,29 +101,6 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
 
         } else {
             // last APDU for this transaction, let's parse, display and request a sign confirmation
-
-            buffer_t buf = {.ptr = G_context.tx_info.raw_tx,
-                            .size = G_context.tx_info.raw_tx_len,
-                            .offset = 0};
-
-            parser_status_e status;
-            BEGIN_TRY {
-                TRY {
-                    status = transaction_deserialize(&buf, &G_context.tx_info.transaction);
-                }
-                CATCH_OTHER(e) {
-                    status = e;
-                }
-                FINALLY {
-                }
-            }
-            END_TRY;
-
-            PRINTF("Parsing status: %d.\n", status);
-            if (status != PARSING_OK) {
-                return io_send_sw(SW_TX_PARSING_FAIL);
-            }
-
             G_context.state = STATE_PARSED;
 
             return ui_display_transaction();
