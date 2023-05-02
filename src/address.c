@@ -4,7 +4,7 @@
 #include <string.h>   // memmove
 
 #include "address.h"
-#include "cashaddr.h"
+#include "./import/cashaddr.h"
 
 #include "transaction/types.h"
 

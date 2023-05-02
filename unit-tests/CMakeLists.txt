@@ -56,7 +56,7 @@ add_executable(test_tx_utils test_tx_utils.c)
 
 add_library(address SHARED ../src/address.c)
 add_library(blake2b SHARED ../src/import/blake2b.c)
-add_library(cashaddr SHARED ../src/cashaddr.c)
+add_library(cashaddr SHARED ../src/import/cashaddr.c)
 add_library(base58 SHARED ../src/common/base58.c)
 add_library(bip32 SHARED ../src/common/bip32.c)
 add_library(buffer SHARED ../src/common/buffer.c)
