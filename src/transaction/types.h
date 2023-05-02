@@ -28,11 +28,11 @@ typedef enum {
 } derive_type_e;
 
 /**
- * Enumeration of op codes 
+ * Enumeration of op codes
  */
 typedef enum {
-    OP_CHECKSIG = 0xac,
-    OP_CHECKSIGECDSA = 0xab
+    OP_CHECKSIG = 0xac,      // Used for SCHNORR output
+    OP_CHECKSIGECDSA = 0xab  // Used for ECDSA output
 } op_code_e;
 
 typedef struct {
