@@ -123,7 +123,7 @@ static bool calc_txin_script_public_key(uint8_t* public_key, uint8_t* out_hash) 
     // Assume schnorr
     out_hash[0] = 0x20;
     memmove(out_hash + 1, public_key, 32);
-    out_hash[33] = 0xac;
+    out_hash[33] = OP_CHECKSIG;
 
     return true;
 }
