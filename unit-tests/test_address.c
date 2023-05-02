@@ -9,8 +9,7 @@
 #include "address.h"
 #include "types.h"
 
-static void test_address_from_public_key(void **state) {
-    // kaspa:qy84scsnsz293djfutux6cjx4vpg6vgma46vhkky3y62s22qcudyq89y6en
+static void test_schnorr_address_from_public_key(void **state) {
     uint8_t public_key[] = {
         0x21, 0xEB, 0x0C, 0x42, 0x70, 0x12, 0x8B, 0x16, 0xC9, 0x3C, 0x5F, 0x0D, 0xAC, 0x48, 0xD5, 0x60,
         0x51, 0xA6, 0x23, 0x7D, 0xAE, 0x99, 0x7B, 0x58, 0x91, 0x26, 0x95, 0x05, 0x28, 0x18, 0xE3, 0x48,
@@ -18,12 +17,10 @@ static void test_address_from_public_key(void **state) {
         0xA4, 0x64, 0x2A, 0x71, 0x83, 0x1F, 0x54, 0xA7, 0x37, 0x78, 0x93, 0xAF, 0x71, 0xA2, 0xE2, 0xAE
     };
 
-    uint8_t address[ADDRESS_LEN + 1] = {0};
+    uint8_t address[SCHNORR_ADDRESS_LEN + 1] = {0};
 
-    address_from_pubkey(public_key, address, ADDRESS_LEN);
+    address_from_pubkey(public_key, SCHNORR, address, SCHNORR_ADDRESS_LEN);
 
-    // assert_string_equal((char *) address, "kaspa:qy84scsnsz293djfutux6cjx4vpg6vgma46vhkky3y62s22qcudyq89y6en");
-    //kaspa:qqs7krzzwqfgk9kf830smtzg64s9rf3r0khfj76cjynf2pfgrr35saatu88xq
     assert_string_equal((char *) address, "kaspa:qqs7krzzwqfgk9kf830smtzg64s9rf3r0khfj76cjynf2pfgrr35saatu88xq");
 
     uint8_t public_key2[] = {
@@ -33,15 +30,31 @@ static void test_address_from_public_key(void **state) {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
 
-    uint8_t address2[ADDRESS_LEN + 1] = {0};
+    uint8_t address2[SCHNORR_ADDRESS_LEN + 1] = {0};
 
-    address_from_pubkey(public_key2, address2, ADDRESS_LEN);
+    address_from_pubkey(public_key2, SCHNORR, address2, SCHNORR_ADDRESS_LEN);
 
     assert_string_equal((char *) address2, "kaspa:qrazhptjkcvrv23xz2xm8z8sfmg6jhxvmrscn7wph4k9we5tzxedwfxf0v6f8");
 }
 
+static void test_ecdsa_address_from_public_key(void **state) {
+    uint8_t public_key2[] = {
+        0xf1, 0xd3, 0x78, 0x05, 0x46, 0xda, 0x20, 0x72, 0x8e, 0xa8, 0xa1, 0xf5, 0xe5, 0xe5, 0x1b, 0x84,
+        0x38, 0x00, 0x2c, 0xd7, 0xc8, 0x38, 0x2a, 0xaf, 0xa7, 0xdd, 0xf6, 0x80, 0xe1, 0x25, 0x57, 0xe4,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+
+    uint8_t address2[SCHNORR_ADDRESS_LEN + 1] = {0};
+
+    address_from_pubkey(public_key2, ECDSA, address2, ECDSA_ADDRESS_LEN);
+
+    assert_string_equal((char *) address2, "kaspa:qyp0r5mcq4rd5grj3652ra09u5dcgwqq9ntuswp247nama5quyj40eq03sc2dkx");
+}
+
 int main() {
-    const struct CMUnitTest tests[] = {cmocka_unit_test(test_address_from_public_key)};
+    const struct CMUnitTest tests[] = {cmocka_unit_test(test_schnorr_address_from_public_key),
+                                       cmocka_unit_test(test_ecdsa_address_from_public_key)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

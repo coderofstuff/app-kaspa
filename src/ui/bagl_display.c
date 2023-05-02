@@ -17,6 +17,7 @@
 #include "../sw.h"
 #include "../address.h"
 #include "action/validate.h"
+#include "../types.h"
 #include "../transaction/types.h"
 #include "../transaction/utils.h"
 #include "../common/bip32.h"
@@ -26,7 +27,7 @@
 static action_validate_cb g_validate_callback;
 static char g_amount[30];
 static char g_bip32_path[60];
-static char g_address[ADDRESS_LEN + 6];
+static char g_address[ECDSA_ADDRESS_LEN + 6];
 static char g_fees[30];
 
 // Validate/Invalidate public key and go back to home
@@ -102,8 +103,8 @@ int ui_display_address() {
     }
 
     memset(g_address, 0, sizeof(g_address));
-    uint8_t address[ADDRESS_LEN] = {0};
-    if (!address_from_pubkey(G_context.pk_info.raw_public_key, address, sizeof(address))) {
+    uint8_t address[ECDSA_ADDRESS_LEN] = {0};
+    if (!address_from_pubkey(G_context.pk_info.raw_public_key, SCHNORR, address, sizeof(address))) {
         return io_send_sw(SW_DISPLAY_ADDRESS_FAIL);
     }
     snprintf(g_address, sizeof(g_address), "%.*s", sizeof(address), address);
@@ -184,11 +185,11 @@ int ui_display_transaction() {
 
     memset(g_address, 0, sizeof(g_address));
 
-    uint8_t address[ADDRESS_LEN] = {0};
+    uint8_t address[ECDSA_ADDRESS_LEN] = {0};
 
     script_public_key_to_address(address,
                                  G_context.tx_info.transaction.tx_outputs[0].script_public_key);
-    snprintf(g_address, sizeof(g_address), "%.*s", ADDRESS_LEN, address);
+    snprintf(g_address, sizeof(g_address), "%.*s", ECDSA_ADDRESS_LEN, address);
 
     g_validate_callback = &ui_action_validate_transaction;
 
