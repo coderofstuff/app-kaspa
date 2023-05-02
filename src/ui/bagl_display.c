@@ -133,7 +133,7 @@ UX_STEP_NOCB(ux_display_amount_step,
 UX_STEP_NOCB(ux_display_fees_step,
              bnnn_paging,
              {
-                 .title = "Max Fees",
+                 .title = "Fees",
                  .text = g_fees,
              });
 
