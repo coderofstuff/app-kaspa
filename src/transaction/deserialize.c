@@ -17,7 +17,10 @@ parser_status_e transaction_output_deserialize(buffer_t *buf, transaction_output
             return OUTPUTS_PARSING_ERROR;
         }
 
-        if (*(buf->ptr + buf->offset + script_len + 1) != 0xac) {
+        uint8_t sig_op_code = *(buf->ptr + buf->offset + script_len + 1);
+
+        if ((script_len == 0x20 && sig_op_code != OP_CHECKSIG) ||
+            (script_len == 0x21 && sig_op_code != OP_CHECKSIGECDSA)) {
             return OUTPUTS_PARSING_ERROR;
         }
 

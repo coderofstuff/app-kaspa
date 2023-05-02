@@ -27,6 +27,14 @@ typedef enum {
     CHANGE = 1    // For change addresses
 } derive_type_e;
 
+/**
+ * Enumeration of op codes 
+ */
+typedef enum {
+    OP_CHECKSIG = 0xac,
+    OP_CHECKSIGECDSA = 0xab
+} op_code_e;
+
 typedef struct {
     uint8_t address_type;
     uint32_t address_index;
