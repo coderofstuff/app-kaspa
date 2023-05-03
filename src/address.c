@@ -28,7 +28,13 @@ bool address_from_pubkey(const uint8_t public_key[static 64], address_type_e add
     uint8_t address[80] = {0};
 
     
-    size_t address_len = address_type == SCHNORR ? SCHNORR_ADDRESS_LEN : ECDSA_ADDRESS_LEN;
+    size_t address_len = SCHNORR_ADDRESS_LEN;
+    int version = 0;
+
+    if (address_type == ECDSA) {
+        address_len = ECDSA_ADDRESS_LEN;
+        version = 1;
+    }
 
     if (out_len < address_len) {
         return false;
@@ -38,7 +44,6 @@ bool address_from_pubkey(const uint8_t public_key[static 64], address_type_e add
 
     // Choose the bigger length for public key container
     uint8_t compressed_public_key[33] = {0};
-    int version = 0;
 
     // Create the relevant compressed public key
     // For schnorr, compressed public key we care about is the X coordinate
