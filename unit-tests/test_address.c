@@ -45,7 +45,7 @@ static void test_ecdsa_address_from_public_key(void **state) {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
 
-    uint8_t address2[SCHNORR_ADDRESS_LEN + 1] = {0};
+    uint8_t address2[ECDSA_ADDRESS_LEN + 1] = {0};
 
     address_from_pubkey(public_key2, ECDSA, address2, ECDSA_ADDRESS_LEN);
 
