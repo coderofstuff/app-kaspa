@@ -5,7 +5,7 @@
 #include <stdbool.h>  // bool
 
 #define SCHNORR_ADDRESS_LEN 67
-#define ECDSA_ADDRESS_LEN 69
+#define ECDSA_ADDRESS_LEN   69
 
 typedef enum {
     PARSING_OK = 1,

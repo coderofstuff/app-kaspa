@@ -37,7 +37,7 @@ void script_public_key_to_address(uint8_t* out_address, uint8_t* in_script_publi
     } else {
         memmove(public_key, in_script_public_key + 1, 32);
     }
-    
+
     address_from_pubkey(public_key, type, out_address, address_len);
 }
 

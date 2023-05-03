@@ -14,7 +14,9 @@
  *    then 32 bytes of X coord if type == ECDSA
  * @return the size of the compressed key
  */
-size_t compress_public_key(const uint8_t public_key[static 64], address_type_e address_type, uint8_t *out);
+size_t compress_public_key(const uint8_t public_key[static 64],
+                           address_type_e address_type,
+                           uint8_t *out);
 
 /**
  * Convert public key to address.
@@ -34,4 +36,7 @@ size_t compress_public_key(const uint8_t public_key[static 64], address_type_e a
  * @return true if success, false otherwise.
  *
  */
-bool address_from_pubkey(const uint8_t public_key[static 64], address_type_e address_type, uint8_t *out, size_t out_len);
+bool address_from_pubkey(const uint8_t public_key[static 64],
+                         address_type_e address_type,
+                         uint8_t *out,
+                         size_t out_len);
