@@ -25,8 +25,9 @@
 
 #include <stdint.h>
 
-#define CASHADDR_P2PKH 0
-#define CASHADDR_P2SH  1
+#define CASHADDR_P2PKH       0
+#define CASHADDR_P2PKH_ECDSA 1
+#define CASHADDR_P2SH        8
 
 /** Encode a Kaspa address
  *

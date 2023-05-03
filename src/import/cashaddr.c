@@ -110,9 +110,10 @@ int cashaddr_encode(uint8_t *hash,
     addr_start = addr;
     *addr_start = 0;
 
-    if (hash_length != 32) return 0;
     if (version == CASHADDR_P2PKH) {  // Support P2PKH = 0, P2SH = 1
         version_byte = 0;
+    } else if (version == CASHADDR_P2PKH_ECDSA) {
+        version_byte = 1;
     } else if (version == CASHADDR_P2SH) {
         version_byte = 8;
     } else {

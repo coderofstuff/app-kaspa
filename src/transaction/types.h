@@ -4,7 +4,8 @@
 #include <stdint.h>   // uint*_t
 #include <stdbool.h>  // bool
 
-#define ADDRESS_LEN 67
+#define SCHNORR_ADDRESS_LEN 67
+#define ECDSA_ADDRESS_LEN   69
 
 typedef enum {
     PARSING_OK = 1,

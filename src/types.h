@@ -50,6 +50,11 @@ typedef enum {
     STATE_APPROVED  /// Transaction data approved
 } state_e;
 
+typedef enum {
+    SCHNORR,  // Display the 61 byte address for schnorr
+    ECDSA     // Display the 63 byte address for ecdsa
+} address_type_e;
+
 /**
  * Enumeration with user request type.
  */

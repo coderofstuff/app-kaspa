@@ -17,6 +17,7 @@
 #include "../sw.h"
 #include "../address.h"
 #include "action/validate.h"
+#include "../types.h"
 #include "../transaction/types.h"
 #include "../common/bip32.h"
 #include "../common/format.h"
@@ -74,8 +75,8 @@ int ui_display_address() {
     }
 
     memset(g_address, 0, sizeof(g_address));
-    uint8_t address[ADDRESS_LEN] = {0};
-    if (!address_from_pubkey(G_context.pk_info.raw_public_key, address, sizeof(address))) {
+    uint8_t address[SCHNORR_ADDRESS_LEN] = {0};
+    if (!address_from_pubkey(G_context.pk_info.raw_public_key, SCHNORR, address, sizeof(address))) {
         return io_send_sw(SW_DISPLAY_ADDRESS_FAIL);
     }
     snprintf(g_address, sizeof(g_address), "%.*s", sizeof(address), address);
