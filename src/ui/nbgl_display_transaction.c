@@ -105,7 +105,7 @@ int ui_display_transaction() {
 
     script_public_key_to_address(address,
                                  G_context.tx_info.transaction.tx_outputs[0].script_public_key);
-    snprintf(g_address, sizeof(g_address), "%.*s", ADDRESS_LEN, address);
+    snprintf(g_address, sizeof(g_address), "%.*s", ECDSA_ADDRESS_LEN, address);
 
     // Start review
     nbgl_useCaseReviewStart(&C_stax_app_boilerplate_64px,
