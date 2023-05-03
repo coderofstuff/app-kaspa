@@ -19,10 +19,25 @@ void script_public_key_to_address(uint8_t* out_address, uint8_t* in_script_publi
     uint8_t public_key[64] = {0};
     // public script keys begin with the length, followed by the amount of data
     size_t data_len = (size_t) in_script_public_key[0];
-    memmove(public_key, in_script_public_key + 1, data_len);
+    address_type_e type = SCHNORR;
+    size_t address_len = SCHNORR_ADDRESS_LEN;
 
-    address_type_e type = data_len == 0x20 ? SCHNORR : ECDSA;
-    size_t address_len = type == SCHNORR ? SCHNORR_ADDRESS_LEN : ECDSA_ADDRESS_LEN;
+    if (data_len == 0x21) {
+        // We're dealing with ECDSA instead:
+        type = ECDSA;
+        address_len = ECDSA_ADDRESS_LEN;
+
+        // This is either one of 0x02 or 0x03
+        uint8_t parity = in_script_public_key[1];
+
+        memmove(public_key, in_script_public_key + 2, 32);
+
+        // Set the correct parity for the y-coord
+        memset(public_key + 32, parity, 32);
+    } else {
+        memmove(public_key, in_script_public_key + 1, 32);
+    }
+    
     address_from_pubkey(public_key, type, out_address, address_len);
 }
 
