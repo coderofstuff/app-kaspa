@@ -75,3 +75,58 @@ docker run --rm -it -v $(pwd)/bin:/speculos/apps -p 5000:5000 ghcr.io/ledgerhq/s
 ## Reporting issues
 - Embedded app issues: https://github.com/coderofstuff/app-kaspa
 - Companion app UI issues: https://github.com/lAmeR1/kaspa-ledger-webapp/issues
+
+## Installing on a Ledger Device
+
+### Required
+- Python3 installation
+- Python `virtualenv` installed
+- Make sure you have the latest firmware for your device by updating using Ledger Live
+
+For Linux:
+```
+sudo apt-get install python3-pip
+pip3 install virtualenv
+```
+
+For Mac:
+```
+// Assuming you have homebrew
+brew install python3
+pip3 install virtualenv
+```
+
+### Reference
+
+The complete instructions can be found in:
+- Mac: https://developers.ledger.com/docs/embedded-app/load-mac/
+- Linux/WSL2: https://developers.ledger.com/docs/embedded-app/load-linux/
+
+Below is a summary of the Mac instructions which should also work for Linux
+
+```
+virtualenv ledger
+source ledger/bin/activate
+pip install ledgerblue
+```
+
+### Install on Nano S Plus
+
+```
+python3 -m ledgerblue.loadApp --curve secp256k1 --appFlags 0x000 --path "44'/111111'" --tlv --targetId 0x33100004 --fileName bin/app.hex --appName Kaspa --appVersion 0.0.1 --dataSize $((0x`cat debug/app.map |grep _envram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'` - 0x`cat debug/app.map |grep _nvram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'`)) --icon "0100000000ffffff00000000807ff03fce9c27e7c3f9709e9c33c7ffe01f00000000" --apiLevel 1 --delete
+```
+
+### Install on Nano S (untested)
+
+When building the embedded app, use this command in the `build container`:
+```
+BOLOS_SDK=$NANOS_SDK make DEBUG=1
+```
+
+Then run this command in your `virtualenv`:
+
+```
+python3 -m ledgerblue.loadApp --curve secp256k1 --appFlags 0x000 --path "44'/111111'" --tlv --targetId 0x31100004 --fileName bin/app.hex --appName Kaspa --appVersion 0.0.1 --dataSize $((0x`cat debug/app.map |grep _envram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'` - 0x`cat debug/app.map |grep _nvram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'`)) --icon "0100000000ffffff00000000807ff03fce9c27e7c3f9709e9c33c7ffe01f00000000" --delete
+```
+
+The commands for `Nano S` is untested. Please let me know when you try this out and if it works for you.
