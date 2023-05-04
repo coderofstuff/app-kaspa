@@ -66,7 +66,7 @@ docker run --rm -it -v $(pwd)/bin:/speculos/apps -p 5000:5000 ghcr.io/ledgerhq/s
 5. Your emulator is now running and is accessible at `http://127.0.0.1:5000`
 
 ## End state
-1. You have the UI running in `http://127.0.0.1:1234`
+1. You have the UI running in `http://127.0.0.1:3000`
 2. You have compiled the embedded app
 3. You have the emulator that loads the compiled app, running in `http://127.0.0.1:5000`
 4. You are now ready to test!
@@ -76,9 +76,12 @@ docker run --rm -it -v $(pwd)/bin:/speculos/apps -p 5000:5000 ghcr.io/ledgerhq/s
 - Embedded app issues: https://github.com/coderofstuff/app-kaspa
 - Companion app UI issues: https://github.com/lAmeR1/kaspa-ledger-webapp/issues
 
-## Installing on a Ledger Device
 
-### Required
+# Installing on a Ledger Device
+
+When you install the app on the device, it will say `This app is not genuine` - this is normal for apps under development.
+
+## Required
 - Python3 installation
 - Python `virtualenv` installed
 - Make sure you have the latest firmware for your device by updating using Ledger Live
@@ -96,7 +99,7 @@ brew install python3
 pip3 install virtualenv
 ```
 
-### Reference
+## Reference
 
 The complete instructions can be found in:
 - Mac: https://developers.ledger.com/docs/embedded-app/load-mac/
@@ -110,13 +113,13 @@ source ledger/bin/activate
 pip install ledgerblue
 ```
 
-### Install on Nano S Plus
+## Install on Nano S Plus
 
 ```
 python3 -m ledgerblue.loadApp --curve secp256k1 --appFlags 0x000 --path "44'/111111'" --tlv --targetId 0x33100004 --fileName bin/app.hex --appName Kaspa --appVersion 0.0.1 --dataSize $((0x`cat debug/app.map |grep _envram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'` - 0x`cat debug/app.map |grep _nvram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'`)) --icon "0100000000ffffff00000000807ff03fce9c27e7c3f9709e9c33c7ffe01f00000000" --apiLevel 1 --delete
 ```
 
-### Install on Nano S (untested)
+## Install on Nano S (untested)
 
 When building the embedded app, use this command in the `build container`:
 ```
