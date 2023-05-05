@@ -31,10 +31,10 @@ static void test_tx_serialization(void **state) {
     assert_int_equal(status, PARSING_OK);
     assert_int_equal(tx.version, 1);
 
-    // uint8_t output[350];
-    // int length = transaction_serialize(&tx, output, sizeof(output));
-    // assert_int_equal(length, sizeof(raw_tx));
-    // assert_memory_equal(raw_tx, output, sizeof(raw_tx));
+    uint8_t output[350];
+    int length = transaction_serialize(&tx, output, sizeof(output));
+    assert_int_equal(length, sizeof(raw_tx));
+    assert_memory_equal(raw_tx, output, sizeof(raw_tx));
 }
 
 static void test_tx_input_serialization(void **state) {
@@ -59,6 +59,10 @@ static void test_tx_input_serialization(void **state) {
 
     assert_int_equal(status, PARSING_OK);
 
+    uint8_t output[350];
+    int length = transaction_input_serialize(&txin, output, sizeof(output));
+    assert_int_equal(length, sizeof(raw_tx));
+    assert_memory_equal(raw_tx, output, sizeof(raw_tx));
 }
 
 static void test_tx_output_serialization_32_bytes(void **state) {
@@ -84,6 +88,10 @@ static void test_tx_output_serialization_32_bytes(void **state) {
 
     assert_int_equal(status, PARSING_OK);
 
+    uint8_t output[350];
+    int length = transaction_output_serialize(&txout, output, sizeof(output));
+    assert_int_equal(length, sizeof(raw_tx));
+    assert_memory_equal(raw_tx, output, sizeof(raw_tx));
 }
 
 static void test_tx_output_serialization_33_bytes(void **state) {
@@ -109,6 +117,10 @@ static void test_tx_output_serialization_33_bytes(void **state) {
 
     assert_int_equal(status, PARSING_OK);
 
+    uint8_t output[350];
+    int length = transaction_output_serialize(&txout, output, sizeof(output));
+    assert_int_equal(length, sizeof(raw_tx));
+    assert_memory_equal(raw_tx, output, sizeof(raw_tx));
 }
 
 int main() {
