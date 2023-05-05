@@ -11,7 +11,6 @@
 #include "globals.h"
 #include "./constants.h"
 
-// const cx_hash_info_t cx_blake2b_info;
 uint8_t outer_buffer[32] = {0};
 uint8_t inner_buffer[32] = {0};
 
@@ -26,8 +25,6 @@ static int hash_init(blake2b_state* hash, size_t size, uint8_t* key, size_t key_
     memset(hash, 0, sizeof(blake2b_state));
 
     size = size / 8;
-    // hash->output_size = size;
-    // hash->header.info = &cx_blake2b_info;
 
     if (blake2b_init_key(hash, size, key, key_len) < 0) {
         goto err;
@@ -39,14 +36,10 @@ err:
 }
 
 static void hash_update(blake2b_state* hash, uint8_t* data, size_t len) {
-    // cx_hash(hash, 0, data, len, NULL, 0);
-    // cx_blake2b_update(hash, data, len);
     blake2b_update(hash, data, len);
 }
 
 static void hash_finalize(blake2b_state* hash, uint8_t* out) {
-    // cx_hash(hash, CX_LAST, NULL, 0, out, 32);
-    // cx_blake2b_final(hash, out);
     blake2b_final(hash, out, 32);
 }
 
