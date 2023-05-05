@@ -22,8 +22,11 @@ endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+add_compile_definitions(MAX_INPUT_COUNT=15)
+
 include(extra/TxParser.cmake)
 
+add_library(address SHARED ../src/address.c)
 add_executable(fuzz_tx_parser fuzz_tx_parser.cc)
 
 target_compile_options(fuzz_tx_parser
@@ -32,5 +35,5 @@ target_compile_options(fuzz_tx_parser
 
 target_link_libraries(fuzz_tx_parser
     PRIVATE $<$<C_COMPILER_ID:Clang>:-fsanitize=fuzzer,address,undefined>
-    PUBLIC txparser
+    PUBLIC txparser address
 )
