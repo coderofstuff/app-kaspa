@@ -14,7 +14,7 @@ void app_quit(void) {
 }
 
 void ui_menu_main(void) {
-    nbgl_useCaseHome(APPNAME, &C_stax_app_boilerplate_64px, NULL, false, ui_menu_about, app_quit);
+    nbgl_useCaseHome(APPNAME, &C_stax_app_kaspa_64px, NULL, false, ui_menu_about, app_quit);
 }
 
 // 'About' menu
