@@ -1,7 +1,7 @@
 # project information
 project(TxParser
         VERSION 1.0
-        DESCRIPTION "Transaction parser of Boilerplate app"
+        DESCRIPTION "Transaction parser of Kaspa app"
         LANGUAGES C)
 
 # specify C standard
@@ -18,7 +18,6 @@ add_library(txparser SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/write.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/buffer.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/format.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/transaction/utils.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/transaction/deserialize.c
 )
 

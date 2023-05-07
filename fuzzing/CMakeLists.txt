@@ -22,18 +22,33 @@ endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_compile_definitions(MAX_INPUT_COUNT=15)
+add_compile_definitions(MAX_INPUT_COUNT=15 USB_SEGMENT_SIZE=64)
 
 include(extra/TxParser.cmake)
 
-add_library(address SHARED ../src/address.c)
 add_executable(fuzz_tx_parser fuzz_tx_parser.cc)
+add_executable(fuzz_txout_parser fuzz_txout_parser.cc)
+add_executable(fuzz_txin_parser fuzz_txin_parser.cc)
 
 target_compile_options(fuzz_tx_parser
+    PRIVATE $<$<C_COMPILER_ID:Clang>:-g -O2 -fsanitize=fuzzer,address,undefined>
+)
+target_compile_options(fuzz_txout_parser
+    PRIVATE $<$<C_COMPILER_ID:Clang>:-g -O2 -fsanitize=fuzzer,address,undefined>
+)
+target_compile_options(fuzz_txin_parser
     PRIVATE $<$<C_COMPILER_ID:Clang>:-g -O2 -fsanitize=fuzzer,address,undefined>
 )
 
 target_link_libraries(fuzz_tx_parser
     PRIVATE $<$<C_COMPILER_ID:Clang>:-fsanitize=fuzzer,address,undefined>
-    PUBLIC txparser address
+    PUBLIC txparser
+)
+target_link_libraries(fuzz_txout_parser
+    PRIVATE $<$<C_COMPILER_ID:Clang>:-fsanitize=fuzzer,address,undefined>
+    PUBLIC txparser
+)
+target_link_libraries(fuzz_txin_parser
+    PRIVATE $<$<C_COMPILER_ID:Clang>:-fsanitize=fuzzer,address,undefined>
+    PUBLIC txparser
 )
