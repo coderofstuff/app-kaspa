@@ -11,9 +11,6 @@
 #include "globals.h"
 #include "./constants.h"
 
-uint8_t outer_buffer[32] = {0};
-uint8_t inner_buffer[32] = {0};
-
 static int hash_init(blake2b_state* hash, size_t size, uint8_t* key, size_t key_len) {
     if (key == NULL && key_len != 0) {
         goto err;
@@ -44,6 +41,7 @@ static void hash_finalize(blake2b_state* hash, uint8_t* out) {
 }
 
 static void calc_prev_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
+    uint8_t inner_buffer[32] = {0};
     blake2b_state inner_hash_writer;
     hash_init(&inner_hash_writer, 256, (uint8_t*) SIGNING_KEY, 22);
 
@@ -58,6 +56,7 @@ static void calc_prev_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
 }
 
 static void calc_sequences_hash(transaction_t* tx, uint8_t* out_hash) {
+    uint8_t inner_buffer[32] = {0};
     blake2b_state inner_hash_writer;
     hash_init(&inner_hash_writer, 256, (uint8_t*) SIGNING_KEY, 22);
 
@@ -72,6 +71,7 @@ static void calc_sequences_hash(transaction_t* tx, uint8_t* out_hash) {
 }
 
 static void calc_sig_op_count_hash(transaction_t* tx, uint8_t* out_hash) {
+    uint8_t inner_buffer[32] = {0};
     blake2b_state inner_hash_writer;
     hash_init(&inner_hash_writer, 256, (uint8_t*) SIGNING_KEY, 22);
 
@@ -85,6 +85,7 @@ static void calc_sig_op_count_hash(transaction_t* tx, uint8_t* out_hash) {
 }
 
 static void calc_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
+    uint8_t inner_buffer[32] = {0};
     blake2b_state inner_hash_writer;
     hash_init(&inner_hash_writer, 256, (uint8_t*) SIGNING_KEY, 22);
 
@@ -125,11 +126,9 @@ void calc_sighash(transaction_t* tx,
                   transaction_input_t* txin,
                   uint8_t* public_key,
                   uint8_t* out_hash) {
+    // Buffer needs to come before the state
+    uint8_t outer_buffer[32] = {0};
     blake2b_state sighash;
-
-    memset(outer_buffer, 0, sizeof(outer_buffer));
-    memset(inner_buffer, 0, sizeof(inner_buffer));
-
     hash_init(&sighash, 256, (uint8_t*) SIGNING_KEY, 22);
 
     // Write version, little endian, 2 bytes
