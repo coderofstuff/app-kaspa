@@ -54,7 +54,6 @@ int crypto_sign_message(void) {
     cx_ecfp_private_key_t private_key = {0};
     cx_ecfp_public_key_t public_key = {0};
     uint8_t chain_code[32] = {0};
-    uint8_t sighash[32] = {0};
     uint32_t info = 0;
 
     transaction_input_t *txin =
@@ -80,13 +79,20 @@ int crypto_sign_message(void) {
 
     BEGIN_TRY {
         TRY {
+            // Clear the sighash and signature before trying to use it:
+            memset(G_context.tx_info.sighash, 0, sizeof(G_context.tx_info.sighash));
+            memset(G_context.tx_info.signature, 0, sizeof(G_context.tx_info.signature));
+
             cx_ecfp_generate_pair(CX_CURVE_256K1, &public_key, &private_key, 1);
-            calc_sighash(&G_context.tx_info.transaction, txin, public_key.W + 1, sighash);
+            calc_sighash(&G_context.tx_info.transaction,
+                         txin,
+                         public_key.W + 1,
+                         G_context.tx_info.sighash);
             cx_ecschnorr_sign(&private_key,
                               CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
                               CX_SHA256,
-                              sighash,
-                              sizeof(sighash),
+                              G_context.tx_info.sighash,
+                              sizeof(G_context.tx_info.sighash),
                               G_context.tx_info.signature,
                               sizeof(G_context.tx_info.signature),
                               &info);
