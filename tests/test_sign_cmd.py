@@ -29,7 +29,8 @@ def test_sign_tx_simple(firmware, backend, navigator, test_name):
                 tx_id="40b022362f1a303518e2b49f86f87a317c87b514ca0f3d08ad2e7cf49d08cc70",
                 address_type=0,
                 address_index=0,
-                index=0
+                index=0,
+                public_key=public_key[1:33]
             )
         ],
         outputs=[
@@ -61,8 +62,9 @@ def test_sign_tx_simple(firmware, backend, navigator, test_name):
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
-    _, _, _, der_sig = unpack_sign_tx_response(response)
-    assert check_signature_validity(public_key, der_sig, transaction)
+    _, _, _, der_sig, _, sighash = unpack_sign_tx_response(response)
+    assert transaction.get_sighash(0) == sighash
+    assert check_signature_validity(public_key, der_sig, sighash, transaction)
 
 def test_sign_tx_invalid_io_len(firmware, backend):
     backend.raise_policy = RaisePolicy.RAISE_NOTHING
@@ -130,7 +132,8 @@ def test_sign_tx_inconsistent_input_length_and_data(backend):
         tx_id="40b022362f1a303518e2b49f86f87a317c87b514ca0f3d08ad2e7cf49d08cc70",
         address_type=0,
         address_index=0,
-        index=0
+        index=0,
+        public_key=None
     )
 
     # Initialize, setting input length to 1
@@ -198,7 +201,8 @@ def test_sign_tx_max(firmware, backend, navigator, test_name):
                 tx_id="40b022362f1a303518e2b49f86f87a317c87b514ca0f3d08ad2e7cf49d08cc" + input_index.to_bytes(1, 'big').hex(),
                 address_type=0,
                 address_index=0,
-                index=0
+                index=0,
+                public_key=public_key[1:33]
             ) for input_index in range(max_input_count)]
     output_value = 1090000 * max_input_count
 
@@ -230,8 +234,9 @@ def test_sign_tx_max(firmware, backend, navigator, test_name):
     
     idx = 0
     response = client.get_async_response().data
-    has_more, _, _, der_sig = unpack_sign_tx_response(response)
-    assert check_signature_validity(public_key, der_sig, transaction)
+    has_more, input_index, _, der_sig, _, sighash = unpack_sign_tx_response(response)
+    assert transaction.get_sighash(input_index) == sighash
+    assert check_signature_validity(public_key, der_sig, sighash, transaction)
 
     while has_more > 0:
         idx = idx + 1
@@ -240,8 +245,9 @@ def test_sign_tx_max(firmware, backend, navigator, test_name):
             break
 
         response = client.get_next_signature().data
-        has_more, _, _, der_sig = unpack_sign_tx_response(response)
-        assert check_signature_validity(public_key, der_sig, transaction)
+        has_more, input_index, _, der_sig, _, sighash = unpack_sign_tx_response(response)
+        assert transaction.get_sighash(input_index) == sighash
+        assert check_signature_validity(public_key, der_sig, sighash, transaction)
 
 # Transaction signature refused test
 # The test will ask for a transaction signature that will be refused on screen
@@ -257,7 +263,8 @@ def test_sign_tx_refused(firmware, backend, navigator, test_name):
                 tx_id="40b022362f1a303518e2b49f86f87a317c87b514ca0f3d08ad2e7cf49d08cc70",
                 address_type=0,
                 address_index=0,
-                index=0
+                index=0,
+                public_key=None
             )
         ],
         outputs=[

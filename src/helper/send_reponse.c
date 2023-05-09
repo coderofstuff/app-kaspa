@@ -24,7 +24,7 @@ int helper_send_response_pubkey() {
 }
 
 int helper_send_response_sig() {
-    uint8_t resp[3 + MAX_DER_SIG_LEN + 1] = {0};
+    uint8_t resp[3 + MAX_DER_SIG_LEN + 34] = {0};
     size_t offset = 0;
 
     // has_more -> 1 byte
@@ -37,6 +37,11 @@ int helper_send_response_sig() {
     // sig -> 64 bytes
     memmove(resp + offset, G_context.tx_info.signature, MAX_DER_SIG_LEN);
     offset += MAX_DER_SIG_LEN;
+    // len(sighash) -> 1 byte
+    resp[offset++] = sizeof(G_context.tx_info.sighash);
+    // sighash -> 32 bytes
+    memmove(resp + offset, G_context.tx_info.sighash, sizeof(G_context.tx_info.sighash));
+    offset += sizeof(G_context.tx_info.sighash);
 
     return io_send_response(&(const buffer_t){.ptr = resp, .size = offset, .offset = 0}, SW_OK);
 }
