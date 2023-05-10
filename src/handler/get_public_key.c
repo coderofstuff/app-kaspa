@@ -41,7 +41,8 @@ int handler_get_public_key(buffer_t *cdata, bool display) {
         return io_send_sw(SW_WRONG_BIP32_COIN_TYPE);
     }
 
-    if (G_context.bip32_path[3] != (uint32_t) RECEIVE && G_context.bip32_path[3] != (uint32_t) CHANGE) {
+    if (G_context.bip32_path[3] != (uint32_t) RECEIVE &&
+        G_context.bip32_path[3] != (uint32_t) CHANGE) {
         return io_send_sw(SW_WRONG_BIP32_TYPE);
     }
 
