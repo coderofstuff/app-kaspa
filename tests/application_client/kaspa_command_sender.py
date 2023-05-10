@@ -50,6 +50,11 @@ class Errors(IntEnum):
     SW_TX_HASH_FAIL            = 0xB006
     SW_BAD_STATE               = 0xB007
     SW_SIGNATURE_FAIL          = 0xB008
+    SW_WRONG_BIP32_PURPOSE     = 0xB009
+    SW_WRONG_BIP32_COIN_TYPE   = 0xB00A
+    SW_WRONG_BIP32_TYPE        = 0xB00B
+    SW_WRONG_BIP32_PATH_LEN    = 0xB00C
+
 
 
 def split_message(message: bytes, max_size: int) -> List[bytes]:
