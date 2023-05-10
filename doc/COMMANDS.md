@@ -7,7 +7,7 @@
 | `GET_VERSION` | 0x03 | Get application version as `MAJOR`, `MINOR`, `PATCH` |
 | `GET_APP_NAME` | 0x04 | Get ASCII encoded application name |
 | `GET_PUBLIC_KEY` | 0x05 | Get public key given BIP32 path |
-| `SIGN_TX` | 0x06 | Sign transaction given BIP32 path and raw transaction |
+| `SIGN_TX` | 0x06 | Sign transaction given transaction info, utxos and outputs |
 
 ## GET_VERSION
 
@@ -47,7 +47,7 @@ Raw response looks like: `4b617370619000`
 | --- | --- | --- | --- | --- | --- |
 | 0xE0 | 0x05 | 0x00 (no display) <br> 0x01 (display) | 0x00 | 0x15 | `path len (1 byte)` \|\|<br>`purpose (4 bytes)` \|\|<br> `coin_type (4 bytes)` \|\|<br> `account (4 bytes)` \|\|<br> `type (4 bytes)` \|\|<br>`index (4 bytes)` |
 
-Keys for kaspa use the derivation path `m/44'/111111'/<account>'/<type>/<index>`. As such you only need to pass the `type` and `index` here.
+Keys for kaspa use the derivation path `m/44'/111111'/<account>'/<type>/<index>`.
 
 | CData Part | Description |
 | --- | --- |
@@ -140,4 +140,5 @@ Transactions signed with ECDSA are currently not supported.
 | 0xB009 | `SW_WRONG_BIP32_PURPOSE` | `Purpose` must be `44'` |
 | 0xB00A | `SW_WRONG_BIP32_COIN_TYPE` | `Coin Type` must be `111111'` |
 | 0xB00B | `SW_WRONG_BIP32_TYPE` | `Type` passed is not valid. Must be either `0`  for `Receive` or `1`  for `Change`|
+| 0xB00C | `SW_WRONG_BIP32_PATH_LEN` | Path length must be `5` |
 | 0x9000 | `OK` | Success |
