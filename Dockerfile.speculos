@@ -1,4 +1,4 @@
-FROM speculos:latest
+FROM ghcr.io/ledgerhq/speculos:latest
 
 COPY ./tests/requirements.txt /tmp/requirements.txt
 
