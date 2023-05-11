@@ -29,6 +29,23 @@ int handler_get_public_key(buffer_t *cdata, bool display) {
         return io_send_sw(SW_WRONG_DATA_LENGTH);
     }
 
+    if (G_context.bip32_path_len != 5) {
+        return io_send_sw(SW_WRONG_BIP32_PATH_LEN);
+    }
+
+    if (G_context.bip32_path[0] != (uint32_t) 0x8000002c) {
+        return io_send_sw(SW_WRONG_BIP32_PURPOSE);
+    }
+
+    if (G_context.bip32_path[1] != (uint32_t) 0x8001b207) {
+        return io_send_sw(SW_WRONG_BIP32_COIN_TYPE);
+    }
+
+    if (G_context.bip32_path[3] != (uint32_t) RECEIVE &&
+        G_context.bip32_path[3] != (uint32_t) CHANGE) {
+        return io_send_sw(SW_WRONG_BIP32_TYPE);
+    }
+
     // derive private key according to BIP32 path
     int error = crypto_derive_private_key(&private_key,
                                           G_context.pk_info.chain_code,
