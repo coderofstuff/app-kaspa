@@ -1,23 +1,36 @@
 version: '3.0'
 
 services:
-  # builder:
-  #   container_name: ledger-builder
-  #   image: ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
-  #   privileged: true
-  #   volumes:
-  #   - .:/app
-  speculos:
-    container_name: ledger-speculos
-    image: speculos
-    command: --model nanos ./apps/app.elf --sdk 2.0 --seed "secret" --display headless --apdu-port 40000 --vnc-port 41000
-    volumes:
-    - ./bin:/speculos/apps
+  builder:
+    container_name: ledger-builder
+    build:
+      dockerfile: ./Dockerfile.builder
+      context: .
+    privileged: true
+    command: bash -c "while true; do sleep 3600; done;"
     ports:
+    - "5000:5000"
+    - "9999:9999"
     - "40000:40000"
     - "41000:41000"
-    - "1234:1234"
-    - "5000:5000"
+    volumes:
+    - .:/app
+    - /dev/bus/usb:/dev/bus/usb
+    - /etc/udev:/etc/udev
+
+  # speculos:
+  #   container_name: ledger-speculos
+  #   image: speculos
+  #   command: --model nanos ./apps/app.elf --sdk 2.0 --seed "secret" --display headless --apdu-port 40000 --vnc-port 41000
+  #   volumes:
+  #   - ./bin:/speculos/apps
+  #   profiles:
+  #     - donotstart
+  #   ports:
+  #   - "40000:40000"
+  #   - "41000:41000"
+  #   - "1234:1234"
+  #   - "5000:5000"
   
   # functional test
   ftest:
