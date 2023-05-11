@@ -41,11 +41,11 @@ void script_public_key_to_address(uint8_t* out_address, uint8_t* in_script_publi
     address_from_pubkey(public_key, type, out_address, address_len);
 }
 
-int calc_fees(transaction_input_t* inputs,
-              size_t input_len,
-              transaction_output_t* outputs,
-              size_t output_len) {
-    int fees = 0;
+uint64_t calc_fees(transaction_input_t* inputs,
+                   size_t input_len,
+                   transaction_output_t* outputs,
+                   size_t output_len) {
+    uint64_t fees = 0;
 
     for (size_t i = 0; i < input_len; i++) {
         fees += inputs[i].value;
