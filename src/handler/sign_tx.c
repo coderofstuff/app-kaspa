@@ -108,8 +108,37 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
 
         } else {
             // Before asking the user, make sure one last time that the inputs are legitimate:
-            if (!tx_validate_parsed_transaction(&G_context.tx_info.transaction)) {
+            transaction_t* tx = &G_context.tx_info.transaction;
+            if (!tx_validate_parsed_transaction(tx)) {
                 return io_send_sw(SW_TX_PARSING_FAIL);
+            }
+
+            // If we have a change address, we must fill it
+            if (tx->tx_output_len > 1) {
+                transaction_output_t change_output = tx->tx_outputs[1];
+
+                if (!change_output.has_path) {
+                    return io_send_sw(SW_TX_PARSING_FAIL);
+                }
+
+                G_context.bip32_path[0] = 0x8000002C;
+                G_context.bip32_path[1] = 0x8001b207;
+                G_context.bip32_path[2] = 0x80000000;
+                G_context.bip32_path[3] = (uint32_t)(change_output.address_type);
+                G_context.bip32_path[4] = change_output.address_index;
+
+                G_context.bip32_path_len = 5;
+
+                // We force the script public key of the change address to be
+                // to be one we generated based on the path. This way, the user
+                // will always have access to the change with the same seed
+                crypto_get_public_key(change_output.script_public_key + 1,
+                                      G_context.bip32_path,
+                                      G_context.bip32_path_len);
+
+                change_output.script_public_key[0] = 0x20;
+                change_output.script_public_key[33] = OP_CHECKSIG;
+                PRINTF("Calculated Script Public Key: %.*H\n", 34, change_output.script_public_key);
             }
 
             // last APDU for this transaction, let's parse, display and request a sign confirmation

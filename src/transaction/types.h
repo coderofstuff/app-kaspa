@@ -52,7 +52,10 @@ typedef struct {
 
 typedef struct {
     uint64_t value;
-    uint8_t script_public_key[35];  // In hex: 20 + public_key_hex + ac (34/35 bytes total)
+    uint8_t script_public_key[35];  // In hex: 20|21 + public_key_hex + ac|ad (34/35 bytes total)
+    uint8_t address_type;
+    uint32_t address_index;
+    bool has_path;
 } transaction_output_t;
 
 typedef struct {

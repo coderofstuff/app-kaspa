@@ -101,7 +101,10 @@ def test_sign_tx_with_change(firmware, backend, navigator, test_name):
             ),
             TransactionOutput(
                 value=80000,
-                script_public_key=valid_change_script_public_key
+                script_public_key=valid_change_script_public_key,
+                address_type=0,
+                address_index=0,
+                is_change=True
             )
         ]
     )
@@ -157,7 +160,10 @@ def test_sign_tx_with_invalid_change(backend):
             ),
             TransactionOutput(
                 value=90000,
-                script_public_key="200000000000000000000000000000000000000000000000000000000000000000ac"
+                script_public_key="200000000000000000000000000000000000000000000000000000000000000000ac",
+                address_type=0,
+                address_index=0,
+                is_change=True
             )
         ]
     )

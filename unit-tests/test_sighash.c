@@ -67,6 +67,11 @@ static void test_sighash(void **state) {
     txin.value = 2;
 
     memcpy(txout.script_public_key, output_script_public_key, sizeof(output_script_public_key));
+    printf("Size of output_script_public_key: %d\n", sizeof(output_script_public_key));
+    for (int j = 0; j < (int) sizeof(output_script_public_key); j++) {
+        printf("%02hhx", (char) txout.script_public_key[j]);
+    }
+    printf("\n------\n");
     txout.value = txin.value; // Assume no fee
 
     tx.version = 1;

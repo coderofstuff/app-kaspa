@@ -10,27 +10,46 @@ parser_status_e transaction_output_deserialize(buffer_t *buf, transaction_output
         return OUTPUT_VALUE_PARSING_ERROR;
     }
 
-    size_t script_len = (size_t) * (buf->ptr + buf->offset);
-    // Can only be length 32 or 33. Fail it otherwise:
-    if (script_len == 0x20 || script_len == 0x21) {
-        if (!buffer_can_read(buf, script_len + 2)) {
+    if (buffer_can_read(buf, 32)) {
+        // We've been passed either a 32 byte or longer data
+        size_t script_len = (size_t) * (buf->ptr + buf->offset);
+        // Can only be length 32 or 33. Fail it otherwise:
+        if (script_len == 0x20 || script_len == 0x21) {
+            if (!buffer_can_read(buf, script_len + 2)) {
+                return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
+            }
+
+            uint8_t sig_op_code = *(buf->ptr + buf->offset + script_len + 1);
+
+            if ((script_len == 0x20 && sig_op_code != OP_CHECKSIG) ||
+                (script_len == 0x21 && sig_op_code != OP_CHECKSIGECDSA)) {
+                return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
+            }
+
+            memcpy(txout->script_public_key, buf->ptr + buf->offset, script_len + 2);
+        } else {
             return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
         }
 
-        uint8_t sig_op_code = *(buf->ptr + buf->offset + script_len + 1);
-
-        if ((script_len == 0x20 && sig_op_code != OP_CHECKSIG) ||
-            (script_len == 0x21 && sig_op_code != OP_CHECKSIGECDSA)) {
+        if (!buffer_seek_cur(buf, script_len + 2)) {
             return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
         }
 
-        memcpy(txout->script_public_key, buf->ptr + buf->offset, script_len + 2);
+        txout->has_path = false;
+    } else if (buffer_can_read(buf, 5)) {
+        // We've been passed addressType (1 byte) + addressIndex (4 byte) or longer data
+        // but definitely less than 32 bytes
+        if (!buffer_read_u8(buf, &txout->address_type)) {
+            return OUTPUT_PARSING_ERROR;
+        }
+
+        if (!buffer_read_u32(buf, &txout->address_index, BE)) {
+            return OUTPUT_PARSING_ERROR;
+        }
+
+        txout->has_path = true;
     } else {
-        return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
-    }
-
-    if (!buffer_seek_cur(buf, script_len + 2)) {
-        return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
+        return OUTPUT_PARSING_ERROR;
     }
 
     // Total: 8 + 32|33 = 40|41 bytes

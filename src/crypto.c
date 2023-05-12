@@ -50,16 +50,16 @@ void crypto_init_public_key(cx_ecfp_private_key_t *private_key,
     memmove(raw_public_key, public_key->W + 1, 64);
 }
 
-bool crypto_validate_public_key(const uint32_t *bip32_path,
-                                uint8_t bip32_path_len,
-                                uint8_t compressed_public_key[static 32]) {
+int crypto_get_public_key(uint8_t compressed_public_key[static 32],
+                           const uint32_t *bip32_path,
+                           uint8_t bip32_path_len) {
     cx_ecfp_private_key_t private_key = {0};
     cx_ecfp_public_key_t public_key = {0};
     uint8_t chain_code[32] = {0};
 
     int error = crypto_derive_private_key(&private_key, chain_code, bip32_path, bip32_path_len);
     if (error != 0) {
-        return false;
+        return error;
     }
 
     BEGIN_TRY {
@@ -73,8 +73,10 @@ bool crypto_validate_public_key(const uint32_t *bip32_path,
     END_TRY;
 
     PRINTF("==> Generated Data: %.*H\n", 32, public_key.W + 1);
-    PRINTF("==> Passed Data   : %.*H\n", 32, compressed_public_key);
-    return memcmp(public_key.W + 1, compressed_public_key, 32) == 0;
+    memmove(compressed_public_key, public_key.W + 1, 32);
+    PRINTF("==> Resulting Data: %.*H\n", 32, compressed_public_key);
+
+    return 0;
 }
 
 int crypto_sign_message(void) {

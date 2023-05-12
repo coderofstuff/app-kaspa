@@ -57,15 +57,34 @@ class TransactionInput:
 class TransactionOutput:
     def __init__(self,
                  value: int,
-                 script_public_key: str):
+                 script_public_key: str = None,
+                 address_type: int = None,
+                 address_index: int = None,
+                 is_change: bool = False):
         self.value = value
-        self.script_public_key: bytes = bytes.fromhex(script_public_key)
+
+        if script_public_key:
+            self.script_public_key: bytes = bytes.fromhex(script_public_key)
+        else:
+            self.script_public_key = None
+
+        self.address_type: int = address_type
+        self.address_index: int = address_index
+        
+        self.is_change = is_change
 
     def serialize(self) -> bytes:
-        return b"".join([
+        data = [
             self.value.to_bytes(8, byteorder="big"),
-            self.script_public_key
-        ])
+        ]
+
+        if self.is_change:
+            data.append(self.address_type.to_bytes(1, 'big'))
+            data.append(self.address_index.to_bytes(4, 'big'))
+        else:
+            data.append(self.script_public_key)
+
+        return b"".join(data)
 
     @classmethod
     def from_bytes(cls, hexa: Union[bytes, BytesIO]):

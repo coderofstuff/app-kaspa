@@ -196,6 +196,30 @@ static void test_tx_output_serialization_32_bytes(void **state) {
     assert_memory_equal(raw_tx, output, sizeof(raw_tx));
 }
 
+static void test_tx_output_serialization_has_path(void **state) {
+        (void) state;
+
+    transaction_output_t txout;
+
+    // clang-format off
+    uint8_t raw_tx[] = {
+        // Output
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x86, 0xa0,
+        0x01, 0x02, 0x03, 0x04, 0x05
+    };
+
+    buffer_t buf = {.ptr = raw_tx, .size = sizeof(raw_tx), .offset = 0};
+
+    parser_status_e status = transaction_output_deserialize(&buf, &txout);
+
+    assert_int_equal(status, PARSING_OK);
+
+    uint8_t output[350];
+    int length = transaction_output_serialize(&txout, output, sizeof(output));
+    assert_int_equal(length, sizeof(raw_tx));
+    assert_memory_equal(raw_tx, output, sizeof(raw_tx));
+}
+
 static void test_tx_output_serialization_33_bytes(void **state) {
         (void) state;
 
@@ -280,27 +304,14 @@ static void test_tx_output_deserialization_fail(void **state) {
     uint8_t invalid_script_len[] = {
         // Output
         0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x86, 0xa0,
-        0x21,
-        0xe1, 0x19, 0xd5, 0x35, 0x14, 0xc1, 0xb0, 0xe2,
-        0xef, 0xce, 0x7a, 0x89, 0xe3, 0xd1, 0xd5, 0xd6,
-        0xcd, 0x73, 0x58, 0x2e, 0xa2, 0x06, 0x87, 0x64,
-    };
-
-    uint8_t raw_tx[] = {
-        // Output
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x86, 0xa0,
-        0x21,
-        0xe1, 0x19, 0xd5, 0x35, 0x14, 0xc1, 0xb0, 0xe2,
-        0xef, 0xce, 0x7a, 0x89, 0xe3, 0xd1, 0xd5, 0xd6,
-        0xcd, 0x73, 0x58, 0x2e, 0xa2, 0x06, 0x87, 0x64,
-        0x1c, 0x8f, 0xdc, 0xcb, 0x60, 0x60, 0xa9, 0xad,
-        0x00, OP_CHECKSIGECDSA
+        0x01, 0x02, 0x03, 0x04
     };
 
     assert_int_equal(run_test_tx_output_serialize(invalid_value, sizeof(invalid_value)), OUTPUT_VALUE_PARSING_ERROR);
     assert_int_equal(run_test_tx_output_serialize(invalid_script_start, sizeof(invalid_script_start)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
+    assert_int_equal(run_test_tx_output_serialize(invalid_script_end_schnorr, sizeof(invalid_script_end_schnorr)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
     assert_int_equal(run_test_tx_output_serialize(invalid_script_end_ecdsa, sizeof(invalid_script_end_ecdsa)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
-    assert_int_equal(run_test_tx_output_serialize(invalid_script_len, sizeof(invalid_script_len)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
+    assert_int_equal(run_test_tx_output_serialize(invalid_script_len, sizeof(invalid_script_len)), OUTPUT_PARSING_ERROR);
 }
 
 static void test_serialization_fail(void **state) {
@@ -322,6 +333,7 @@ int main() {
                                        cmocka_unit_test(test_tx_input_deserialization_fail),
                                        cmocka_unit_test(test_tx_output_serialization_32_bytes),
                                        cmocka_unit_test(test_tx_output_serialization_33_bytes),
+                                       cmocka_unit_test(test_tx_output_serialization_has_path),
                                        cmocka_unit_test(test_tx_output_deserialization_fail),
                                        cmocka_unit_test(test_serialization_fail)};
 
