@@ -53,3 +53,21 @@ void crypto_init_public_key(cx_ecfp_private_key_t *private_key,
  *
  */
 int crypto_sign_message(void);
+
+/**
+ * Checks if the compressed public key matches the
+ * one generated from the bip32 path
+ *
+ * @param[in]  bip32_path
+ *   Pointer to buffer with BIP32 path.
+ * @param[in]  bip32_path_len
+ *   Number of path in BIP32 path.
+ * @param[in]  compressed_public_key
+ *   The 32-byte compressed public key to compare to
+ *
+ * @return 0 on success, error number otherwise.
+ *
+ */
+bool crypto_validate_public_key(const uint32_t *bip32_path,
+                                uint8_t bip32_path_len,
+                                uint8_t compressed_public_key[static 32]);
