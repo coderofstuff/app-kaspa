@@ -15,6 +15,7 @@
 #include "../common/buffer.h"
 #include "../transaction/types.h"
 #include "../transaction/deserialize.h"
+#include "../transaction/tx_validate.h"
 #include "../helper/send_response.h"
 
 static int sign_input_and_send() {
@@ -107,6 +108,11 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
             return io_send_sw(SW_OK);
 
         } else {
+            // Before asking the user, make sure one last time that the inputs are legitimate:
+            if (!tx_validate_parsed_transaction(&G_context.tx_info.transaction)) {
+                return io_send_sw(SW_TX_PARSING_FAIL);
+            }
+
             // last APDU for this transaction, let's parse, display and request a sign confirmation
             G_context.state = STATE_PARSED;
 
