@@ -21,6 +21,13 @@
 
 #include "cx.h"
 
+typedef struct {
+    uint64_t     m[16];
+    uint64_t     v[16];
+    uint8_t      buffer[BLAKE2B_OUTBYTES];
+    uint8_t      block1[BLAKE2B_BLOCKBYTES];
+} blake2b_globals_t;
+
 #if defined(_MSC_VER)
 #define BLAKE2_PACKED(x) __pragma(pack(push, 1)) x __pragma(pack(pop))
 #else

@@ -20,6 +20,8 @@
 #include "blake2b.h"
 #include "blake2-impl.h"
 
+static blake2b_globals_t b2bg_cx;
+
 static const uint64_t blake2b_IV[8] =
 {
   0x6a09e667f3bcc908ULL, 0xbb67ae8584caa73bULL,
@@ -140,13 +142,12 @@ int blake2b_init_key( blake2b_state *S, size_t outlen, const void *key, size_t k
 
   if( blake2b_init_param( S, P ) < 0 ) return -1;
 
-  {
-    uint8_t block[BLAKE2B_BLOCKBYTES];
+#define block b2bg_cx.block1
     memset( block, 0, BLAKE2B_BLOCKBYTES );
     memcpy( block, key, keylen );
     blake2b_update( S, block, BLAKE2B_BLOCKBYTES );
     secure_zero_memory( block, BLAKE2B_BLOCKBYTES ); /* Burn the key from stack */
-  }
+#undef block
   return 0;
 }
 
@@ -176,8 +177,10 @@ int blake2b_init_key( blake2b_state *S, size_t outlen, const void *key, size_t k
 
 static void blake2b_compress( blake2b_state *S, const uint8_t block[BLAKE2B_BLOCKBYTES] )
 {
-  uint64_t m[16];
-  uint64_t v[16];
+#define m b2bg_cx.m
+#define v b2bg_cx.v
+  memset(m, 0, 16);
+  memset(v, 0, 16);
   size_t i;
 
   for( i = 0; i < 16; ++i ) {
@@ -213,6 +216,8 @@ static void blake2b_compress( blake2b_state *S, const uint8_t block[BLAKE2B_BLOC
   for( i = 0; i < 8; ++i ) {
     S->h[i] = S->h[i] ^ v[i] ^ v[i + 8];
   }
+#undef m
+#undef v
 }
 
 #undef G
@@ -247,8 +252,9 @@ int blake2b_update( blake2b_state *S, const void *pin, size_t inlen )
 
 int blake2b_final( blake2b_state *S, void *out, size_t outlen )
 {
-  uint8_t buffer[BLAKE2B_OUTBYTES] = {0};
   size_t i;
+#define buffer b2bg_cx.buffer
+  memset(buffer, 0, BLAKE2B_OUTBYTES);
 
   if( out == NULL || outlen < S->outlen )
     return -1;
@@ -267,6 +273,7 @@ int blake2b_final( blake2b_state *S, void *out, size_t outlen )
   memcpy( out, buffer, S->outlen );
   secure_zero_memory(buffer, sizeof(buffer));
   return 0;
+#undef buffer
 }
 
 /* inlen, at least, should be uint64_t. Others can be size_t. */
