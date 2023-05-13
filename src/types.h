@@ -75,8 +75,6 @@ typedef struct {
  * Structure for transaction information context.
  */
 typedef struct {
-    uint8_t raw_tx[MAX_TRANSACTION_LEN];  /// raw transaction serialized
-    size_t raw_tx_len;                    /// length of raw transaction
     transaction_t transaction;            /// structured transaction
     uint8_t signature[MAX_DER_SIG_LEN];   /// transaction input signature encoded in DER
     uint8_t signing_input_index;          /// The input index currently being signed
