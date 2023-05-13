@@ -4,6 +4,8 @@
 #include <stdint.h>   // uint*_t
 #include <stdbool.h>  // bool
 
+#include "constants.h"
+
 #define SCHNORR_ADDRESS_LEN 67
 #define ECDSA_ADDRESS_LEN   69
 
@@ -60,7 +62,7 @@ typedef struct {
     size_t tx_input_len;  // check
     size_t tx_output_len;
 
-    transaction_output_t tx_outputs[2];
+    transaction_output_t tx_outputs[MAX_OUTPUT_COUNT];
     transaction_input_t tx_inputs[MAX_INPUT_COUNT];  // array of inputs
 
     // uint64_t lock_time;      // Don't support this yet

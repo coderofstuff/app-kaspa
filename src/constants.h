@@ -46,3 +46,5 @@
  * The signing key used for sighash
  */
 #define SIGNING_KEY "TransactionSigningHash"
+
+#define MAX_OUTPUT_COUNT 2

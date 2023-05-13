@@ -7,6 +7,7 @@
 #include "cx.h"
 
 #include "sign_tx.h"
+#include "constants.h"
 #include "../apdu/dispatcher.h"
 #include "../sw.h"
 #include "../globals.h"
@@ -56,10 +57,9 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
         // Parse as we go
         if (type == P1_OUTPUTS) {
             // Outputs
-            if (G_context.tx_info.parsing_output_index >=
-                    sizeof(G_context.tx_info.transaction.tx_outputs) ||
+            if (G_context.tx_info.parsing_output_index >= (uint8_t) MAX_OUTPUT_COUNT ||
                 G_context.tx_info.parsing_output_index >=
-                    G_context.tx_info.transaction.tx_output_len) {
+                    (uint8_t) G_context.tx_info.transaction.tx_output_len) {
                 // Too many outputs!
                 return io_send_sw(SW_TX_PARSING_FAIL);
             }
@@ -78,10 +78,9 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
 
         } else if (type == P1_INPUTS) {
             // Inputs
-            if (G_context.tx_info.parsing_input_index >=
-                    sizeof(G_context.tx_info.transaction.tx_inputs) ||
+            if (G_context.tx_info.parsing_input_index >= (uint8_t) MAX_INPUT_COUNT ||
                 G_context.tx_info.parsing_input_index >=
-                    G_context.tx_info.transaction.tx_input_len) {
+                    (uint8_t) G_context.tx_info.transaction.tx_input_len) {
                 // Too many inputs!
                 return io_send_sw(SW_TX_PARSING_FAIL);
             }
