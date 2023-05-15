@@ -58,6 +58,10 @@ static void test_sighash(void **state) {
     transaction_output_t txout;
     transaction_t tx;
 
+    memset(&txin, 0, sizeof(txin));
+    memset(&txout, 0, sizeof(txout));
+    memset(&tx, 0, sizeof(tx));
+
     memcpy(txin.tx_id, input_prev_tx_id, sizeof(input_prev_tx_id));
     txin.index = 1;
     txin.value = 2;
@@ -105,6 +109,10 @@ static void test_sighash_zeros(void **state) {
     transaction_input_t txin;
     transaction_output_t txout;
     transaction_t tx;
+
+    memset(&txin, 0, sizeof(txin));
+    memset(&txout, 0, sizeof(txout));
+    memset(&tx, 0, sizeof(tx));
 
     memcpy(txin.tx_id, input_prev_tx_id, sizeof(input_prev_tx_id));
     txin.index = 0;
