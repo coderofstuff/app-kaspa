@@ -7,7 +7,7 @@
 /**
  * Maximum length of BIP32 path allowed.
  */
-#define MAX_BIP32_PATH 10
+#define MAX_BIP32_PATH 5
 
 /**
  * Read BIP32 path from byte buffer.
