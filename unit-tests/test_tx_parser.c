@@ -17,22 +17,26 @@ static void test_tx_serialization(void **state) {
     transaction_t tx;
     tx.tx_output_len = 2;
     tx.tx_input_len = 3;
+
+    uint32_t path[5] = {0};
     
     // clang-format off
     uint8_t raw_tx[] = {
         // header
-        0x00, 0x01, 0x02, 0x03
+        0x00, 0x01, 0x02, 0x03,
+        0x01,
+        0x04, 0x05, 0x06, 0xFF
     };
 
     buffer_t buf = {.ptr = raw_tx, .size = sizeof(raw_tx), .offset = 0};
 
-    parser_status_e status = transaction_deserialize(&buf, &tx);
+    parser_status_e status = transaction_deserialize(&buf, &tx, path);
 
     assert_int_equal(status, PARSING_OK);
     assert_int_equal(tx.version, 1);
 
     uint8_t output[350];
-    int length = transaction_serialize(&tx, output, sizeof(output));
+    int length = transaction_serialize(&tx, path, output, sizeof(output));
     assert_int_equal(length, sizeof(raw_tx));
     assert_memory_equal(raw_tx, output, sizeof(raw_tx));
 }
@@ -42,7 +46,9 @@ static int run_test_tx_serialize(uint8_t* raw_tx, size_t raw_tx_len) {
 
     buffer_t buf = {.ptr = raw_tx, .size = raw_tx_len, .offset = 0};
 
-    return transaction_deserialize(&buf, &tx);
+    uint32_t path[5] = {0};
+
+    return transaction_deserialize(&buf, &tx, path);
 }
 
 static void test_tx_deserialization_fail(void **state) {
@@ -72,11 +78,16 @@ static void test_tx_deserialization_fail(void **state) {
         0x00, 0x01, 0x02, 0x00
     };
 
+    uint8_t invalid_change_type[] = {
+        0x00, 0x01, 0x02, 0x03, 0x02
+    };
+
     assert_int_equal(run_test_tx_serialize(invalid_version, sizeof(invalid_version)), VERSION_PARSING_ERROR);
     assert_int_equal(run_test_tx_serialize(missing_outlen, sizeof(missing_outlen)), OUTPUTS_LENGTH_PARSING_ERROR);
     assert_int_equal(run_test_tx_serialize(invalid_outlen, sizeof(invalid_outlen)), OUTPUTS_LENGTH_PARSING_ERROR);
     assert_int_equal(run_test_tx_serialize(missing_inlen, sizeof(missing_inlen)), INPUTS_LENGTH_PARSING_ERROR);
     assert_int_equal(run_test_tx_serialize(invalid_inlen, sizeof(invalid_inlen)), INPUTS_LENGTH_PARSING_ERROR);
+    assert_int_equal(run_test_tx_serialize(invalid_change_type, sizeof(invalid_change_type)), HEADER_PARSING_ERROR);
 }
 
 static void test_tx_input_serialization(void **state) {
@@ -309,8 +320,9 @@ static void test_serialization_fail(void **state) {
     transaction_input_t txin;
 
     uint8_t buffer[1] = {0};
+    uint32_t path[5] = {0};
 
-    assert_int_equal(transaction_serialize(&tx, buffer, sizeof(buffer)), -1);
+    assert_int_equal(transaction_serialize(&tx, path, buffer, sizeof(buffer)), -1);
     assert_int_equal(transaction_output_serialize(&txout, buffer, sizeof(buffer)), -1);
     assert_int_equal(transaction_input_serialize(&txin, buffer, sizeof(buffer)), -1);
 }

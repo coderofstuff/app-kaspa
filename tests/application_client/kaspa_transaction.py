@@ -81,10 +81,14 @@ class Transaction:
                  version: int,
                  inputs: list[TransactionInput],
                  outputs: list[TransactionOutput],
+                 change_address_type: int = 0,
+                 change_address_index: int = 0,
                  do_check: bool = True) -> None:
         self.version: int = version
         self.inputs: list[TransactionInput] = inputs
         self.outputs: list[TransactionOutput] = outputs
+        self.change_address_type: int = change_address_type
+        self.change_address_index: int = change_address_index
 
         if do_check:
             if not 0 <= self.version <= 1:
@@ -94,7 +98,9 @@ class Transaction:
         return b"".join([
             self.version.to_bytes(2, byteorder="big"),
             len(self.outputs).to_bytes(1, byteorder="big"),
-            len(self.inputs).to_bytes(1, byteorder="big")
+            len(self.inputs).to_bytes(1, byteorder="big"),
+            self.change_address_type.to_bytes(1, byteorder="big"),
+            self.change_address_index.to_bytes(4, byteorder="big"),
         ])
 
     def serialize(self) -> bytes:

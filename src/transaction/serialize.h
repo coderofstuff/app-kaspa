@@ -11,6 +11,8 @@
  *
  * @param[in]  tx
  *   Pointer to input transaction structure.
+ * @param[in]  bip32_path
+ *   Pointer to bip32_path array where change address data will be read
  * @param[out] out
  *   Pointer to output byte buffer.
  * @param[in]  out_len
@@ -19,7 +21,7 @@
  * @return number of bytes written if success, -1 otherwise.
  *
  */
-int transaction_serialize(const transaction_t *tx, uint8_t *out, size_t out_len);
+int transaction_serialize(const transaction_t *tx, uint32_t* path, uint8_t *out, size_t out_len);
 
 /**
  * Serialize transaction output in byte buffer.

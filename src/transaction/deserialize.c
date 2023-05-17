@@ -74,13 +74,17 @@ parser_status_e transaction_input_deserialize(buffer_t *buf, transaction_input_t
     return buf->size - buf->offset == 0 ? PARSING_OK : INPUT_PARSING_ERROR;
 }
 
-parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
+parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx, uint32_t* bip32_path) {
+    uint8_t n_output = 0;
+    uint8_t n_input = 0;
+    uint8_t change_address_type = 0;
+    uint32_t change_address_index = 0;
+
     // Version, 2 bytes
     if (!buffer_read_u16(buf, &tx->version, BE)) {
         return VERSION_PARSING_ERROR;
     }
 
-    uint8_t n_output = 0;
     if (!buffer_read_u8(buf, &n_output)) {
         return OUTPUTS_LENGTH_PARSING_ERROR;
     }
@@ -91,8 +95,7 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
     if (tx->tx_output_len < 1 || tx->tx_output_len > 2) {
         return OUTPUTS_LENGTH_PARSING_ERROR;
     }
-
-    uint8_t n_input = 0;
+    
     if (!buffer_read_u8(buf, &n_input)) {
         return INPUTS_LENGTH_PARSING_ERROR;
     }
@@ -103,6 +106,24 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx) {
     if (tx->tx_input_len < 1 || tx->tx_input_len > MAX_INPUT_COUNT) {
         return INPUTS_LENGTH_PARSING_ERROR;
     }
+
+    if (!buffer_read_u8(buf, &change_address_type)) {
+        return HEADER_PARSING_ERROR;
+    }
+
+    if (change_address_type != 0 && change_address_type != 1) {
+        return HEADER_PARSING_ERROR;
+    }
+
+    if (!buffer_read_u32(buf, &change_address_index, BE)) {
+        return HEADER_PARSING_ERROR;
+    }
+
+    bip32_path[0] = 0x8000002C;
+    bip32_path[1] = 0x8001b207;
+    bip32_path[2] = 0x80000000;
+    bip32_path[3] = (uint32_t)(change_address_type);
+    bip32_path[4] = change_address_index;
 
     return buf->size - buf->offset == 0 ? PARSING_OK : HEADER_PARSING_ERROR;
 }
