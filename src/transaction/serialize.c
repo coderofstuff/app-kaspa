@@ -7,7 +7,7 @@
 #include "../common/write.h"
 #include "../common/varint.h"
 
-int transaction_serialize(const transaction_t *tx, uint8_t *out, size_t out_len) {
+int transaction_serialize(const transaction_t *tx, uint32_t *path, uint8_t *out, size_t out_len) {
     size_t offset = 0;
 
     if (out_len < 4) {
@@ -18,6 +18,11 @@ int transaction_serialize(const transaction_t *tx, uint8_t *out, size_t out_len)
     offset += 2;
     out[offset++] = tx->tx_output_len;
     out[offset++] = tx->tx_input_len;
+
+    out[offset++] = (uint8_t) path[3];
+
+    write_u32_be(out, offset, path[4]);
+    offset += 4;
 
     return (int) offset;
 }

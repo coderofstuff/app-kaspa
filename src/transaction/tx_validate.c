@@ -18,7 +18,6 @@ bool tx_validate_parsed_transaction(transaction_t* tx) {
     // Change address will always be output[1] if it exists
     if (tx->tx_output_len == 2) {
         transaction_output_t change_output = tx->tx_outputs[1];
-        transaction_input_t first_utxo = tx->tx_inputs[0];
 
         if (change_output.script_public_key[0] != 0x20) {
             // Change address can only be SCHNORR address and it's not
@@ -31,11 +30,11 @@ bool tx_validate_parsed_transaction(transaction_t* tx) {
         // was validated when we deserialized the data.
         memmove(change_address_pubkey, change_output.script_public_key + 1, 32);
 
+        // Forcing these values. path[3] and path[4]
+        // would've been set by transaction_deserialize
         G_context.bip32_path[0] = 0x8000002C;
         G_context.bip32_path[1] = 0x8001b207;
         G_context.bip32_path[2] = 0x80000000;
-        G_context.bip32_path[3] = (uint32_t)(first_utxo.address_type);
-        G_context.bip32_path[4] = first_utxo.address_index;
 
         G_context.bip32_path_len = 5;
 
