@@ -7,7 +7,7 @@
 #include "../common/write.h"
 #include "../common/varint.h"
 
-int transaction_serialize(const transaction_t *tx, uint32_t* path, uint8_t *out, size_t out_len) {
+int transaction_serialize(const transaction_t *tx, uint32_t *path, uint8_t *out, size_t out_len) {
     size_t offset = 0;
 
     if (out_len < 4) {

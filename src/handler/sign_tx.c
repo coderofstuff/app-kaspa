@@ -38,7 +38,8 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
         G_context.req_type = CONFIRM_TRANSACTION;
         G_context.state = STATE_NONE;
 
-        parser_status_e status = transaction_deserialize(cdata, &G_context.tx_info.transaction, G_context.bip32_path);
+        parser_status_e status =
+            transaction_deserialize(cdata, &G_context.tx_info.transaction, G_context.bip32_path);
 
         PRINTF("Header Parsing status: %d.\n", status);
 

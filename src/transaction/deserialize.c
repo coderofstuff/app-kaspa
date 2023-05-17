@@ -74,7 +74,7 @@ parser_status_e transaction_input_deserialize(buffer_t *buf, transaction_input_t
     return buf->size - buf->offset == 0 ? PARSING_OK : INPUT_PARSING_ERROR;
 }
 
-parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx, uint32_t* bip32_path) {
+parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx, uint32_t *bip32_path) {
     uint8_t n_output = 0;
     uint8_t n_input = 0;
     uint8_t change_address_type = 0;
@@ -95,7 +95,7 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx, uint32
     if (tx->tx_output_len < 1 || tx->tx_output_len > 2) {
         return OUTPUTS_LENGTH_PARSING_ERROR;
     }
-    
+
     if (!buffer_read_u8(buf, &n_input)) {
         return INPUTS_LENGTH_PARSING_ERROR;
     }
