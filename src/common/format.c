@@ -103,8 +103,19 @@ bool format_fpu64(char *dst, size_t dst_len, const uint64_t value, uint8_t decim
     }
 
     size_t digits = strlen(buffer);
+    size_t offset = 0;
 
-    if (digits <= decimals) {
+    while (offset < decimals && buffer[digits - offset - 1] == '0') {
+        buffer[digits - offset - 1] = '\0';
+        offset++;
+    }
+
+    digits -= offset;
+    decimals -= offset;
+
+    if (decimals == 0) {
+        strncpy(dst, buffer, dst_len);
+    } else if (digits <= decimals) {
         if (dst_len <= 2 + decimals - digits) {
             return false;
         }
