@@ -55,7 +55,12 @@ static void test_format_fpu64(void **state) {
 
     char temp[22] = {0};
 
-    uint64_t amount = 100000000ull;  // satoshi
+    uint64_t amount = 0ull;  // satoshi
+    memset(temp, 0, sizeof(temp));
+    assert_true(format_fpu64(temp, sizeof(temp), amount, 8));
+    assert_string_equal(temp, "0");  // BTC
+
+    amount = 100000000ull;  // satoshi
     memset(temp, 0, sizeof(temp));
     assert_true(format_fpu64(temp, sizeof(temp), amount, 8));
     assert_string_equal(temp, "1");  // BTC

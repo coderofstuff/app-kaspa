@@ -102,10 +102,21 @@ bool format_fpu64(char *dst, size_t dst_len, const uint64_t value, uint8_t decim
         return false;
     }
 
+    if (value == 0) {
+        if (dst_len <= 1) {
+            return false;
+        }
+
+        dst[0] = '0';
+        dst[1] = '\0';
+
+        return true;
+    }
+
     size_t digits = strlen(buffer);
     size_t offset = 0;
 
-    while (offset < decimals && buffer[digits - offset - 1] == '0') {
+    while (offset < decimals && digits - offset - 1 > 0 && buffer[digits - offset - 1] == '0') {
         buffer[digits - offset - 1] = '\0';
         offset++;
     }
