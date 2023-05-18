@@ -116,7 +116,7 @@ bool format_fpu64(char *dst, size_t dst_len, const uint64_t value, uint8_t decim
     size_t digits = strlen(buffer);
     size_t offset = 0;
 
-    while (offset < decimals && digits - offset - 1 > 0 && buffer[digits - offset - 1] == '0') {
+    while (offset < decimals && digits > offset + 1 && buffer[digits - offset - 1] == '0') {
         buffer[digits - offset - 1] = '\0';
         offset++;
     }
