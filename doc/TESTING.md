@@ -118,7 +118,7 @@ pip install ledgerblue
 ## Install on Nano S Plus
 
 ```
-python3 -m ledgerblue.loadApp --curve secp256k1 --appFlags 0x000 --path "44'/111111'" --tlv --targetId 0x33100004 --fileName bin/app.hex --appName Kaspa --appVersion 0.0.1 --dataSize $((0x`cat debug/app.map |grep _envram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'` - 0x`cat debug/app.map |grep _nvram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'`)) --icon "0100000000ffffff00000000807ff03fce9c27e7c3f9709e9c33c7ffe01f00000000" --apiLevel 1 --delete
+python3 -m ledgerblue.loadApp --curve secp256k1 --appFlags 0x000 --path "44'/111111'" --tlv --targetId 0x33100004 --fileName bin/app.hex --appName Kaspa --appVersion 1.0.0 --dataSize $((0x`cat debug/app.map |grep _envram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'` - 0x`cat debug/app.map |grep _nvram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'`)) --icon "0100000000ffffff00000000807ff03fce9c27e7c3f9709e9c33c7ffe01f00000000" --apiLevel 1 --delete
 ```
 
 ### Install on Nano S
@@ -131,5 +131,5 @@ BOLOS_SDK=$NANOS_SDK make DEBUG=1
 Then run this command in your `virtualenv`:
 
 ```
-python3 -m ledgerblue.loadApp --curve secp256k1 --appFlags 0x000 --path "44'/111111'" --tlv --targetId 0x31100004 --fileName bin/app.hex --appName Kaspa --appVersion 0.0.1 --dataSize $((0x`cat debug/app.map |grep _envram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'` - 0x`cat debug/app.map |grep _nvram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'`)) --icon "0100000000ffffff000000f00ffc3ffc3ffe7f9e793e797e787e783e799e79fe7ffc3ffc3ff00f0000" --delete
+python3 -m ledgerblue.loadApp --curve secp256k1 --appFlags 0x000 --path "44'/111111'" --tlv --targetId 0x31100004 --fileName bin/app.hex --appName Kaspa --appVersion 1.0.0 --dataSize $((0x`cat debug/app.map |grep _envram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'` - 0x`cat debug/app.map |grep _nvram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'`)) --icon "0100000000ffffff000000f00ffc3ffc3ffe7f9e793e797e787e783e799e79fe7ffc3ffc3ff00f0000" --delete
 ```
