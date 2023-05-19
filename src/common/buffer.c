@@ -29,7 +29,6 @@
 
 #include "buffer.h"
 #include "read.h"
-#include "varint.h"
 #include "bip32.h"
 
 bool buffer_can_read(const buffer_t *buffer, size_t n) {
@@ -121,20 +120,6 @@ bool buffer_read_u64(buffer_t *buffer, uint64_t *value, endianness_t endianness)
                                  : read_u64_le(buffer->ptr, buffer->offset));
 
     buffer_seek_cur(buffer, 8);
-
-    return true;
-}
-
-bool buffer_read_varint(buffer_t *buffer, uint64_t *value) {
-    int length = varint_read(buffer->ptr + buffer->offset, buffer->size - buffer->offset, value);
-
-    if (length < 0) {
-        *value = 0;
-
-        return false;
-    }
-
-    buffer_seek_cur(buffer, (size_t) length);
 
     return true;
 }

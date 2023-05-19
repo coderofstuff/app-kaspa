@@ -62,7 +62,6 @@ add_library(read SHARED ../src/common/read.c)
 add_library(sighash SHARED ../src/sighash.c)
 add_library(write SHARED ../src/common/write.c)
 add_library(format SHARED ../src/common/format.c)
-add_library(varint SHARED ../src/common/varint.c)
 add_library(apdu_parser SHARED ../src/apdu/parser.c)
 add_library(transaction_deserialize ../src/transaction/deserialize.c)
 add_library(transaction_serialize ../src/transaction/serialize.c)
@@ -70,7 +69,7 @@ add_library(transaction_utils ../src/transaction/utils.c)
 
 target_link_libraries(test_address PUBLIC cmocka gcov address cashaddr)
 target_link_libraries(test_bip32 PUBLIC cmocka gcov bip32 read)
-target_link_libraries(test_buffer PUBLIC cmocka gcov buffer bip32 varint write read)
+target_link_libraries(test_buffer PUBLIC cmocka gcov buffer bip32 write read)
 target_link_libraries(test_format PUBLIC cmocka gcov format)
 target_link_libraries(test_sighash PUBLIC cmocka gcov sighash blake2b write)
 target_link_libraries(test_write PUBLIC cmocka gcov write)
@@ -82,7 +81,6 @@ target_link_libraries(test_tx_parser PUBLIC
                       bip32
                       cmocka
                       gcov
-                      varint
                       write
                       read
                       transaction_utils)
