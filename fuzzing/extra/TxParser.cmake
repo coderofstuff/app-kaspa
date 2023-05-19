@@ -13,7 +13,6 @@ set(CMAKE_C_FLAGS_DEBUG
 
 add_library(txparser SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/bip32.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/varint.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/read.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/write.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/buffer.c
