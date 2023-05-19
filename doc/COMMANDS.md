@@ -35,7 +35,7 @@
 
 | Length <br/>(bytes) | SW | RData |
 | --- | --- | --- |
-| 5 | 0x9000 | `Kaspa (5 bytes)` |
+| 5 | 0x9000 | `Kaspa (5 bytes)` in ASCII |
 
 Raw response looks like: `4b617370619000`
 
@@ -63,10 +63,10 @@ Keys for kaspa use the derivation path `m/44'/111111'/<account>'/<type>/<index>`
 | --- | --- | --- |
 | var | 0x9000 | `len(public_key) (1)` \|\|<br> `public_key (65 bytes)` \|\|<br> `len(chain_code) (1)` \|\|<br> `chain_code (var)` |
 
-`public_key` here will always be `65 bytes`, represending the uncompressed public key in DER encoding.
+`public_key` here will always be `65 bytes`, representing the uncompressed public key in DER encoding.
 It is composed of `0x04` followed by `32 bytes` for the `X` coordinate of the public key, then `32 bytes` for the `Y` coordinate.
 
-In kaspa, you only need the `32 bytes` for the `X` coordinate as the public key to generate addresses whose transactions are signed with Schnorr.
+In Kaspa, you only need the `32 bytes` for the `X` coordinate as the compressed public key to generate addresses whose transactions are signed with Schnorr.
 
 Transactions signed with ECDSA are currently not supported.
 
@@ -93,7 +93,7 @@ Transactions signed with ECDSA are currently not supported.
 | 0x80 | Indicates that there will be more APDU sent by the client |
 | 0x00 | Incdicates that this is the last APDU sent by the client |
 
-`P2` value is used only if `P1 in {0x00, 0x01, 0x02}`.
+`P2` value is used only if `P1 in {0x00, 0x01, 0x02}`. If `P1 = 0x03`, `P2` is ignored.
 
 #### Flow
 1. Send the first APDU `P1 = 0x00` with the version, output length and input length
@@ -107,7 +107,7 @@ Transactions signed with ECDSA are currently not supported.
 
 | Length <br/>(bytes) | SW | RData |
 | --- | --- | --- |
-| 67 | 0x9000 | `has_more (1)` \|\| <br/>`input_index (1)` \|\| <br/>`len(sig) (1)` \|\| <br/> `sig (64)` |
+| 100 | 0x9000 | `has_more (1)` \|\| `input_index (1)` \|\| <br/> `len(sig) (1)` \|\| `sig (64)` \|\| <br/> `len(sighash) (1)` \|\| `sighash (32)`|
 
 #### Response Breakdown
 | Data | Description |
@@ -115,7 +115,9 @@ Transactions signed with ECDSA are currently not supported.
 | `has_more`* | Non-zero if there are more signatures to be sent back, `0x00` otherwise |
 | `input_index` | The input index in the current transaction that this signature is for |
 | `len(sig)` | The length of the signature. Always 64 bytes with Schnorr |
-| `sig` | The signature |
+| `sig` | The Schnorr signature |
+| `len(sighash)` | The length of the sighash. Always 32 bytes |
+| `sighash` | The message (aka. sighash) that was signed. |
 
 \* While `has_more` is non-zero, you can ask for the next signature by sending another APDU back
 

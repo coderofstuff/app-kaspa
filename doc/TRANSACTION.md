@@ -10,7 +10,9 @@ The base unit in Kaspa is the KAS and the smallest unit used in raw transaction 
 
 ## Address format
 
-Kaspa addresses begin with `kaspa:` followed by 61 base32 characters for a total of `67` bytes.
+Kaspa addresses begin with `kaspa:` followed by 61 base32 characters for a total of `67` bytes for Schnorr-signed addresses.
+
+For ECDSA-signed addresses (supported by this app only as a send address), it begins with `kaspa:` followed by 63 bytes for a total of `69` bytes.
 
 ## Structure
 
@@ -20,10 +22,15 @@ Kaspa addresses begin with `kaspa:` followed by 61 base32 characters for a total
 | --- | :---: | --- |
 | `version` | 2 | The version of the transaction being signed |
 | `n_inputs` | 1 | The number of inputs. Max 255.
-| `inputs[]` | n_inputs * 69 | Array of `Transaction Inputs` |
-| `n_outputs` | 1 | The number of outputs. Max 255.
-| `outputs[]` | n_outputs * 42 | Array of `Transaction Outputs` |
+| `n_outputs` | 1 | The number of outputs. Exactly 1 or 2.
+| `change_address_type` | 1 | `0` if `RECEIVE` or `1` if `CHANGE`* |
+| `change_address_index` | 4 | `0x00000000` to `0xFFFFFFFF`**|
 
+\* While this will be used for the change, the path may be either `RECEIVE` or `CHANGE`.
+This is necessary in case the user wants to send the change back to the same address.
+In this case, the `change_address_type` has to be set to `RECEIVE`.
+
+\*\* `change_address_type` and `change_address_index` are ignored if `n_outputs == 1`. If `n_outputs == 2` then the path defined here must resolve to the same `script_public_key` in `outputs[1]`.
 ### Transaction Input
 
 Total bytes: 46
@@ -54,14 +61,15 @@ Total bytes: 43 (max)
 - (total inputs amount) > (total outputs amount)
 - There must be at least 1 input
 - There must be exactly 1 or 2 outputs
-  - If there is only 1 output, it is assumed to be the send address
+  - If there is only 1 output, it is assumed to be the `send` address
   - If there are 2 outputs, the first output is assumed to be the `send` address and the second output is where the `change` will go
+    - The `script_public_key` for the change must resolve to the same value that the change address type and index resolve to. This is validated in the ledger device.
 
 ### Signature
 
 [Schnorr](https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki) is used to sign transaction on the [SECP-256k1](https://www.secg.org/sec2-v2.pdf#subsubsection.2.4.1) curve.
 
-It is used to sign the [sighash](https://kaspa-mdbook.aspectron.com/transactions/sighashes.html).
+It is used to sign the [SigHash](https://kaspa-mdbook.aspectron.com/transactions/sighashes.html).
 
 ### Fee
 
@@ -69,4 +77,4 @@ The fee is the difference between the sum of input values and the sum of the out
 
 ## Links
 
-- Bitcoin Transaction: https://kaspa-mdbook.aspectron.com/transactions.html
+- Kaspa Transaction: https://kaspa-mdbook.aspectron.com/transactions.html
