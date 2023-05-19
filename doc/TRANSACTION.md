@@ -57,32 +57,16 @@ Total bytes: 43 (max)
   - If there is only 1 output, it is assumed to be the send address
   - If there are 2 outputs, the first output is assumed to be the `send` address and the second output is where the `change` will go
 
-
-
-### Variable length integer (varint)
-
-Integer can be encoded depending on the represented value to save space.
-Variable length integers always precede an array of a type of data that may vary in length.
-Longer numbers are encoded in little endian.
-
-| Value | Storage length (bytes) | Format |
-| --- | :---: | --- |
-| < 0xFD | 1 | uint8_t |
-| <= 0xFFFF | 3 | 0xFD followed by the length as uint16_t |
-| <= 0xFFFF FFFF | 5 | 0xFE followed by the length as uint32_t |
-| - | 9 | 0xFF followed by the length as uint64_t |
-
 ### Signature
 
-Deterministic ECDSA ([RFC 6979](https://tools.ietf.org/html/rfc6979)) is used to sign transaction on the [SECP-256k1](https://www.secg.org/sec2-v2.pdf#subsubsection.2.4.1) curve.
-The signed message is `m = Keccak-256(nonce || to || value || memo_len || memo)`.
+[Schnorr](https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki) is used to sign transaction on the [SECP-256k1](https://www.secg.org/sec2-v2.pdf#subsubsection.2.4.1) curve.
+
+It is used to sign the [sighash](https://kaspa-mdbook.aspectron.com/transactions/sighashes.html).
 
 ### Fee
 
-You won't find any fee in the transaction structure because the BOLOK *chain* has constant fees.
+The fee is the difference between the sum of input values and the sum of the output values.
 
 ## Links
 
-- Bitcoin Transaction: https://en.bitcoin.it/wiki/Protocol_documentation#tx
-
-- Ethereum Transaction: https://ethereum.github.io/yellowpaper/paper.pdf#subsection.4.2
+- Bitcoin Transaction: https://kaspa-mdbook.aspectron.com/transactions.html
