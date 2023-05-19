@@ -24,7 +24,7 @@
                 "HAVE_USB_APDU",
                 "USB_SEGMENT_SIZE=64",
                 "UNUSED(x)=(void)x",
-                "APPVERSION=\"0.0.1\"",
+                "APPVERSION=\"1.0.0\"",
                 "APPNAME=\"Kaspa\"",
                 "MAJOR_VERSION=0",
                 "MINOR_VERSION=0",

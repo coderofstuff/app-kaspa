@@ -2,9 +2,9 @@ from application_client.kaspa_command_sender import KaspaCommandSender
 from application_client.kaspa_response_unpacker import unpack_get_version_response
 
 # Taken from the Makefile, to update every time the Makefile version is bumped
-MAJOR = 0
+MAJOR = 1
 MINOR = 0
-PATCH = 1
+PATCH = 0
 
 # In this test we check the behavior of the device when asked to provide the app version
 def test_version(backend):
