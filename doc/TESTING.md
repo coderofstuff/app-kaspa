@@ -14,56 +14,46 @@ mkdir kaspa-ledger
 cd kaspa-ledger
 ```
 
-## Setting up the Companion app UI
-1. Clone the repo `https://github.com/coderofstuff/kaspa-ledger-webapp.git` and install dependencies then run the UI:
-```
-git clone https://github.com/coderofstuff/kaspa-ledger-webapp.git
-cd kaspa-ledger-webapp
-
-npm install
-npm run start
-```
-
 ## Compiling Embedded app
 1. Go back to the base folder, clone the `app-kaspa` repo and `cd` into it
-```
-cd .. // To go back to 
-git clone https://github.com/coderofstuff/app-kaspa.git
-cd app-kaspa
-```
+2. Use the utility script to `load` or `build` the app.
 
-4. Pull the Ledger official builder image and docker run it:
 ```
-docker pull ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
-docker run --rm -it -v $(realpath .):/app --privileged ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
-```
+# -----------------------------
+## If you want to build the app and then load it into your ledger device, run the command below
 
-5. You should now be in a terminal inside the container. Compile the embedded app from within the container:
-```
-BOLOS_SDK=$NANOSP_SDK make DEBUG=1
-```
+# For Nano S
+bash utils.sh load nanos
 
-After it compiles, exit the container:
-```
-exit
-```
+# For Nano S+
+bash utils.sh load nanosp
 
-6.  You now have a built `app.elf` ready for use by speculos in `app-kaspa/bin/app.elf`.
+# -----------------------------
+## If you want to only build the app then use it with the emulator, run the command below
+
+# For Nano S
+bash utils.sh build nanos
+
+# For Nano S+
+bash utils.sh build nanosp
+```
+3.  You now have a built `app.elf` ready for use by speculos in `app-kaspa/bin/app.elf`. If you chose to `load` the app, follow the instructions on your device to allow installing the app. See the `Installing on a Ledger Device` section below for more info.
 
 ## Setup the emulator
-1. While in the directory `kaspa-ledger/app-kaspa`, docker pull the Ledger official speculos image:
+1. Open a new terminal session, and `cd` into your base directory (`kaspa-ledger`)
+2. Generate a completely new 24-word seed with https://iancoleman.io/bip39/#english
+3. Replace `[device]` with either `nanos` or `nanosp`. Replace the `CHANGE_THIS_TO_SEED_FROM_2` with your generated seed - keep the seed in between the double quotes. Then run:
 ```
-docker pull ghcr.io/ledgerhq/speculos:latest
+bash app-kaspa/utils.sh init-emulator [device] "CHANGE_THIS_TO_SEED_FROM_2"
 ```
+4. Your emulator is now running and is accessible at `http://127.0.0.1:5000`
 
-3. [Highly Recommended] Generate a completely new 24-word seed with https://iancoleman.io/bip39/#english
-
-4. Change the `CHANGE_THIS_TO_SEED_FROM_2` text below. `cd` in the `app-kaspa` directory and run:
+## Setting up the Companion app UI
+1. Open a new terminal session, and `cd` into your base directory (`kaspa-ledger`)
+2. Install and run the companion app by running:
 ```
-docker run --rm -it -v $(pwd)/bin:/speculos/apps -p 5000:5000 ghcr.io/ledgerhq/speculos:latest --model nanosp ./apps/app.elf --display headless --seed "CHANGE_THIS_TO_SEED_FROM_2"
+bash app-kaspa/utils.sh init-companion
 ```
-
-5. Your emulator is now running and is accessible at `http://127.0.0.1:5000`
 
 ## End state
 1. You have the UI running in `http://127.0.0.1:3000`
@@ -109,16 +99,10 @@ The complete instructions can be found in:
 
 Below is a summary of the Mac instructions which should also work for Linux
 
-```
-virtualenv ledger
-source ledger/bin/activate
-pip install ledgerblue
-```
-
 ## Install on Nano S Plus
 
 ```
-python3 -m ledgerblue.loadApp --curve secp256k1 --appFlags 0x000 --path "44'/111111'" --tlv --targetId 0x33100004 --fileName bin/app.hex --appName Kaspa --appVersion 1.0.0 --dataSize $((0x`cat debug/app.map |grep _envram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'` - 0x`cat debug/app.map |grep _nvram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'`)) --icon "0100000000ffffff00000000807ff03fce9c27e7c3f9709e9c33c7ffe01f00000000" --apiLevel 1 --delete
+bash utils.sh load nanosp
 ```
 
 ### Install on Nano S
@@ -131,5 +115,5 @@ BOLOS_SDK=$NANOS_SDK make DEBUG=1
 Then run this command in your `virtualenv`:
 
 ```
-python3 -m ledgerblue.loadApp --curve secp256k1 --appFlags 0x000 --path "44'/111111'" --tlv --targetId 0x31100004 --fileName bin/app.hex --appName Kaspa --appVersion 1.0.0 --dataSize $((0x`cat debug/app.map |grep _envram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'` - 0x`cat debug/app.map |grep _nvram_data | tr -s ' ' | cut -f2 -d' '|cut -f2 -d'x'`)) --icon "0100000000ffffff000000f00ffc3ffc3ffe7f9e793e797e787e783e799e79fe7ffc3ffc3ff00f0000" --delete
+bash util.sh load nanos
 ```
