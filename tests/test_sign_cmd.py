@@ -66,6 +66,62 @@ def test_sign_tx_simple(firmware, backend, navigator, test_name):
     assert transaction.get_sighash(0) == sighash
     assert check_signature_validity(public_key, der_sig, sighash, transaction)
 
+def test_sign_tx_p2sh(firmware, backend, navigator, test_name):
+    # Use the app interface instead of raw interface
+    client = KaspaCommandSender(backend)
+    # The path used for this entire test
+    path: str = "m/44'/111111'/0'/0/0"
+
+    # First we need to get the public key of the device in order to build the transaction
+    rapdu = client.get_public_key(path=path)
+    _, public_key, _, _ = unpack_get_public_key_response(rapdu.data)
+
+    # Create the transaction that will be sent to the device for signing
+    transaction = Transaction(
+        version=0,
+        inputs=[
+            TransactionInput(
+                value=1100000,
+                tx_id="40b022362f1a303518e2b49f86f87a317c87b514ca0f3d08ad2e7cf49d08cc70",
+                address_type=0,
+                address_index=0,
+                index=0,
+                public_key=public_key[1:33]
+            )
+        ],
+        outputs=[
+            TransactionOutput(
+                value=1090000,
+                script_public_key="aa20f38031f61ca23d70844f63a477d07f0b2c2decab907c2e096e548b0e08721c7987"
+            )
+        ]
+    )
+
+    # Send the sign device instruction.
+    # As it requires on-screen validation, the function is asynchronous.
+    # It will yield the result when the navigation is done
+    with client.sign_tx(transaction=transaction):
+        # Validate the on-screen request by performing the navigation appropriate for this device
+        if firmware.device.startswith("nano"):
+            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
+                                                      [NavInsID.BOTH_CLICK],
+                                                      "Approve",
+                                                      ROOT_SCREENSHOT_PATH,
+                                                      test_name)
+        else:
+            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_REVIEW_TAP,
+                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
+                                                       NavInsID.USE_CASE_STATUS_DISMISS],
+                                                      "Hold to sign",
+                                                      ROOT_SCREENSHOT_PATH,
+                                                      test_name)
+
+    # The device as yielded the result, parse it and ensure that the signature is correct
+    response = client.get_async_response().data
+    _, _, _, der_sig, _, sighash = unpack_sign_tx_response(response)
+    assert transaction.get_sighash(0) == sighash
+    assert check_signature_validity(public_key, der_sig, sighash, transaction)
+
 def test_sign_tx_simple_sendint(firmware, backend, navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
