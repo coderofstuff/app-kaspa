@@ -35,15 +35,17 @@ size_t compress_public_key(const uint8_t public_key[static 64],
                            address_type_e address_type,
                            uint8_t *out) {
     size_t compressed_pub_size = 0;
-    if (address_type == SCHNORR) {
+    if (address_type == SCHNORR || address_type == P2SH) {
         compressed_pub_size = 32;
         memmove(out, public_key, 32);
-    } else {
+    } else if (address_type == ECDSA) {
         compressed_pub_size = 33;
         // If Y coord is even, first byte is 0x02. if odd then 0x03
         out[0] = public_key[63] % 2 == 0 ? 0x02 : 0x03;
         // We copy starting from the 2nd byte
         memmove(out + 1, public_key, 32);
+    } else {
+        return 0;
     }
 
     return compressed_pub_size;
@@ -61,6 +63,9 @@ bool address_from_pubkey(const uint8_t public_key[static 64],
     if (address_type == ECDSA) {
         address_len = ECDSA_ADDRESS_LEN;
         version = 1;
+    } else if (address_type == P2SH) {
+        address_len = SCHNORR_ADDRESS_LEN;
+        version = 8;
     }
 
     if (out_len < address_len) {
@@ -78,6 +83,10 @@ bool address_from_pubkey(const uint8_t public_key[static 64],
     // coordinate
     size_t compressed_pub_size =
         compress_public_key(public_key, address_type, compressed_public_key);
+
+    if (compressed_pub_size == 0) {
+        return false;
+    }
 
     // First part of the address is "kaspa:"
     memmove(address, hrp, sizeof(hrp));

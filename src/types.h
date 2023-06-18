@@ -75,7 +75,8 @@ typedef enum {
 
 typedef enum {
     SCHNORR,  // Display the 61 byte address for schnorr
-    ECDSA     // Display the 63 byte address for ecdsa
+    ECDSA,    // Display the 63 byte address for ecdsa
+    P2SH      // Display the 61 byte address for p2sh (also schnorr)
 } address_type_e;
 
 /**

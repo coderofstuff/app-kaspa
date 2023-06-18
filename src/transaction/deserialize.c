@@ -34,8 +34,30 @@ parser_status_e transaction_output_deserialize(buffer_t *buf, transaction_output
     }
 
     size_t script_len = (size_t) * (buf->ptr + buf->offset);
-    // Can only be length 32 or 33. Fail it otherwise:
-    if (script_len == 0x20 || script_len == 0x21) {
+
+    if (script_len == OP_BLAKE2B) {
+        // P2SH = 0xaa + 0x20 + (pubkey) + 0x87
+        // script len is actually the second byte if the first one is 0xaa
+        script_len = (size_t) * (buf->ptr + buf->offset + 1);
+
+        if (!buffer_can_read(buf, script_len + 3)) {
+            return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
+        }
+
+        uint8_t sig_op_code = *(buf->ptr + buf->offset + script_len + 2);
+
+        if (script_len == 0x20 && sig_op_code != OP_EQUAL) {
+            return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
+        }
+
+        memcpy(txout->script_public_key, buf->ptr + buf->offset, script_len + 3);
+
+        if (!buffer_seek_cur(buf, script_len + 3)) {
+            return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
+        }
+    } else if (script_len == 0x20 || script_len == 0x21) {
+        // P2PK
+        // Can only be length 32 or 33. Fail it otherwise:
         if (!buffer_can_read(buf, script_len + 2)) {
             return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
         }
@@ -48,11 +70,11 @@ parser_status_e transaction_output_deserialize(buffer_t *buf, transaction_output
         }
 
         memcpy(txout->script_public_key, buf->ptr + buf->offset, script_len + 2);
-    } else {
-        return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
-    }
 
-    if (!buffer_seek_cur(buf, script_len + 2)) {
+        if (!buffer_seek_cur(buf, script_len + 2)) {
+            return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
+        }
+    } else {
         return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
     }
 
