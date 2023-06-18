@@ -107,10 +107,22 @@ static void test_ecdsa_address_from_public_key(void **state) {
     assert_string_equal((char *) address_odd, "kaspa:qyp7xyqdshh6aylqct7x2je0pse4snep8glallgz8jppyaajz7y7qeq4x79fq4z");
 }
 
+static void test_invalid_type(void **state) {
+    // Even Y-coord test case
+    uint8_t public_key[1] = {0};
+
+    uint8_t address[1] = {0};
+
+    bool res = address_from_pubkey(public_key, -1, address, 1);
+
+    assert_int_equal(res, 0);
+}
+
 int main() {
     const struct CMUnitTest tests[] = {cmocka_unit_test(test_schnorr_address_from_public_key),
                                        cmocka_unit_test(test_ecdsa_address_from_public_key),
-                                       cmocka_unit_test(test_p2sh_address_from_public_key)};
+                                       cmocka_unit_test(test_p2sh_address_from_public_key),
+                                       cmocka_unit_test(test_invalid_type)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
