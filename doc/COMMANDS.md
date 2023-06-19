@@ -83,7 +83,7 @@ Transactions signed with ECDSA are currently not supported.
 | P1 Value | Usage | CData |
 | --- | --- | --- |
 | 0x00 | Sending transaction metadata | `version (2)` \|\| `output_len (1)` \|\| `input_len (1)` |
-| 0x01 | Sending a tx output | `value (8)` \|\| `script_public_key (32/33)` |
+| 0x01 | Sending a tx output | `value (8)` \|\| `script_public_key (34/35)` |
 | 0x02 | Sending a tx input | `value (8)` \|\| `tx_id (32)` \|\| `address_type (1)` \|\| `address_index (4)` \|\| `outpoint_index (1)` |
 | 0x03 | Requesting for next signature | - |
 

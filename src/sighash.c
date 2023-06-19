@@ -122,12 +122,21 @@ static void calc_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
                     inner_buffer,
                     2);  // Write the output script version, assume 0
 
-        // First byte is always the length of the following public key
-        // Last byte is always 0xac (op code for normal transactions)
-        uint8_t script_len = tx->tx_outputs[i].script_public_key[0] + 2;
-        write_u64_le(inner_buffer,
-                     0,
-                     script_len);  // Write the number of bytes of the script public key
+        uint8_t script_len = 0;
+        if (tx->tx_outputs[i].script_public_key[0] == 0xaa) {
+            // P2SH script public key is always 35 bytes,
+            // always begins with 0xaa and ends with 0x87
+            script_len = 35;
+            write_u64_le(inner_buffer, 0, 35);
+        } else {
+            // First byte is always the length of the following public key
+            // Last byte is always 0xac (op code for normal transactions)
+            script_len = tx->tx_outputs[i].script_public_key[0] + 2;
+            write_u64_le(inner_buffer,
+                         0,
+                         script_len);  // Write the number of bytes of the script public key
+        }
+
         hash_update(&inner_hash_writer, inner_buffer, 8);
         hash_update(&inner_hash_writer, tx->tx_outputs[i].script_public_key, script_len);
     }

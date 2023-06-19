@@ -82,11 +82,19 @@ int transaction_output_serialize(const transaction_output_t *txout, uint8_t *out
     write_u64_be(out, offset, txout->value);
     offset += 8;
 
-    size_t script_len = txout->script_public_key[0];
+    if (txout->script_public_key[0] == OP_BLAKE2B) {
+        size_t script_len = txout->script_public_key[1];
 
-    memcpy(out + offset, txout->script_public_key, script_len + 2);
+        memcpy(out + offset, txout->script_public_key, script_len + 3);
 
-    offset += script_len + 2;
+        offset += script_len + 3;
+    } else {
+        size_t script_len = txout->script_public_key[0];
+
+        memcpy(out + offset, txout->script_public_key, script_len + 2);
+
+        offset += script_len + 2;
+    }
 
     return (int) offset;
 }

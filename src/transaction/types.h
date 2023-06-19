@@ -60,8 +60,10 @@ typedef enum {
  * Enumeration of op codes
  */
 typedef enum {
-    OP_CHECKSIG = 0xac,      // Used for SCHNORR output
-    OP_CHECKSIGECDSA = 0xab  // Used for ECDSA output
+    OP_CHECKSIG = 0xac,       // Used for SCHNORR output
+    OP_CHECKSIGECDSA = 0xab,  // Used for ECDSA output
+    OP_BLAKE2B = 0xaa,        // Used for P2SH (start)
+    OP_EQUAL = 0x87           // Used for P2SH (end)
 } op_code_e;
 
 typedef struct {
@@ -75,7 +77,7 @@ typedef struct {
 
 typedef struct {
     uint64_t value;
-    uint8_t script_public_key[35];  // In hex: 20 + public_key_hex + ac (34/35 bytes total)
+    uint8_t script_public_key[40];  // In hex: 20 + public_key_hex + ac (34/35 bytes total)
 } transaction_output_t;
 
 typedef struct {

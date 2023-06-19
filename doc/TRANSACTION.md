@@ -10,7 +10,7 @@ The base unit in Kaspa is the KAS and the smallest unit used in raw transaction 
 
 ## Address format
 
-Kaspa addresses begin with `kaspa:` followed by 61 base32 characters for a total of `67` bytes for Schnorr-signed addresses.
+Kaspa addresses begin with `kaspa:` followed by 61 base32 characters for a total of `67` bytes for Schnorr-signed and P2SH addresses. P2SH addresses are supported only as a send address by this app.
 
 For ECDSA-signed addresses (supported by this app only as a send address), it begins with `kaspa:` followed by 63 bytes for a total of `69` bytes.
 
@@ -54,7 +54,7 @@ Total bytes: 43 (max)
 | Field | Size (bytes) | Description |
 | --- | --- | --- |
 | `value` | 8 | The amount of KAS in sompi that will go send to the address |
-| `script_public_key` | 35 | Schnorr: `20` + public_key (32 bytes) + `ac` <br/> ECDSA: `20` + public_key (33 bytes) + `ab` |
+| `script_public_key` | 35 | Schnorr: `20` + public_key (32 bytes) + `ac` <br/> ECDSA: `20` + public_key (33 bytes) + `ab` <br/> P2SH: `aa20` + public_key (32 bytes) + `87` |
 
 ### Transaction Requirements
 - Fee = (total inputs amount) - (total outputs amount)

@@ -41,11 +41,15 @@ bool transaction_utils_check_encoding(const uint8_t* memo, uint64_t memo_len) {
 void script_public_key_to_address(uint8_t* out_address, uint8_t* in_script_public_key) {
     uint8_t public_key[64] = {0};
     // public script keys begin with the length, followed by the amount of data
-    size_t data_len = (size_t) in_script_public_key[0];
+    size_t first_byte = (size_t) in_script_public_key[0];
     address_type_e type = SCHNORR;
     size_t address_len = SCHNORR_ADDRESS_LEN;
 
-    if (data_len == 0x21) {
+    if (first_byte == 0xaa) {
+        type = P2SH;
+        address_len = SCHNORR_ADDRESS_LEN;
+        memmove(public_key, in_script_public_key + 2, 32);
+    } else if (first_byte == 0x21) {
         // We're dealing with ECDSA instead:
         type = ECDSA;
         address_len = ECDSA_ADDRESS_LEN;

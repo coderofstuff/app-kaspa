@@ -179,7 +179,11 @@ class Sighash:
         for txout in self.tx.outputs:
             inner_hash.update(txout.value.to_bytes(8, "little"))
             inner_hash.update((0).to_bytes(2, "little")) # assume script version 0
-            inner_hash.update((txout.script_public_key[0] + 2).to_bytes(8, "little"))
+            if txout.script_public_key[0] == 0xaa:
+                inner_hash.update((35).to_bytes(8, "little"))
+            else:
+                inner_hash.update((txout.script_public_key[0] + 2).to_bytes(8, "little"))
+
             inner_hash.update(txout.script_public_key)
 
         return inner_hash.digest()

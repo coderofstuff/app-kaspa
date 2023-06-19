@@ -60,6 +60,23 @@ static void test_schnorr_address_from_public_key(void **state) {
     assert_string_equal((char *) address2, "kaspa:qrazhptjkcvrv23xz2xm8z8sfmg6jhxvmrscn7wph4k9we5tzxedwfxf0v6f8");
 }
 
+static void test_p2sh_address_from_public_key(void **state) {
+    uint8_t public_key[] = {
+        // OP_BLAKE2B, 0x20,
+        0xF3, 0x80, 0x31, 0xF6, 0x1C, 0xA2, 0x3D, 0x70, 0x84, 0x4F, 0x63, 0xA4, 0x77, 0xD0, 0x7F, 0x0B,
+        0x2C, 0x2D, 0xEC, 0xAB, 0x90, 0x7C, 0x2E, 0x09, 0x6E, 0x54, 0x8B, 0x0E, 0x08, 0x72, 0x1C, 0x79,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        // OP_EQUAL
+    };
+
+    uint8_t address[SCHNORR_ADDRESS_LEN + 1] = {0};
+
+    address_from_pubkey(public_key, P2SH, address, SCHNORR_ADDRESS_LEN);
+
+    assert_string_equal((char *) address, "kaspa:precqv0krj3r6uyyfa36ga7s0u9jct0v4wg8ctsfde2gkrsgwgw8jgxfzfc98");
+}
+
 static void test_ecdsa_address_from_public_key(void **state) {
     // Even Y-coord test case
     uint8_t public_key_even[] = {
@@ -90,9 +107,22 @@ static void test_ecdsa_address_from_public_key(void **state) {
     assert_string_equal((char *) address_odd, "kaspa:qyp7xyqdshh6aylqct7x2je0pse4snep8glallgz8jppyaajz7y7qeq4x79fq4z");
 }
 
+static void test_invalid_type(void **state) {
+    // Even Y-coord test case
+    uint8_t public_key[1] = {0};
+
+    uint8_t address[1] = {0};
+
+    bool res = address_from_pubkey(public_key, -1, address, 1);
+
+    assert_int_equal(res, 0);
+}
+
 int main() {
     const struct CMUnitTest tests[] = {cmocka_unit_test(test_schnorr_address_from_public_key),
-                                       cmocka_unit_test(test_ecdsa_address_from_public_key)};
+                                       cmocka_unit_test(test_ecdsa_address_from_public_key),
+                                       cmocka_unit_test(test_p2sh_address_from_public_key),
+                                       cmocka_unit_test(test_invalid_type)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
