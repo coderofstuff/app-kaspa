@@ -8,6 +8,16 @@ PARAM2=$3
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+PARAM_SCP=""
+
+# If you've set up a keypair for your device, you can run
+# SCP_PRIVKEY=<yourkeypair_privkey> bash utils.sh load nanosp
+if [ "$SCP_PRIVKEY" ]; then
+    PARAM_SCP="--rootPrivateKey $SCP_PRIVKEY"
+fi
+
+echo "$PARAM_SCP"
+
 if [ -z "$COMMAND" ]; then
     echo "Usage: ./utils.sh command [param1] [param2]"
     echo "Valid commands and params:"
@@ -113,7 +123,8 @@ function load_to_device() {
             --dataSize $DATA_SIZE \
             --icon "0100000000ffffff000778001830e21c7807fc017e801ff007de8173048c01e0010e" \
             --apiLevel 1 \
-            --delete
+            --delete \
+            $PARAM_SCP
     elif [ "$DEVICE" == "nanos" ]; then
         python3 -m ledgerblue.loadApp \
             --curve secp256k1 \
@@ -126,7 +137,8 @@ function load_to_device() {
             --appVersion 1.0.0 \
             --dataSize $DATA_SIZE \
             --icon "0100000000ffffff000000f00ffc3ffc398e710e711e703e703e701e700e718e71fc39fc3ff00f0000" \
-            --delete
+            --delete \
+            $PARAM_SCP
     else
         echo "No operation executed. Unsupported device: $DEVICE"
         echo "Usage: ./utils.sh load [nanos|nanosp]"
