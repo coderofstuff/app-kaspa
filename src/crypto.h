@@ -37,7 +37,7 @@
  * @return 0 on success, error number otherwise.
  *
  */
-int crypto_sign_message(void);
+int crypto_sign_transaction(void);
 
 /**
  * Checks if the compressed public key matches the
@@ -56,3 +56,14 @@ int crypto_sign_message(void);
 bool crypto_validate_public_key(const uint32_t *bip32_path,
                                 uint8_t bip32_path_len,
                                 uint8_t compressed_public_key[static 32]);
+
+/**
+ * Sign personal message hash in global context.
+ *
+ * @see G_context.bip32_path,
+ * G_context.msg_info.signature.
+ *
+ * @return 0 on success, error number otherwise.
+ *
+ */
+int crypto_sign_personal_message(void);

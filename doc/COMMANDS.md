@@ -121,6 +121,36 @@ Transactions signed with ECDSA are currently not supported.
 
 \* While `has_more` is non-zero, you can ask for the next signature by sending another APDU back
 
+## SIGN_MESSAGE
+
+### Command
+
+| CLA | INS | P1 | P2 | Lc | CData |
+| --- | --- | --- | --- | --- | --- |
+| 0xE0 | 0x07 | 0x00 | 0x00 | var | `address_type (1)` \|\| `address_index (4)` \|\|<br>`message_len (1 bytes)` \|\| `message (var bytes)` |
+
+| CData Part | Description |
+| --- | --- |
+| `address_type` | Either `00` for Receive Address or `01` for Change Address |
+| `address_index` | Any value from `00000000` to `11111111` |
+| `message_len` | How long the message is. Must be a value from `1` to `128`, inclusive |
+| `message` | The message to sign |
+
+### Response
+
+| Length <br/>(bytes) | SW | RData |
+| --- | --- | --- |
+| var | 0x9000 | See Response Breakdown |
+
+#### Response Breakdown
+
+| Data | Description |
+| --- | --- |
+| `len(sig)` | The length of the signature. Always 64 bytes with Schnorr |
+| `sig` | The Schnorr signature |
+| `len(message_hash)` | The length of the message hash. Always 32 bytes |
+| `message_hash` | The hash that was signed. |
+
 ## Status Words
 
 | SW | SW name | Description |

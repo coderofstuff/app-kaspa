@@ -49,6 +49,11 @@
 #define MAX_TRANSACTION_LEN 128
 
 /**
+ * Maximum message length (bytes) 
+ */
+#define MAX_MESSAGE_LEN 128
+
+/**
  * Maximum signature length (bytes).
  * Schnorr signatures only have 64 bytes
  */
@@ -69,5 +74,7 @@
  * The signing key used for sighash
  */
 #define SIGNING_KEY "TransactionSigningHash"
+
+#define MESSAGE_SIGNING_KEY "PersonalMessageSigningHash"
 
 #define MAX_OUTPUT_COUNT 2

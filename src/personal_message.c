@@ -21,54 +21,56 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *****************************************************************************/
-#include <stdbool.h>  // bool
+#include <stdint.h>
+#include <stdbool.h>
 
-#include "validate.h"
-#include "../menu.h"
-#include "../../sw.h"
-#include "../../crypto.h"
-#include "../../globals.h"
-#include "../../helper/send_response.h"
+// #include "cx.h"
 
-void validate_pubkey(bool choice) {
-    if (choice) {
-        helper_send_response_pubkey();
-    } else {
-        io_send_sw(SW_DENY);
+#include "constants.h"
+#include "./import/blake2-impl.h"
+#include "./import/blake2b.h"
+#include "./personal_message.h"
+
+// #include "globals.h"
+
+static int hash_init(blake2b_state* hash, size_t size, uint8_t* key, size_t key_len) {
+    if (key == NULL && key_len != 0) {
+        goto err;
     }
+
+    if (size % 8 != 0 || size < 8 || size > 512) {
+        goto err;
+    }
+    memset(hash, 0, sizeof(blake2b_state));
+
+    size = size / 8;
+
+    if (blake2b_init_key(hash, size, key, key_len) < 0) {
+        goto err;
+    }
+    return 0;
+
+err:
+    return -1;
 }
 
-void validate_transaction(bool choice) {
-    if (choice) {
-        G_context.state = STATE_APPROVED;
-
-        int error = crypto_sign_transaction();
-        if (error != 0) {
-            G_context.state = STATE_NONE;
-            io_send_sw(error);
-        } else {
-            helper_send_response_sig();
-            G_context.tx_info.signing_input_index++;
-        }
-    } else {
-        G_context.state = STATE_NONE;
-        io_send_sw(SW_DENY);
-    }
+static void hash_update(blake2b_state* hash, uint8_t* data, size_t len) {
+    blake2b_update(hash, data, len);
 }
 
-void validate_message(bool choice) {
-    if (choice) {
-        G_context.state = STATE_APPROVED;
+static void hash_finalize(blake2b_state* hash, uint8_t* out) {
+    blake2b_final(hash, out, 32);
+}
 
-        int error = crypto_sign_personal_message();
-        if (error != 0) {
-            G_context.state = STATE_NONE;
-            io_send_sw(error);
-        } else {
-            helper_send_response_personal_message_sig();
-        }
-    } else {
-        G_context.state = STATE_NONE;
-        io_send_sw(SW_DENY);
+bool hash_personal_message(uint8_t* message_bytes, size_t message_byte_len, uint8_t* out_hash) {
+    blake2b_state inner_hash_writer;
+    int err = hash_init(&inner_hash_writer, 256, (uint8_t*) MESSAGE_SIGNING_KEY, 26);
+    if (err < 0) {
+        return false;
     }
+
+    hash_update(&inner_hash_writer, message_bytes, message_byte_len);
+    hash_finalize(&inner_hash_writer, out_hash);
+
+    return true;
 }

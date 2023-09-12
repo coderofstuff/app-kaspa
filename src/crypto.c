@@ -31,6 +31,7 @@
 #include "globals.h"
 
 #include "sighash.h"
+#include "personal_message.h"
 
 bool crypto_validate_public_key(const uint32_t *bip32_path,
                                 uint8_t bip32_path_len,
@@ -54,7 +55,7 @@ bool crypto_validate_public_key(const uint32_t *bip32_path,
     return memcmp(raw_pubkey + 1, compressed_public_key, 32) == 0;
 }
 
-int crypto_sign_message(void) {
+int crypto_sign_transaction(void) {
     cx_ecfp_private_key_t private_key = {0};
     cx_ecfp_public_key_t public_key = {0};
     uint8_t chain_code[32] = {0};
@@ -110,6 +111,40 @@ int crypto_sign_message(void) {
         }
         FINALLY {
             explicit_bzero(&public_key, sizeof(public_key));
+            explicit_bzero(&private_key, sizeof(private_key));
+        }
+    }
+    END_TRY;
+
+    return error;
+}
+
+int crypto_sign_personal_message(void) {
+    hash_personal_message(G_context.msg_info.message,
+                          G_context.msg_info.message_len,
+                          G_context.msg_info.message_hash);
+
+    cx_ecfp_private_key_t private_key = {0};
+    uint8_t chain_code[32] = {0};
+
+    int error = bip32_derive_init_privkey_256(CX_CURVE_256K1,
+                                              G_context.bip32_path,
+                                              G_context.bip32_path_len,
+                                              &private_key,
+                                              chain_code);
+    
+    BEGIN_TRY {
+        TRY {
+            size_t sig_len = sizeof(G_context.tx_info.signature);
+            error = cx_ecschnorr_sign_no_throw(&private_key,
+                                               CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
+                                               CX_SHA256,
+                                               G_context.msg_info.message_hash,
+                                               sizeof(G_context.msg_info.message_hash),
+                                               G_context.msg_info.signature,
+                                               &sig_len);
+        }
+        FINALLY {
             explicit_bzero(&private_key, sizeof(private_key));
         }
     }

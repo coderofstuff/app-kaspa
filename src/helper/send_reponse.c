@@ -68,3 +68,21 @@ int helper_send_response_sig() {
 
     return io_send_response_pointer(resp, offset, SW_OK);
 }
+
+int helper_send_response_personal_message_sig() {
+    uint8_t resp[3 + MAX_DER_SIG_LEN + 34] = {0};
+    size_t offset = 0;
+
+    // len(sig) -> 1 byte
+    resp[offset++] = MAX_DER_SIG_LEN;
+    // sig -> 64 bytes
+    memmove(resp + offset, G_context.msg_info.signature, MAX_DER_SIG_LEN);
+    offset += MAX_DER_SIG_LEN;
+    // len(sighash) -> 1 byte
+    resp[offset++] = sizeof(G_context.msg_info.message_hash);
+    // sighash -> 32 bytes
+    memmove(resp + offset, G_context.msg_info.message_hash, sizeof(G_context.msg_info.message_hash));
+    offset += sizeof(G_context.msg_info.message_hash);
+
+    return io_send_response_pointer(resp, offset, SW_OK);
+}
