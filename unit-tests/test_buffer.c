@@ -29,7 +29,7 @@
 
 #include <cmocka.h>
 
-#include "common/buffer.h"
+#include "buffer.h"
 
 static void test_buffer_can_read(void **state) {
     (void) state;

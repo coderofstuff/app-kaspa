@@ -25,7 +25,7 @@
 #include "deserialize.h"
 #include "utils.h"
 #include "types.h"
-#include "../common/buffer.h"
+#include "buffer.h"
 
 parser_status_e transaction_output_deserialize(buffer_t *buf, transaction_output_t *txout) {
     // 8 bytes

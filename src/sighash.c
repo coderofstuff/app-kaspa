@@ -29,7 +29,7 @@
 #include "./import/blake2b.h"
 
 #include "./transaction/types.h"
-#include "./common/buffer.h"
+#include "buffer.h"
 #include "./common/write.h"
 #include "globals.h"
 #include "./constants.h"

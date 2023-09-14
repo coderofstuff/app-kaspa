@@ -27,7 +27,7 @@
 #include <sys/types.h>
 
 extern "C" {
-#include "common/buffer.h"
+#include "buffer.h"
 #include "common/format.h"
 #include "transaction/deserialize.h"
 #include "transaction/types.h"

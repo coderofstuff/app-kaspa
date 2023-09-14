@@ -36,7 +36,7 @@
 #include "../globals.h"
 #include "../crypto.h"
 #include "../ui/display.h"
-#include "../common/buffer.h"
+#include "buffer.h"
 #include "../transaction/types.h"
 #include "../transaction/deserialize.h"
 #include "../transaction/tx_validate.h"
