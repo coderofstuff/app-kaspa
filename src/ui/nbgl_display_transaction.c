@@ -115,7 +115,7 @@ int ui_display_transaction() {
     // Format amount and address to g_amount and g_address buffers
     memset(g_amount, 0, sizeof(g_amount));
     char amount[30] = {0};
-    if (!format_fpu64(amount,
+    if (!format_fpu64_trimmed(amount,
                       sizeof(amount),
                       G_context.tx_info.transaction.tx_outputs[0].value,
                       EXPONENT_SMALLEST_UNIT)) {

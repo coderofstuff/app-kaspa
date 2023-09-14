@@ -184,7 +184,7 @@ int ui_display_transaction() {
 
     memset(g_amount, 0, sizeof(g_amount));
     char amount[30] = {0};
-    if (!format_fpu64(amount,
+    if (!format_fpu64_trimmed(amount,
                       sizeof(amount),
                       G_context.tx_info.transaction.tx_outputs[0].value,
                       EXPONENT_SMALLEST_UNIT)) {
@@ -195,13 +195,13 @@ int ui_display_transaction() {
 
     memset(g_fees, 0, sizeof(g_fees));
     char fees[30] = {0};
-    if (!format_fpu64(fees,
-                      sizeof(fees),
-                      calc_fees(G_context.tx_info.transaction.tx_inputs,
-                                G_context.tx_info.transaction.tx_input_len,
-                                G_context.tx_info.transaction.tx_outputs,
-                                G_context.tx_info.transaction.tx_output_len),
-                      EXPONENT_SMALLEST_UNIT)) {
+    if (!format_fpu64_trimmed(fees,
+                              sizeof(fees),
+                              calc_fees(G_context.tx_info.transaction.tx_inputs,
+                                        G_context.tx_info.transaction.tx_input_len,
+                                        G_context.tx_info.transaction.tx_outputs,
+                                        G_context.tx_info.transaction.tx_output_len),
+                              EXPONENT_SMALLEST_UNIT)) {
         return io_send_sw(SW_DISPLAY_AMOUNT_FAIL);
     }
     snprintf(g_fees, sizeof(g_fees), "KAS %.*s", sizeof(fees), fees);

@@ -72,7 +72,7 @@ bool format_u64(char *dst, size_t dst_len, uint64_t value);
  * @return true if success, false otherwise.
  *
  */
-bool format_fpu64(char *dst, size_t dst_len, const uint64_t value, uint8_t decimals);
+bool format_fpu64_trimmed(char *dst, size_t dst_len, const uint64_t value, uint8_t decimals);
 
 /**
  * Format byte buffer to uppercase hexadecimal string.
