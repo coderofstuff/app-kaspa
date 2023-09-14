@@ -30,7 +30,7 @@
 
 #include "./transaction/types.h"
 #include "buffer.h"
-#include "./common/write.h"
+#include "write.h"
 #include "globals.h"
 #include "./constants.h"
 

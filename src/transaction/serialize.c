@@ -27,7 +27,7 @@
 #include <string.h>   // memmove
 
 #include "serialize.h"
-#include "../common/write.h"
+#include "write.h"
 
 int transaction_serialize(const transaction_t *tx, uint32_t *path, uint8_t *out, size_t out_len) {
     size_t offset = 0;

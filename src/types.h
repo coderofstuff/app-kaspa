@@ -28,7 +28,7 @@
 
 #include "constants.h"
 #include "transaction/types.h"
-#include "common/bip32.h"
+#include "bip32.h"
 
 /**
  * Enumeration with expected INS of APDU commands.

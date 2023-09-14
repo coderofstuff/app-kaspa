@@ -42,7 +42,7 @@
 #include "action/validate.h"
 #include "../types.h"
 #include "../transaction/types.h"
-#include "../common/bip32.h"
+#include "bip32.h"
 #include "../common/format.h"
 #include "../menu.h"
 

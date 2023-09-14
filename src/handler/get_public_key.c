@@ -69,12 +69,12 @@ int handler_get_public_key(buffer_t *cdata, bool display) {
     }
 
     int error = bip32_derive_get_pubkey_256(CX_CURVE_256K1,
-                                G_context.bip32_path,
-                                G_context.bip32_path_len,
-                                raw_pubkey,
-                                G_context.pk_info.chain_code,
-                                CX_SHA512);
-    
+                                            G_context.bip32_path,
+                                            G_context.bip32_path_len,
+                                            raw_pubkey,
+                                            G_context.pk_info.chain_code,
+                                            CX_SHA512);
+
     if (error != CX_OK) {
         return io_send_sw(error);
     }

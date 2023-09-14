@@ -39,11 +39,11 @@ bool crypto_validate_public_key(const uint32_t *bip32_path,
     uint8_t chain_code[32] = {0};
 
     int error = bip32_derive_get_pubkey_256(CX_CURVE_256K1,
-        bip32_path,
-        bip32_path_len,
-        raw_pubkey,
-        chain_code,
-        CX_SHA512);
+                                            bip32_path,
+                                            bip32_path_len,
+                                            raw_pubkey,
+                                            chain_code,
+                                            CX_SHA512);
 
     if (error != CX_OK) {
         return false;
@@ -95,7 +95,7 @@ int crypto_sign_message(void) {
                          txin,
                          public_key.W + 1,
                          G_context.tx_info.sighash);
-            
+
             size_t sig_len = sizeof(G_context.tx_info.signature);
             error = cx_ecschnorr_sign_no_throw(&private_key,
                                                CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
