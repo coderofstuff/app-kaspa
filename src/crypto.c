@@ -25,86 +25,39 @@
 #include <string.h>   // memset, explicit_bzero
 #include <stdbool.h>  // bool
 
+#include "crypto_helpers.h"
 #include "crypto.h"
 
 #include "globals.h"
 
 #include "sighash.h"
 
-int crypto_derive_private_key(cx_ecfp_private_key_t *private_key,
-                              uint8_t chain_code[static 32],
-                              const uint32_t *bip32_path,
-                              uint8_t bip32_path_len) {
-    uint8_t raw_private_key[32] = {0};
-    int error = 0;
-
-    BEGIN_TRY {
-        TRY {
-            // derive the seed with bip32_path
-            os_perso_derive_node_bip32(CX_CURVE_256K1,
-                                       bip32_path,
-                                       bip32_path_len,
-                                       raw_private_key,
-                                       chain_code);
-            // new private_key from raw
-            cx_ecfp_init_private_key(CX_CURVE_256K1,
-                                     raw_private_key,
-                                     sizeof(raw_private_key),
-                                     private_key);
-        }
-        CATCH_OTHER(e) {
-            error = e;
-        }
-        FINALLY {
-            explicit_bzero(&raw_private_key, sizeof(raw_private_key));
-        }
-    }
-    END_TRY;
-
-    return error;
-}
-
-void crypto_init_public_key(cx_ecfp_private_key_t *private_key,
-                            cx_ecfp_public_key_t *public_key,
-                            uint8_t raw_public_key[static 64]) {
-    // generate corresponding public key
-    cx_ecfp_generate_pair(CX_CURVE_256K1, public_key, private_key, 1);
-
-    memmove(raw_public_key, public_key->W + 1, 64);
-}
-
 bool crypto_validate_public_key(const uint32_t *bip32_path,
                                 uint8_t bip32_path_len,
                                 uint8_t compressed_public_key[static 32]) {
-    cx_ecfp_private_key_t private_key = {0};
-    cx_ecfp_public_key_t public_key = {0};
+    uint8_t raw_pubkey[65] = {0};
     uint8_t chain_code[32] = {0};
 
-    int error = crypto_derive_private_key(&private_key, chain_code, bip32_path, bip32_path_len);
-    if (error != 0) {
+    int error = bip32_derive_get_pubkey_256(CX_CURVE_256K1,
+                                            bip32_path,
+                                            bip32_path_len,
+                                            raw_pubkey,
+                                            chain_code,
+                                            CX_SHA512);
+
+    if (error != CX_OK) {
         return false;
     }
 
-    BEGIN_TRY {
-        TRY {
-            cx_ecfp_generate_pair(CX_CURVE_256K1, &public_key, &private_key, 1);
-        }
-    }
-    FINALLY {
-        explicit_bzero(&private_key, sizeof(private_key));
-    }
-    END_TRY;
-
-    PRINTF("==> Generated Data: %.*H\n", 32, public_key.W + 1);
+    PRINTF("==> Generated Data: %.*H\n", 32, raw_pubkey + 1);
     PRINTF("==> Passed Data   : %.*H\n", 32, compressed_public_key);
-    return memcmp(public_key.W + 1, compressed_public_key, 32) == 0;
+    return memcmp(raw_pubkey + 1, compressed_public_key, 32) == 0;
 }
 
 int crypto_sign_message(void) {
     cx_ecfp_private_key_t private_key = {0};
     cx_ecfp_public_key_t public_key = {0};
     uint8_t chain_code[32] = {0};
-    uint32_t info = 0;
 
     transaction_input_t *txin =
         &G_context.tx_info.transaction.tx_inputs[G_context.tx_info.signing_input_index];
@@ -118,12 +71,12 @@ int crypto_sign_message(void) {
 
     G_context.bip32_path_len = 5;
 
-    // derive private key according to BIP32 path
-    int error = crypto_derive_private_key(&private_key,
-                                          chain_code,
-                                          G_context.bip32_path,
-                                          G_context.bip32_path_len);
-    if (error != 0) {
+    int error = bip32_derive_init_privkey_256(CX_CURVE_256K1,
+                                              G_context.bip32_path,
+                                              G_context.bip32_path_len,
+                                              &private_key,
+                                              chain_code);
+    if (error != CX_OK) {
         return error;
     }
 
@@ -133,23 +86,27 @@ int crypto_sign_message(void) {
             memset(G_context.tx_info.sighash, 0, sizeof(G_context.tx_info.sighash));
             memset(G_context.tx_info.signature, 0, sizeof(G_context.tx_info.signature));
 
-            cx_ecfp_generate_pair(CX_CURVE_256K1, &public_key, &private_key, 1);
+            error = cx_ecfp_generate_pair_no_throw(CX_CURVE_256K1, &public_key, &private_key, 1);
+            if (error != CX_OK) {
+                return error;
+            }
+
             calc_sighash(&G_context.tx_info.transaction,
                          txin,
                          public_key.W + 1,
                          G_context.tx_info.sighash);
-            cx_ecschnorr_sign(&private_key,
-                              CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
-                              CX_SHA256,
-                              G_context.tx_info.sighash,
-                              sizeof(G_context.tx_info.sighash),
-                              G_context.tx_info.signature,
-                              sizeof(G_context.tx_info.signature),
-                              &info);
-            PRINTF("Signature: %.*H\n", 64, G_context.tx_info.signature);
-        }
-        CATCH_OTHER(e) {
-            error = e;
+
+            size_t sig_len = sizeof(G_context.tx_info.signature);
+            error = cx_ecschnorr_sign_no_throw(&private_key,
+                                               CX_ECSCHNORR_BIP0340 | CX_RND_TRNG,
+                                               CX_SHA256,
+                                               G_context.tx_info.sighash,
+                                               sizeof(G_context.tx_info.sighash),
+                                               G_context.tx_info.signature,
+                                               &sig_len);
+            if (error != CX_OK) {
+                PRINTF("Signature: %.*H\n", 64, G_context.tx_info.signature);
+            }
         }
         FINALLY {
             explicit_bzero(&public_key, sizeof(public_key));

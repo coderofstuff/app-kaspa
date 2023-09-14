@@ -37,13 +37,13 @@
 #include "display.h"
 #include "constants.h"
 #include "../globals.h"
-#include "../io.h"
+#include "io.h"
 #include "../sw.h"
 #include "../address.h"
 #include "action/validate.h"
 #include "../transaction/types.h"
 #include "../transaction/utils.h"
-#include "../common/bip32.h"
+#include "bip32.h"
 #include "../common/format.h"
 #include "../menu.h"
 
@@ -115,10 +115,10 @@ int ui_display_transaction() {
     // Format amount and address to g_amount and g_address buffers
     memset(g_amount, 0, sizeof(g_amount));
     char amount[30] = {0};
-    if (!format_fpu64(amount,
-                      sizeof(amount),
-                      G_context.tx_info.transaction.tx_outputs[0].value,
-                      EXPONENT_SMALLEST_UNIT)) {
+    if (!format_fpu64_trimmed(amount,
+                              sizeof(amount),
+                              G_context.tx_info.transaction.tx_outputs[0].value,
+                              EXPONENT_SMALLEST_UNIT)) {
         return io_send_sw(SW_DISPLAY_AMOUNT_FAIL);
     }
     snprintf(g_amount, sizeof(g_amount), "KAS %.*s", sizeof(amount), amount);

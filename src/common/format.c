@@ -103,7 +103,7 @@ bool format_u64(char *out, size_t outLen, uint64_t in) {
     return true;
 }
 
-bool format_fpu64(char *dst, size_t dst_len, const uint64_t value, uint8_t decimals) {
+bool format_fpu64_trimmed(char *dst, size_t dst_len, const uint64_t value, uint8_t decimals) {
     char buffer[21] = {0};
 
     if (!format_u64(buffer, sizeof(buffer), value)) {

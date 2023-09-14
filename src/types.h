@@ -28,16 +28,7 @@
 
 #include "constants.h"
 #include "transaction/types.h"
-#include "common/bip32.h"
-
-/**
- * Enumeration for the status of IO.
- */
-typedef enum {
-    READY,     /// ready for new event
-    RECEIVED,  /// data received
-    WAITING    /// waiting
-} io_state_e;
+#include "bip32.h"
 
 /**
  * Enumeration with expected INS of APDU commands.

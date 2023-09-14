@@ -24,7 +24,7 @@
 #pragma once
 
 #include "types.h"
-#include "../common/buffer.h"
+#include "buffer.h"
 
 /**
  * Deserialize raw transaction in structure.

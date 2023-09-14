@@ -73,46 +73,46 @@ static void test_format_u64(void **state) {
     assert_false(format_u64(temp, sizeof(temp) - 5, value));
 }
 
-static void test_format_fpu64(void **state) {
+static void test_format_fpu64_trimmed(void **state) {
     (void) state;
 
     char temp[22] = {0};
 
     uint64_t amount = 0ull;  // satoshi
     memset(temp, 0, sizeof(temp));
-    assert_true(format_fpu64(temp, sizeof(temp), amount, 8));
+    assert_true(format_fpu64_trimmed(temp, sizeof(temp), amount, 8));
     assert_string_equal(temp, "0");  // BTC
 
     amount = 100000000ull;  // satoshi
     memset(temp, 0, sizeof(temp));
-    assert_true(format_fpu64(temp, sizeof(temp), amount, 8));
+    assert_true(format_fpu64_trimmed(temp, sizeof(temp), amount, 8));
     assert_string_equal(temp, "1");  // BTC
 
     amount = 24964823ull;  // satoshi
     memset(temp, 0, sizeof(temp));
-    assert_true(format_fpu64(temp, sizeof(temp), amount, 8));
+    assert_true(format_fpu64_trimmed(temp, sizeof(temp), amount, 8));
     assert_string_equal(temp, "0.24964823");  // BTC
 
     amount = 100ull;  // satoshi
     memset(temp, 0, sizeof(temp));
-    assert_true(format_fpu64(temp, sizeof(temp), amount, 8));
+    assert_true(format_fpu64_trimmed(temp, sizeof(temp), amount, 8));
     assert_string_equal(temp, "0.000001");  // BTC
     // buffer too small
-    assert_false(format_fpu64(temp, sizeof(temp) - 16, amount, 8));
+    assert_false(format_fpu64_trimmed(temp, sizeof(temp) - 16, amount, 8));
 
     char temp2[50] = {0};
 
     amount = 1000000000000000000ull;  // wei
-    assert_true(format_fpu64(temp2, sizeof(temp2), amount, 18));
+    assert_true(format_fpu64_trimmed(temp2, sizeof(temp2), amount, 18));
     assert_string_equal(temp2, "1");  // ETH
 
     amount = 100000000000000000ull;  // wei
-    assert_true(format_fpu64(temp2, sizeof(temp2), amount, 18));
+    assert_true(format_fpu64_trimmed(temp2, sizeof(temp2), amount, 18));
     assert_string_equal(temp2, "0.1");  // ETH
 
     // buffer too small
     amount = 1000000000000000001ull;  // wei
-    assert_false(format_fpu64(temp2, sizeof(temp2) - 20, amount, 18));
+    assert_false(format_fpu64_trimmed(temp2, sizeof(temp2) - 20, amount, 18));
 }
 
 static void test_format_hex(void **state) {
@@ -131,7 +131,7 @@ static void test_format_hex(void **state) {
 int main() {
     const struct CMUnitTest tests[] = {cmocka_unit_test(test_format_i64),
                                        cmocka_unit_test(test_format_u64),
-                                       cmocka_unit_test(test_format_fpu64),
+                                       cmocka_unit_test(test_format_fpu64_trimmed),
                                        cmocka_unit_test(test_format_hex)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);

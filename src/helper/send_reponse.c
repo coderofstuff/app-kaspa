@@ -29,7 +29,7 @@
 #include "../constants.h"
 #include "../globals.h"
 #include "../sw.h"
-#include "common/buffer.h"
+#include "buffer.h"
 
 int helper_send_response_pubkey() {
     uint8_t resp[1 + 1 + PUBKEY_LEN + 1 + CHAINCODE_LEN] = {0};
@@ -43,7 +43,7 @@ int helper_send_response_pubkey() {
     memmove(resp + offset, G_context.pk_info.chain_code, CHAINCODE_LEN);
     offset += CHAINCODE_LEN;
 
-    return io_send_response(&(const buffer_t){.ptr = resp, .size = offset, .offset = 0}, SW_OK);
+    return io_send_response_pointer(resp, offset, SW_OK);
 }
 
 int helper_send_response_sig() {
@@ -66,5 +66,5 @@ int helper_send_response_sig() {
     memmove(resp + offset, G_context.tx_info.sighash, sizeof(G_context.tx_info.sighash));
     offset += sizeof(G_context.tx_info.sighash);
 
-    return io_send_response(&(const buffer_t){.ptr = resp, .size = offset, .offset = 0}, SW_OK);
+    return io_send_response_pointer(resp, offset, SW_OK);
 }

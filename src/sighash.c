@@ -29,8 +29,8 @@
 #include "./import/blake2b.h"
 
 #include "./transaction/types.h"
-#include "./common/buffer.h"
-#include "./common/write.h"
+#include "buffer.h"
+#include "write.h"
 #include "globals.h"
 #include "./constants.h"
 

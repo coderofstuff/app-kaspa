@@ -41,14 +41,12 @@ include_directories(mock_includes)
 # include_directories(/opt/nanos-secure-sdk/include/)
 include_directories(/opt/ledger-secure-sdk/include/)
 include_directories(/opt/ledger-secure-sdk/lib_cxng/include)
+include_directories(/opt/ledger-secure-sdk/lib_standard_app/)
 
 
 add_executable(test_address test_address.c)
-add_executable(test_bip32 test_bip32.c)
-add_executable(test_buffer test_buffer.c)
 add_executable(test_format test_format.c)
 add_executable(test_sighash test_sighash.c)
-add_executable(test_write test_write.c)
 add_executable(test_apdu_parser test_apdu_parser.c)
 add_executable(test_tx_parser test_tx_parser.c)
 add_executable(test_tx_utils test_tx_utils.c)
@@ -56,28 +54,27 @@ add_executable(test_tx_utils test_tx_utils.c)
 add_library(address SHARED ../src/address.c)
 add_library(blake2b SHARED ../src/import/blake2b.c)
 add_library(cashaddr SHARED ../src/import/cashaddr.c)
-add_library(bip32 SHARED ../src/common/bip32.c)
-add_library(buffer SHARED ../src/common/buffer.c)
-add_library(read SHARED ../src/common/read.c)
+add_library(bip32 SHARED /opt/ledger-secure-sdk/lib_standard_app/bip32.c)
+add_library(buffer SHARED /opt/ledger-secure-sdk/lib_standard_app/buffer.c)
+add_library(read SHARED /opt/ledger-secure-sdk/lib_standard_app/read.c)
 add_library(sighash SHARED ../src/sighash.c)
-add_library(write SHARED ../src/common/write.c)
+add_library(write SHARED /opt/ledger-secure-sdk/lib_standard_app/write.c)
 add_library(format SHARED ../src/common/format.c)
 add_library(apdu_parser SHARED ../src/apdu/parser.c)
 add_library(transaction_deserialize ../src/transaction/deserialize.c)
 add_library(transaction_serialize ../src/transaction/serialize.c)
 add_library(transaction_utils ../src/transaction/utils.c)
+add_library(varint SHARED /opt/ledger-secure-sdk/lib_standard_app/varint.c)
 
 target_link_libraries(test_address PUBLIC cmocka gcov address cashaddr)
-target_link_libraries(test_bip32 PUBLIC cmocka gcov bip32 read)
-target_link_libraries(test_buffer PUBLIC cmocka gcov buffer bip32 write read)
 target_link_libraries(test_format PUBLIC cmocka gcov format)
 target_link_libraries(test_sighash PUBLIC cmocka gcov sighash blake2b write)
-target_link_libraries(test_write PUBLIC cmocka gcov write)
 target_link_libraries(test_apdu_parser PUBLIC cmocka gcov apdu_parser)
 target_link_libraries(test_tx_parser PUBLIC
                       transaction_deserialize
                       transaction_serialize
                       buffer
+                      varint
                       bip32
                       cmocka
                       gcov
@@ -92,11 +89,8 @@ target_link_libraries(test_tx_utils PUBLIC
                       cashaddr)
 
 add_test(test_address test_address)
-add_test(test_bip32 test_bip32)
-add_test(test_buffer test_buffer)
 add_test(test_format test_format)
 add_test(test_sighash test_sighash)
-add_test(test_write test_write)
 add_test(test_apdu_parser test_apdu_parser)
 add_test(test_tx_parser test_tx_parser)
 add_test(test_tx_utils test_tx_utils)

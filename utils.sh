@@ -110,7 +110,20 @@ function load_to_device() {
 
     build_app $DEVICE
 
-    if [ "$DEVICE" == "nanosp" ]; then
+    if [ "$DEVICE" == "nanox" ]; then \
+        python3 -m ledgerblue.loadApp \
+            --curve secp256k1 \
+            --appFlags 0x000 \
+            --path "44'/111111'" \
+            --tlv \
+            --targetId 0x33000004 \
+            --fileName bin/app.hex \
+            --appName Kaspa \
+            --appVersion 1.0.0 \
+            --icon "0100000000ffffff000778001830e21c7807fc017e801ff007de8173048c01e0010e" \
+            --apiLevel 1 \
+            --delete
+    elif [ "$DEVICE" == "nanosp" ]; then
         python3 -m ledgerblue.loadApp \
             --curve secp256k1 \
             --appFlags 0x000 \

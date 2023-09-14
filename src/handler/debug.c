@@ -40,7 +40,7 @@ static int helper_send_response_sig(uint8_t* signature) {
     memmove(resp + offset, signature, 64);
     offset += 64;
 
-    return io_send_response(&(const buffer_t){.ptr = resp, .size = offset, .offset = 0}, SW_OK);
+    return io_send_response_pointer(resp, offset, SW_OK);
 }
 // Test cases from https://github.com/bitcoin/bips/blob/master/bip-0340/test-vectors.csv
 static void debug_test_case_1(uint8_t* signature) {

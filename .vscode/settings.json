@@ -1,6 +1,7 @@
 {
     "files.associations": {
-        "*.h": "c"
+        "*.h": "c",
+        "system_error": "c"
     },
     "C_Cpp.clang_format_path": "/usr/bin/clang-format",
     "editor.formatOnSave": false,
