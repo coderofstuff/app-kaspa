@@ -40,7 +40,7 @@ typedef enum {
     GET_VERSION = 0x03,     /// version of the application
     GET_APP_NAME = 0x04,    /// name of the application
     GET_PUBLIC_KEY = 0x05,  /// public key of corresponding BIP32 path
-    SIGN_TX = 0x06,          /// sign transaction with BIP32 path
+    SIGN_TX = 0x06,         /// sign transaction with BIP32 path
     SIGN_MESSAGE = 0x07     /// sign a personal message with BIP32 path
 } command_e;
 
@@ -75,9 +75,9 @@ typedef enum {
  * Enumeration with user request type.
  */
 typedef enum {
-    CONFIRM_ADDRESS,     /// confirm address derived from public key
-    CONFIRM_TRANSACTION, /// confirm transaction information
-    CONFIRM_MESSAGE      /// confirm message information
+    CONFIRM_ADDRESS,      /// confirm address derived from public key
+    CONFIRM_TRANSACTION,  /// confirm transaction information
+    CONFIRM_MESSAGE       /// confirm message information
 } request_type_e;
 
 /**
@@ -101,15 +101,15 @@ typedef struct {
 } transaction_ctx_t;
 
 /**
- * Structure for message signing information context. 
+ * Structure for message signing information context.
  */
 typedef struct {
-    size_t message_len;                 /// message length
-    uint8_t message[128];               /// message bytes
-    uint8_t message_hash[32];           /// message hash
-    uint8_t signature[MAX_DER_SIG_LEN]; /// signature of the message
-    uint8_t address_type;               /// address type to use for bip32 path
-    uint32_t address_index;             /// address index to use for bip32 path
+    size_t message_len;                  /// message length
+    uint8_t message[128];                /// message bytes
+    uint8_t message_hash[32];            /// message hash
+    uint8_t signature[MAX_DER_SIG_LEN];  /// signature of the message
+    uint8_t address_type;                /// address type to use for bip32 path
+    uint32_t address_index;              /// address index to use for bip32 path
 } message_sign_ctx_t;
 
 /**
@@ -118,9 +118,9 @@ typedef struct {
 typedef struct {
     state_e state;  /// state of the context
     union {
-        pubkey_ctx_t pk_info;        /// public key context
-        transaction_ctx_t tx_info;   /// transaction context
-        message_sign_ctx_t msg_info; /// message sign context
+        pubkey_ctx_t pk_info;         /// public key context
+        transaction_ctx_t tx_info;    /// transaction context
+        message_sign_ctx_t msg_info;  /// message sign context
     };
     request_type_e req_type;              /// user request
     uint32_t bip32_path[MAX_BIP32_PATH];  /// BIP32 path

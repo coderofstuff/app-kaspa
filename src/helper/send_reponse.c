@@ -81,7 +81,9 @@ int helper_send_response_personal_message_sig() {
     // len(sighash) -> 1 byte
     resp[offset++] = sizeof(G_context.msg_info.message_hash);
     // sighash -> 32 bytes
-    memmove(resp + offset, G_context.msg_info.message_hash, sizeof(G_context.msg_info.message_hash));
+    memmove(resp + offset,
+            G_context.msg_info.message_hash,
+            sizeof(G_context.msg_info.message_hash));
     offset += sizeof(G_context.msg_info.message_hash);
 
     return io_send_response_pointer(resp, offset, SW_OK);

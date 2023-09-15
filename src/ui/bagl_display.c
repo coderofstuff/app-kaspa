@@ -267,7 +267,11 @@ int ui_display_message() {
     }
 
     memset(g_message, 0, sizeof(g_message));
-    snprintf(g_message, sizeof(g_message), "%.*s", G_context.msg_info.message_len, G_context.msg_info.message);
+    snprintf(g_message,
+             sizeof(g_message),
+             "%.*s",
+             G_context.msg_info.message_len,
+             G_context.msg_info.message);
 
     g_validate_callback = &ui_action_validate_message;
 

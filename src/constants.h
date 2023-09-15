@@ -44,7 +44,7 @@
 #define MAX_APPNAME_LEN 64
 
 /**
- * Maximum message length (bytes) 
+ * Maximum message length (bytes)
  */
 #define MAX_MESSAGE_LEN 200
 

@@ -132,7 +132,7 @@ int crypto_sign_personal_message(void) {
                                               G_context.bip32_path_len,
                                               &private_key,
                                               chain_code);
-    
+
     BEGIN_TRY {
         TRY {
             size_t sig_len = sizeof(G_context.tx_info.signature);

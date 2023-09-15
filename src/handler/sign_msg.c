@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *****************************************************************************/
-#include <stdint.h>   // uint*_t
+#include <stdint.h>  // uint*_t
 #include <string.h>  // memset, explicit_bzero
 
 #include "types.h"

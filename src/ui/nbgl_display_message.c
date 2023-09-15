@@ -108,7 +108,11 @@ int ui_display_message() {
     }
 
     memset(g_message, 0, sizeof(g_message));
-    snprintf(g_message, sizeof(g_message), "%.*s", G_context.msg_info.message_len, G_context.msg_info.message);
+    snprintf(g_message,
+             sizeof(g_message),
+             "%.*s",
+             G_context.msg_info.message_len,
+             G_context.msg_info.message);
 
     nbgl_useCaseReviewStart(&C_stax_app_kaspa_64px,
                             "Sign Message",
