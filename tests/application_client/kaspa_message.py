@@ -1,8 +1,4 @@
-from io import BytesIO
-from typing import Union
 from hashlib import blake2b
-
-from .kaspa_utils import read, read_uint
 
 def hash_init() -> blake2b:
     return blake2b(digest_size=32, key=bytes("PersonalMessageSigningHash", "ascii"))
@@ -15,7 +11,7 @@ class PersonalMessage:
         self.address_type: int = address_type           # 1 byte
         self.address_index:int  = address_index         # 4 bytes
         self.message: bytes = bytes(message, 'utf8')    # var
-    
+
     def serialize(self) -> bytes:
         return b"".join([
             self.address_type.to_bytes(1, byteorder="big"),

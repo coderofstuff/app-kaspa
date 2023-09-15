@@ -82,15 +82,15 @@ def unpack_sign_tx_response(response: bytes) -> Tuple[int, int, int, bytes, int,
 # Unpack from response:
 # response = der_sig_len (1)
 #            der_sig (64)
-#            hash_len (1)
-#            hash (32)
-def unpack_sign_message_response(response: bytes) -> Tuple[int, int, int, bytes, int, bytes]:
+#            mhash_len (1)
+#            mhash (32)
+def unpack_sign_message_response(response: bytes) -> Tuple[int, bytes, int, bytes]:
     response, der_sig_len, der_sig = pop_size_prefixed_buf_from_buf(response)
-    response, hash_len, hash = pop_size_prefixed_buf_from_buf(response)
+    response, mhash_len, mhash = pop_size_prefixed_buf_from_buf(response)
 
     assert len(response) == 0
 
     return der_sig_len, \
            der_sig, \
-           hash_len, \
-           hash
+           mhash_len, \
+           mhash

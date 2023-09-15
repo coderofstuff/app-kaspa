@@ -140,7 +140,7 @@ class KaspaCommandSender:
                                     data=txinput.serialize()) as response:
 
             yield response
-    
+
     @contextmanager
     def sign_message(self, message_data: PersonalMessage) -> Generator[None, None, None]:
         with self.backend.exchange_async(cla=CLA,
