@@ -64,7 +64,7 @@ def test_sign_tx_simple(firmware, backend, navigator, test_name):
     response = client.get_async_response().data
     _, _, _, der_sig, _, sighash = unpack_sign_tx_response(response)
     assert transaction.get_sighash(0) == sighash
-    assert check_signature_validity(public_key, der_sig, sighash, transaction)
+    assert check_signature_validity(public_key, der_sig, sighash)
 
 def test_sign_tx_simple_ecdsa(firmware, backend, navigator, test_name):
     # Use the app interface instead of raw interface
@@ -120,7 +120,7 @@ def test_sign_tx_simple_ecdsa(firmware, backend, navigator, test_name):
     response = client.get_async_response().data
     _, _, _, der_sig, _, sighash = unpack_sign_tx_response(response)
     assert transaction.get_sighash(0) == sighash
-    assert check_signature_validity(public_key, der_sig, sighash, transaction)
+    assert check_signature_validity(public_key, der_sig, sighash)
 
 
 def test_sign_tx_p2sh(firmware, backend, navigator, test_name):
@@ -177,7 +177,7 @@ def test_sign_tx_p2sh(firmware, backend, navigator, test_name):
     response = client.get_async_response().data
     _, _, _, der_sig, _, sighash = unpack_sign_tx_response(response)
     assert transaction.get_sighash(0) == sighash
-    assert check_signature_validity(public_key, der_sig, sighash, transaction)
+    assert check_signature_validity(public_key, der_sig, sighash)
 
 def test_sign_tx_simple_sendint(firmware, backend, navigator, test_name):
     # Use the app interface instead of raw interface
@@ -233,7 +233,7 @@ def test_sign_tx_simple_sendint(firmware, backend, navigator, test_name):
     response = client.get_async_response().data
     _, _, _, der_sig, _, sighash = unpack_sign_tx_response(response)
     assert transaction.get_sighash(0) == sighash
-    assert check_signature_validity(public_key, der_sig, sighash, transaction)
+    assert check_signature_validity(public_key, der_sig, sighash)
 
 def test_sign_tx_simple_sendmaxu64(firmware, backend, navigator, test_name):
     # Use the app interface instead of raw interface
@@ -289,7 +289,7 @@ def test_sign_tx_simple_sendmaxu64(firmware, backend, navigator, test_name):
     response = client.get_async_response().data
     _, _, _, der_sig, _, sighash = unpack_sign_tx_response(response)
     assert transaction.get_sighash(0) == sighash
-    assert check_signature_validity(public_key, der_sig, sighash, transaction)
+    assert check_signature_validity(public_key, der_sig, sighash)
 
 def test_sign_tx_simple_change_idx1(firmware, backend, navigator, test_name):
     # Use the app interface instead of raw interface
@@ -358,7 +358,7 @@ def test_sign_tx_simple_change_idx1(firmware, backend, navigator, test_name):
     response = client.get_async_response().data
     _, _, _, der_sig, _, sighash = unpack_sign_tx_response(response)
     assert transaction.get_sighash(0) == sighash
-    assert check_signature_validity(public_key, der_sig, sighash, transaction)
+    assert check_signature_validity(public_key, der_sig, sighash)
 
 def test_sign_tx_with_change(firmware, backend, navigator, test_name):
     # Use the app interface instead of raw interface
@@ -423,7 +423,7 @@ def test_sign_tx_with_change(firmware, backend, navigator, test_name):
     response = client.get_async_response().data
     _, _, _, der_sig, _, sighash = unpack_sign_tx_response(response)
     assert transaction.get_sighash(0) == sighash
-    assert check_signature_validity(public_key, der_sig, sighash, transaction)
+    assert check_signature_validity(public_key, der_sig, sighash)
 
 def test_sign_tx_with_invalid_change(backend):
     backend.raise_policy = RaisePolicy.RAISE_NOTHING
@@ -666,7 +666,7 @@ def test_sign_tx_max(firmware, backend, navigator, test_name):
     response = client.get_async_response().data
     has_more, input_index, _, der_sig, _, sighash = unpack_sign_tx_response(response)
     assert transaction.get_sighash(input_index) == sighash
-    assert check_signature_validity(public_key, der_sig, sighash, transaction)
+    assert check_signature_validity(public_key, der_sig, sighash)
 
     while has_more > 0:
         idx = idx + 1
@@ -677,7 +677,7 @@ def test_sign_tx_max(firmware, backend, navigator, test_name):
         response = client.get_next_signature().data
         has_more, input_index, _, der_sig, _, sighash = unpack_sign_tx_response(response)
         assert transaction.get_sighash(input_index) == sighash
-        assert check_signature_validity(public_key, der_sig, sighash, transaction)
+        assert check_signature_validity(public_key, der_sig, sighash)
 
 # Transaction signature refused test
 # The test will ask for a transaction signature that will be refused on screen

@@ -42,3 +42,12 @@ void validate_pubkey(bool choice);
  *
  */
 void validate_transaction(bool choice);
+
+/**
+ * Action for message information validation.
+ *
+ * @param[in] choice
+ *   User choice (either approved or rejectd).
+ *
+ */
+void validate_message(bool choice);

@@ -43,7 +43,7 @@
 #include "../helper/send_response.h"
 
 static int sign_input_and_send() {
-    int error = crypto_sign_message();
+    int error = crypto_sign_transaction();
     if (error != 0) {
         G_context.state = STATE_NONE;
         io_send_sw(error);

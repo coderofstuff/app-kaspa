@@ -35,6 +35,7 @@
 #include "../handler/get_app_name.h"
 #include "../handler/get_public_key.h"
 #include "../handler/sign_tx.h"
+#include "../handler/sign_msg.h"
 
 #ifdef HAVE_DEBUG_APDU
 #include "../handler/debug.h"
@@ -92,6 +93,13 @@ int apdu_dispatcher(const command_t *cmd) {
             buf.offset = 0;
 
             return handler_sign_tx(&buf, cmd->p1, (bool) (cmd->p2 & P2_MORE));
+        case SIGN_MESSAGE:
+
+            buf.ptr = cmd->data;
+            buf.size = cmd->lc;
+            buf.offset = 0;
+
+            return handler_sign_msg(&buf);
 #ifdef HAVE_DEBUG_APDU
         case DEBUG_APDU:
             return handler_debug(cmd->p1);

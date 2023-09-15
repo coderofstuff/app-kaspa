@@ -60,3 +60,13 @@ int helper_send_response_pubkey(void);
  *
  */
 int helper_send_response_sig(void);
+
+/**
+ * Helper to send APDU response with personal message signature
+ * response = MAX_DER_SIG_LEN (1) ||
+ *            G_context.tx_info.signature (MAX_DER_SIG_LEN)
+ *
+ * @return zero or positive integer if success, -1 otherwise.
+ *
+ */
+int helper_send_response_personal_message_sig(void);

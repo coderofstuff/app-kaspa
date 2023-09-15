@@ -52,6 +52,7 @@ static char g_amount[30];
 static char g_bip32_path[60];
 static char g_address[ECDSA_ADDRESS_LEN + 6];
 static char g_fees[30];
+static char g_message[MAX_MESSAGE_LEN + 6];
 
 // Validate/Invalidate public key and go back to home
 static void ui_action_validate_pubkey(bool choice) {
@@ -62,6 +63,12 @@ static void ui_action_validate_pubkey(bool choice) {
 // Validate/Invalidate transaction and go back to home
 static void ui_action_validate_transaction(bool choice) {
     validate_transaction(choice);
+    ui_menu_main();
+}
+
+// Validate/Invalidate message and go back to home
+static void ui_action_validate_message(bool choice) {
+    validate_message(choice);
     ui_menu_main();
 }
 
@@ -218,6 +225,57 @@ int ui_display_transaction() {
 
     ux_flow_init(0, ux_display_transaction_flow, NULL);
 
+    return 0;
+}
+
+// Step with icon and text
+UX_STEP_NOCB(ux_display_confirm_message_step, pn, {&C_icon_eye, "Confirm Message"});
+
+// Step with title/text for message
+UX_STEP_NOCB(ux_display_message_step,
+             bnnn_paging,
+             {
+                 .title = "Message",
+                 .text = g_message,
+             });
+
+// FLOW to display address and BIP32 path:
+// #1 screen: eye icon + "Confirm Address"
+// #2 screen: display BIP32 Path
+// #3 screen: display address
+// #4 screen: approve button
+// #5 screen: reject button
+UX_FLOW(ux_display_message_flow,
+        &ux_display_confirm_message_step,
+        &ux_display_path_step,
+        &ux_display_message_step,
+        &ux_display_approve_step,
+        &ux_display_reject_step);
+
+int ui_display_message() {
+    if (G_context.req_type != CONFIRM_MESSAGE || G_context.state != STATE_NONE) {
+        G_context.state = STATE_NONE;
+        return io_send_sw(SW_BAD_STATE);
+    }
+
+    memset(g_bip32_path, 0, sizeof(g_bip32_path));
+    if (!bip32_path_format(G_context.bip32_path,
+                           G_context.bip32_path_len,
+                           g_bip32_path,
+                           sizeof(g_bip32_path))) {
+        return io_send_sw(SW_DISPLAY_BIP32_PATH_FAIL);
+    }
+
+    memset(g_message, 0, sizeof(g_message));
+    snprintf(g_message,
+             sizeof(g_message),
+             "%.*s",
+             G_context.msg_info.message_len,
+             G_context.msg_info.message);
+
+    g_validate_callback = &ui_action_validate_message;
+
+    ux_flow_init(0, ux_display_message_flow, NULL);
     return 0;
 }
 

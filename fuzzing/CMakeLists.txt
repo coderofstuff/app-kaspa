@@ -22,7 +22,7 @@ endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_compile_definitions(MAX_INPUT_COUNT=15 USB_SEGMENT_SIZE=64)
+add_compile_definitions(MAX_INPUT_COUNT=15 MAX_MESSAGE_LEN=200 USB_SEGMENT_SIZE=64)
 
 include(extra/TxParser.cmake)
 
