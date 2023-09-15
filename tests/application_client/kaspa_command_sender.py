@@ -6,6 +6,7 @@ from ragger.backend.interface import BackendInterface, RAPDU
 from ragger.bip import pack_derivation_path
 
 from .kaspa_transaction import Transaction
+from .kaspa_message import PersonalMessage
 
 
 MAX_APDU_LEN: int = 255
@@ -34,6 +35,7 @@ class InsType(IntEnum):
     GET_APP_NAME   = 0x04
     GET_PUBLIC_KEY = 0x05
     SIGN_TX        = 0x06
+    SIGN_MESSAGE   = 0x07
 
 class Errors(IntEnum):
     SW_DENY                    = 0x6985
@@ -54,12 +56,10 @@ class Errors(IntEnum):
     SW_WRONG_BIP32_COIN_TYPE   = 0xB00A
     SW_WRONG_BIP32_TYPE        = 0xB00B
     SW_WRONG_BIP32_PATH_LEN    = 0xB00C
-
-
+    SW_MESSAGE_TOO_LONG        = 0xB00D
 
 def split_message(message: bytes, max_size: int) -> List[bytes]:
     return [message[x:x + max_size] for x in range(0, len(message), max_size)]
-
 
 class KaspaCommandSender:
     def __init__(self, backend: BackendInterface) -> None:
@@ -139,6 +139,15 @@ class KaspaCommandSender:
                                     p2=P2.P2_LAST,
                                     data=txinput.serialize()) as response:
 
+            yield response
+    
+    @contextmanager
+    def sign_message(self, message_data: PersonalMessage) -> Generator[None, None, None]:
+        with self.backend.exchange_async(cla=CLA,
+                                         ins=InsType.SIGN_MESSAGE,
+                                         p1=P1.P1_CONFIRM,
+                                         p2=P2.P2_LAST,
+                                         data=message_data.serialize()) as response:
             yield response
 
     def get_next_signature(self) -> RAPDU:
