@@ -33,7 +33,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt. ")
 endif()
 
-add_compile_definitions(TEST HAVE_HASH HAVE_BLAKE2 HAVE_ECC USB_SEGMENT_SIZE=64 MAX_INPUT_COUNT=15 IO_SEPROXYHAL_BUFFER_SIZE_B=128)
+add_compile_definitions(TEST HAVE_HASH HAVE_BLAKE2 HAVE_ECC USB_SEGMENT_SIZE=64 MAX_INPUT_COUNT=15 MAX_MESSAGE_LEN=200 IO_SEPROXYHAL_BUFFER_SIZE_B=128)
 
 include_directories(../src)
 # include_directories(mock_includes)

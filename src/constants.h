@@ -44,11 +44,6 @@
 #define MAX_APPNAME_LEN 64
 
 /**
- * Maximum message length (bytes)
- */
-#define MAX_MESSAGE_LEN 200
-
-/**
  * Maximum signature length (bytes).
  * Schnorr signatures only have 64 bytes
  */

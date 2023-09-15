@@ -35,10 +35,13 @@ APPVERSION = "$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)"
 
 ifeq ($(TARGET_NAME),TARGET_NANOS)
     DEFINES += MAX_INPUT_COUNT=15
+    DEFINES += MAX_MESSAGE_LEN=120
 else ifeq ($(TARGET_NAME),TARGET_STAX)
     DEFINES += MAX_INPUT_COUNT=128
+    DEFINES += MAX_MESSAGE_LEN=200
 else
     DEFINES += MAX_INPUT_COUNT=128
+    DEFINES += MAX_MESSAGE_LEN=200
 endif
 
 # Application source files
@@ -76,7 +79,7 @@ VARIANT_PARAM = COIN
 VARIANT_VALUES = KAS
 
 # Enabling DEBUG flag will enable PRINTF and disable optimizations
-#DEBUG = 1
+DEBUG = 1
 
 ########################################
 #     Application custom permissions   #
