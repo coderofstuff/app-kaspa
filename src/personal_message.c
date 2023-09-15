@@ -24,14 +24,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// #include "cx.h"
-
 #include "constants.h"
 #include "./import/blake2-impl.h"
 #include "./import/blake2b.h"
 #include "./personal_message.h"
-
-// #include "globals.h"
 
 static int hash_init(blake2b_state* hash, size_t size, uint8_t* key, size_t key_len) {
     if (key == NULL && key_len != 0) {
