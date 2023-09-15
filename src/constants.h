@@ -44,14 +44,9 @@
 #define MAX_APPNAME_LEN 64
 
 /**
- * Maximum transaction length (bytes).
- */
-#define MAX_TRANSACTION_LEN 128
-
-/**
  * Maximum message length (bytes) 
  */
-#define MAX_MESSAGE_LEN 128
+#define MAX_MESSAGE_LEN 200
 
 /**
  * Maximum signature length (bytes).

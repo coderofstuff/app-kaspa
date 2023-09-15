@@ -173,4 +173,5 @@ Transactions signed with ECDSA are currently not supported.
 | 0xB00A | `SW_WRONG_BIP32_COIN_TYPE` | `Coin Type` must be `111111'` |
 | 0xB00B | `SW_WRONG_BIP32_TYPE` | `Type` passed is not valid. Must be either `0`  for `Receive` or `1`  for `Change`|
 | 0xB00C | `SW_WRONG_BIP32_PATH_LEN` | Path length must be `5` |
+| 0xB00D | `SW_MESSAGE_TOO_LONG` | Message len greater than max |
 | 0x9000 | `OK` | Success |
