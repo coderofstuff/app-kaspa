@@ -230,7 +230,7 @@ int ui_display_transaction() {
 }
 
 // Step with icon and text
-UX_STEP_NOCB(ux_display_confirm_message_step, pn, {&C_icon_eye, "Confirm Message"});
+UX_STEP_NOCB(ux_display_confirm_message_step, pn, {&C_icon_eye, "Review Message"});
 
 // Step with title/text for message
 UX_STEP_NOCB(ux_display_message_step,

@@ -62,6 +62,10 @@ int handler_sign_msg(buffer_t *cdata) {
         return io_send_sw(SW_WRONG_DATA_LENGTH);
     }
 
+    if (message_len == 0) {
+        return io_send_sw(SW_WRONG_DATA_LENGTH);
+    }
+
     if (message_len > MAX_MESSAGE_LEN) {
         return io_send_sw(SW_MESSAGE_TOO_LONG);
     }
