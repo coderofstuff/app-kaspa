@@ -173,5 +173,11 @@ Transactions signed with ECDSA are currently not supported.
 | 0xB00A | `SW_WRONG_BIP32_COIN_TYPE` | `Coin Type` must be `111111'` |
 | 0xB00B | `SW_WRONG_BIP32_TYPE` | `Type` passed is not valid. Must be either `0`  for `Receive` or `1`  for `Change`|
 | 0xB00C | `SW_WRONG_BIP32_PATH_LEN` | Path length must be `5` |
-| 0xB00D | `SW_MESSAGE_TOO_LONG` | Message len greater than max |
+| 0xB010 | `SW_MESSAGE_PARSING_FAIL` | Unable to parse message data |
+| 0xB011 | `SW_MESSAGE_TOO_LONG` | Message len greater than max |
+| 0xB012 | `SW_MESSAGE_TOO_SHORT` | Message len is 0 |
+| 0xB013 | `SW_MESSAGE_ADDRESS_TYPE_FAIL` | Address type could not be parsed or is not `0`/`1` |
+| 0xB014 | `SW_MESSAGE_ADDRESS_INDEX_FAIL` | Address index could not be parsed |
+| 0xB015 | `SW_MESSAGE_LEN_PARSING_FAIL` | Message length could not be parsed |
+| 0xB016 | `SW_MESSAGE_UNEXPECTED` | Unexpected error while parsing message |
 | 0x9000 | `OK` | Success |
