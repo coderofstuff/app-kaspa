@@ -28,7 +28,6 @@
 
 #include <stdbool.h>  // bool
 #include <string.h>   // memset
-#include <ctype.h>
 
 #include "os.h"
 #include "ux.h"
@@ -45,7 +44,8 @@
 #include "../transaction/types.h"
 #include "../transaction/utils.h"
 #include "bip32.h"
-#include "../common/format.h"
+#include "../common/format_local.h"
+#include "format.h"
 #include "../menu.h"
 
 static action_validate_cb g_validate_callback;
@@ -253,34 +253,6 @@ UX_FLOW(ux_display_message_flow,
         &ux_display_approve_step,
         &ux_display_reject_step);
 
-void process_message_to_sign(char* msg_dest, int msg_dest_len, char* msg_src, int msg_src_len) {
-    int c;
-    int dest_idx = 0;
-
-    for (int i = 0; i < msg_src_len && dest_idx < msg_dest_len; i++) {
-        c = msg_src[i];
-        if (isspace(c))  // to replace all white-space characters as spaces
-        {
-            c = ' ';
-        }
-        if (isprint(c)) {
-            sprintf(msg_dest + dest_idx, "%c", (char) c);
-            dest_idx++;
-        } else {
-            int remaining_buffer_length = msg_dest_len - dest_idx - 1;
-            if (remaining_buffer_length >= 4)  // 4 being the fixed length of \x00
-            {
-                snprintf(msg_dest + dest_idx, remaining_buffer_length, "\\x%02x", c);
-                dest_idx += 4;
-            } else {
-                // fill the rest of the UI buffer spaces, to consider the buffer full
-                memset(msg_dest + dest_idx, ' ', remaining_buffer_length);
-                dest_idx += remaining_buffer_length;
-            }
-        }
-    }
-}
-
 int ui_display_message() {
     if (G_context.req_type != CONFIRM_MESSAGE || G_context.state != STATE_NONE) {
         G_context.state = STATE_NONE;
@@ -296,12 +268,11 @@ int ui_display_message() {
     }
 
     memset(g_message, 0, sizeof(g_message));
-    process_message_to_sign(g_message, (int) sizeof(g_message), (char *) G_context.msg_info.message, (int) G_context.msg_info.message_len);
-    // snprintf(g_message,
-    //          sizeof(g_message),
-    //          "%.*s",
-    //          G_context.msg_info.message_len,
-    //          G_context.msg_info.message);
+
+    format_message_to_sign(g_message,
+                           (int) sizeof(g_message),
+                           (char *) G_context.msg_info.message,
+                           (int) G_context.msg_info.message_len);
 
     g_validate_callback = &ui_action_validate_message;
 
