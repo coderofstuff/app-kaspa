@@ -44,7 +44,7 @@
 #include "../transaction/types.h"
 #include "../transaction/utils.h"
 #include "bip32.h"
-#include "../common/format.h"
+#include "format.h"
 #include "../menu.h"
 
 // Buffer where the transaction amount string is written

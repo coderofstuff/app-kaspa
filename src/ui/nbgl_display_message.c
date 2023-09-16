@@ -43,7 +43,8 @@
 #include "../types.h"
 #include "../transaction/types.h"
 #include "bip32.h"
-#include "../common/format.h"
+#include "../common/format_local.h"
+#include "format.h"
 #include "../menu.h"
 
 static char g_message[MAX_MESSAGE_LEN];
@@ -59,6 +60,15 @@ static void confirm_message_rejection(void) {
     nbgl_useCaseStatus("Message signing\ncancelled", false, ui_menu_main);
 }
 
+static void ask_message_rejection_confirmation(void) {
+    // display a choice to confirm/cancel rejection
+    nbgl_useCaseConfirm("Reject message?",
+                        NULL,
+                        "Yes, Reject",
+                        "Go back to message",
+                        confirm_message_rejection);
+}
+
 static void confirm_message_approval(void) {
     // display a success status page and go back to main
     validate_message(true);
@@ -69,7 +79,7 @@ static void review_message_choice(bool confirm) {
     if (confirm) {
         confirm_message_approval();
     } else {
-        confirm_message_rejection();
+        ask_message_rejection_confirmation();
     }
 }
 
@@ -108,18 +118,17 @@ int ui_display_message() {
     }
 
     memset(g_message, 0, sizeof(g_message));
-    snprintf(g_message,
-             sizeof(g_message),
-             "%.*s",
-             G_context.msg_info.message_len,
-             G_context.msg_info.message);
+    format_message_to_sign(g_message,
+                           sizeof(g_message),
+                           (char *) G_context.msg_info.message,
+                           G_context.msg_info.message_len);
 
     nbgl_useCaseReviewStart(&C_stax_app_kaspa_64px,
                             "Sign Message",
                             NULL,
-                            "Cancel",
+                            "Reject message",
                             continue_message_review,
-                            confirm_message_rejection);
+                            ask_message_rejection_confirmation);
     return 0;
 }
 

@@ -44,7 +44,8 @@
 #include "../transaction/types.h"
 #include "../transaction/utils.h"
 #include "bip32.h"
-#include "../common/format.h"
+#include "../common/format_local.h"
+#include "format.h"
 #include "../menu.h"
 
 static action_validate_cb g_validate_callback;
@@ -229,7 +230,7 @@ int ui_display_transaction() {
 }
 
 // Step with icon and text
-UX_STEP_NOCB(ux_display_confirm_message_step, pn, {&C_icon_eye, "Confirm Message"});
+UX_STEP_NOCB(ux_display_confirm_message_step, pn, {&C_icon_eye, "Review Message"});
 
 // Step with title/text for message
 UX_STEP_NOCB(ux_display_message_step,
@@ -267,11 +268,11 @@ int ui_display_message() {
     }
 
     memset(g_message, 0, sizeof(g_message));
-    snprintf(g_message,
-             sizeof(g_message),
-             "%.*s",
-             G_context.msg_info.message_len,
-             G_context.msg_info.message);
+
+    format_message_to_sign(g_message,
+                           (int) sizeof(g_message),
+                           (char *) G_context.msg_info.message,
+                           (int) G_context.msg_info.message_len);
 
     g_validate_callback = &ui_action_validate_message;
 

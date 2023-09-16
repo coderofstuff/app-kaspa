@@ -43,7 +43,7 @@
 #include "../types.h"
 #include "../transaction/types.h"
 #include "bip32.h"
-#include "../common/format.h"
+#include "format.h"
 #include "../menu.h"
 
 static char g_address[43];

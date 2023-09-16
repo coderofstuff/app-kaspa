@@ -50,16 +50,24 @@ int handler_sign_msg(buffer_t *cdata) {
     G_context.state = STATE_NONE;
 
     if (!buffer_read_u8(cdata, &G_context.msg_info.address_type)) {
-        return io_send_sw(SW_WRONG_DATA_LENGTH);
+        return io_send_sw(SW_MESSAGE_ADDRESS_TYPE_FAIL);
+    }
+
+    if (G_context.msg_info.address_type != 0 && G_context.msg_info.address_type != 1) {
+        return io_send_sw(SW_MESSAGE_ADDRESS_TYPE_FAIL);
     }
 
     if (!buffer_read_u32(cdata, &G_context.msg_info.address_index, BE)) {
-        return io_send_sw(SW_WRONG_DATA_LENGTH);
+        return io_send_sw(SW_MESSAGE_ADDRESS_TYPE_FAIL);
     }
 
     uint8_t message_len = 0;
     if (!buffer_read_u8(cdata, &message_len)) {
-        return io_send_sw(SW_WRONG_DATA_LENGTH);
+        return io_send_sw(SW_MESSAGE_LEN_PARSING_FAIL);
+    }
+
+    if (message_len == 0) {
+        return io_send_sw(SW_MESSAGE_TOO_SHORT);
     }
 
     if (message_len > MAX_MESSAGE_LEN) {
@@ -69,13 +77,13 @@ int handler_sign_msg(buffer_t *cdata) {
     G_context.msg_info.message_len = (size_t) message_len;
 
     if (!buffer_can_read(cdata, G_context.msg_info.message_len)) {
-        return io_send_sw(SW_WRONG_DATA_LENGTH);
+        return io_send_sw(SW_MESSAGE_PARSING_FAIL);
     }
 
     memcpy(G_context.msg_info.message, cdata->ptr + cdata->offset, G_context.msg_info.message_len);
 
     if (!buffer_seek_cur(cdata, G_context.msg_info.message_len)) {
-        return io_send_sw(SW_WRONG_DATA_LENGTH);
+        return io_send_sw(SW_MESSAGE_UNEXPECTED);
     }
 
     G_context.bip32_path[0] = 0x8000002C;
