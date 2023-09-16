@@ -108,4 +108,37 @@ def test_sign_message_too_long(firmware, backend, navigator, test_name):
     last_response = client.send_raw_apdu(InsType.SIGN_MESSAGE, p1=P1.P1_INPUTS, p2=P2.P2_LAST, data=message_data.serialize())
 
     assert last_response.status == Errors.SW_MESSAGE_TOO_LONG
-    
+
+def test_sign_message_refused(firmware, backend, navigator, test_name):
+    # Use the app interface instead of raw interface
+    client = KaspaCommandSender(backend)
+
+    address_type = 1
+    address_index = 6
+    message = "Hello Kaspa!"
+
+    message_data = PersonalMessage(address_type, address_index, message)
+
+    if firmware.device.startswith("nano"):
+        with client.sign_message(message_data=message_data):
+            # Disable raising when trying to unpack an error APDU
+            backend.raise_policy = RaisePolicy.RAISE_NOTHING
+            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
+                                                      [NavInsID.BOTH_CLICK],
+                                                      "Reject",
+                                                      ROOT_SCREENSHOT_PATH,
+                                                      test_name)
+
+        assert client.get_async_response().status == Errors.SW_DENY
+    else:
+        for i in range(3):
+            instructions = [NavInsID.USE_CASE_REVIEW_TAP] * i
+            instructions += [NavInsID.USE_CASE_REVIEW_REJECT,
+                             NavInsID.USE_CASE_CHOICE_CONFIRM,
+                             NavInsID.USE_CASE_STATUS_DISMISS]
+            with client.sign_message(message_data=message_data):
+                backend.raise_policy = RaisePolicy.RAISE_NOTHING
+                navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
+                                               test_name + f"/part{i}",
+                                               instructions)
+            assert client.get_async_response().status == Errors.SW_DENY

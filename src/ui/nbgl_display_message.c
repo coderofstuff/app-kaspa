@@ -59,6 +59,15 @@ static void confirm_message_rejection(void) {
     nbgl_useCaseStatus("Message signing\ncancelled", false, ui_menu_main);
 }
 
+static void ask_message_rejection_confirmation(void) {
+    // display a choice to confirm/cancel rejection
+    nbgl_useCaseConfirm("Reject message?",
+                        NULL,
+                        "Yes, Reject",
+                        "Go back to message",
+                        confirm_message_rejection);
+}
+
 static void confirm_message_approval(void) {
     // display a success status page and go back to main
     validate_message(true);
@@ -69,7 +78,7 @@ static void review_message_choice(bool confirm) {
     if (confirm) {
         confirm_message_approval();
     } else {
-        confirm_message_rejection();
+        ask_message_rejection_confirmation();
     }
 }
 
@@ -117,9 +126,9 @@ int ui_display_message() {
     nbgl_useCaseReviewStart(&C_stax_app_kaspa_64px,
                             "Sign Message",
                             NULL,
-                            "Cancel",
+                            "Reject message",
                             continue_message_review,
-                            confirm_message_rejection);
+                            ask_message_rejection_confirmation);
     return 0;
 }
 
