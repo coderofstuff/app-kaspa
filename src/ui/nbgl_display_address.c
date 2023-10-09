@@ -46,7 +46,7 @@
 #include "format.h"
 #include "../menu.h"
 
-static char g_address[43];
+static char g_address[ECDSA_ADDRESS_LEN + 6];
 static char g_bip32_path[60];
 
 static nbgl_layoutTagValue_t pairs[1];
