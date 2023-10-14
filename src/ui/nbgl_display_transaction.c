@@ -51,8 +51,9 @@
 static char g_amount[30];
 // Buffer where the transaction address string is written
 static char g_address[ECDSA_ADDRESS_LEN + 6];
+static char g_fees[30];
 
-static nbgl_layoutTagValue_t pairs[2];
+static nbgl_layoutTagValue_t pairs[3];
 static nbgl_layoutTagValueList_t pairList;
 static nbgl_pageInfoLongPress_t infoLongPress;
 
@@ -86,12 +87,14 @@ static void review_continue(void) {
     // Setup data to display
     pairs[0].item = "Amount";
     pairs[0].value = g_amount;
-    pairs[1].item = "Address";
-    pairs[1].value = g_address;
+    pairs[1].item = "Fees";
+    pairs[1].value = g_fees;
+    pairs[2].item = "To";
+    pairs[2].value = g_address;
 
     // Setup list
     pairList.nbMaxLinesForValue = 0;
-    pairList.nbPairs = 2;
+    pairList.nbPairs = 3;
     pairList.pairs = pairs;
 
     // Info long press
@@ -104,7 +107,7 @@ static void review_continue(void) {
 
 // Public function to start the transaction review
 // - Check if the app is in the right state for transaction review
-// - Format the amount and address strings in g_amount and g_address buffers
+// - Format the amount and address strings in g_amount, g-fees and g_address buffers
 // - Display the first screen of the transaction review
 int ui_display_transaction() {
     if (G_context.req_type != CONFIRM_TRANSACTION || G_context.state != STATE_PARSED) {
@@ -122,6 +125,20 @@ int ui_display_transaction() {
         return io_send_sw(SW_DISPLAY_AMOUNT_FAIL);
     }
     snprintf(g_amount, sizeof(g_amount), "KAS %.*s", sizeof(amount), amount);
+
+    memset(g_fees, 0, sizeof(g_fees));
+    char fees[30] = {0};
+    if (!format_fpu64_trimmed(fees,
+                              sizeof(fees),
+                              calc_fees(G_context.tx_info.transaction.tx_inputs,
+                                        G_context.tx_info.transaction.tx_input_len,
+                                        G_context.tx_info.transaction.tx_outputs,
+                                        G_context.tx_info.transaction.tx_output_len),
+                              EXPONENT_SMALLEST_UNIT)) {
+        return io_send_sw(SW_DISPLAY_AMOUNT_FAIL);
+    }
+    snprintf(g_fees, sizeof(g_fees), "KAS %.*s", sizeof(fees), fees);
+
     memset(g_address, 0, sizeof(g_address));
 
     uint8_t address[ECDSA_ADDRESS_LEN] = {0};
