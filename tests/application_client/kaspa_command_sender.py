@@ -54,8 +54,7 @@ class Errors(IntEnum):
     SW_SIGNATURE_FAIL             = 0xB008
     SW_WRONG_BIP32_PURPOSE        = 0xB009
     SW_WRONG_BIP32_COIN_TYPE      = 0xB00A
-    SW_WRONG_BIP32_TYPE           = 0xB00B
-    SW_WRONG_BIP32_PATH_LEN       = 0xB00C
+    SW_WRONG_BIP32_PATH_LEN       = 0xB00B
     SW_MESSAGE_PARSING_FAIL       = 0xB010
     SW_MESSAGE_TOO_LONG           = 0xB011
     SW_MESSAGE_TOO_SHORT          = 0xB012

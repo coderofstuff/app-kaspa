@@ -47,15 +47,21 @@ Raw response looks like: `4b617370619000`
 | --- | --- | --- | --- | --- | --- |
 | 0xE0 | 0x05 | 0x00 (no display) <br> 0x01 (display) | 0x00 | 0x15 | `path len (1 byte)` \|\|<br>`purpose (4 bytes)` \|\|<br> `coin_type (4 bytes)` \|\|<br> `account (4 bytes)` \|\|<br> `type (4 bytes)` \|\|<br>`index (4 bytes)` |
 
-Keys for kaspa use the derivation path `m/44'/111111'/<account>'/<type>/<index>`.
+Keys for kaspa normally use the derivation path `m/44'/111111'/<account>'/<type>/<index>`. This command will accept these as inputs:
+- `m/44'/111111'`
+- `m/44'/111111'/<account>'`
+- `m/44'/111111'/<account>'/<type>`
+- `m/44'/111111'/<account>'/<type>/<index>`
 
 | CData Part | Description |
 | --- | --- |
 | `purpose` | Must be `44'` or `80000002c` |
 | `coin_type` | Must be `111111'` or `8001b207` |
-| `account` | Current wallets all use `80000000` for `0'` for default account but any value is accepted |
-| `type` | Either `00000000` for Receive Address or `00000001` for Change Address |
-| `index` | Any value from `00000000` to `11111111` |
+| `account` | Current wallets all use `80000000` (aka. `0'`) for default account but any value from `00000000` to `11111111` is accepted if passed |
+| `type` | Current wallets use either `00000000` for Receive Address or `00000001` for Change Address, but any value from `00000000` to `11111111` is accepted if passed |
+| `index` | Any value from `00000000` to `11111111` if passed |
+
+If you want to generate addresses using a root public key,
 
 ### Response
 
@@ -171,8 +177,7 @@ Transactions signed with ECDSA are currently not supported.
 | 0xB008 | `SW_SIGNATURE_FAIL` | Signature of raw transaction failed |
 | 0xB009 | `SW_WRONG_BIP32_PURPOSE` | `Purpose` must be `44'` |
 | 0xB00A | `SW_WRONG_BIP32_COIN_TYPE` | `Coin Type` must be `111111'` |
-| 0xB00B | `SW_WRONG_BIP32_TYPE` | `Type` passed is not valid. Must be either `0`  for `Receive` or `1`  for `Change`|
-| 0xB00C | `SW_WRONG_BIP32_PATH_LEN` | Path length must be `5` |
+| 0xB00B | `SW_WRONG_BIP32_PATH_LEN` | Path length must be `5` |
 | 0xB010 | `SW_MESSAGE_PARSING_FAIL` | Unable to parse message data |
 | 0xB011 | `SW_MESSAGE_TOO_LONG` | Message len greater than max |
 | 0xB012 | `SW_MESSAGE_TOO_SHORT` | Message len is 0 |

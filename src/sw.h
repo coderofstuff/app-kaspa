@@ -86,8 +86,7 @@
 
 #define SW_WRONG_BIP32_PURPOSE        0xB009
 #define SW_WRONG_BIP32_COIN_TYPE      0xB00A
-#define SW_WRONG_BIP32_TYPE           0xB00B
-#define SW_WRONG_BIP32_PATH_LEN       0xB00C
+#define SW_WRONG_BIP32_PATH_LEN       0xB00B
 #define SW_MESSAGE_PARSING_FAIL       0xB010
 #define SW_MESSAGE_TOO_LONG           0xB011
 #define SW_MESSAGE_TOO_SHORT          0xB012

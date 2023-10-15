@@ -8,7 +8,7 @@ from utils import ROOT_SCREENSHOT_PATH
 
 # GET_PUBLIC_KEY works for valid cases in non-confirmation mode
 def test_get_public_key_no_confirm_valid(backend):
-    for path in ["m/44'/111111'/0'/0/0", "m/44'/111111'/0/0/0", "m/44'/111111'/911'/0/0", "m/44'/111111'/0/1/255", "m/44'/111111'/2147483647/0/0"]:
+    for path in ["m/44'/111111'/0'/0/0", "m/44'/111111'/0/0/0", "m/44'/111111'/911'/0/0", "m/44'/111111'/0/1/255", "m/44'/111111'/2147483647/0/0", "m/44'/111111'/0'/0/0", "m/44'/111111'/911'/3/0", "m/44'/111111'"]:
         client = KaspaCommandSender(backend)
         response = client.get_public_key(path=path).data
         _, public_key, _, chain_code = unpack_get_public_key_response(response)
@@ -24,8 +24,8 @@ def test_get_public_key_no_confirm_invalid(backend):
     for test_case in [
         ("m/33'/0'/0'/0/0", Errors.SW_WRONG_BIP32_PURPOSE),
         ("m/44'/0'/0/0/0", Errors.SW_WRONG_BIP32_COIN_TYPE),
-        ("m/44'/111111'/911'/3/0", Errors.SW_WRONG_BIP32_TYPE),
-        ("m/44'/111111'/2147483647/0", Errors.SW_WRONG_BIP32_PATH_LEN)
+        ("m/44'", Errors.SW_WRONG_BIP32_PATH_LEN),
+        ("m/44'/111111'/2147483647/0/0/0", Errors.SW_WRONG_BIP32_PATH_LEN)
     ]:
         client = KaspaCommandSender(backend)
         

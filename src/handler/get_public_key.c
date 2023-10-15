@@ -51,7 +51,7 @@ int handler_get_public_key(buffer_t *cdata, bool display) {
         return io_send_sw(SW_WRONG_DATA_LENGTH);
     }
 
-    if (G_context.bip32_path_len != 5) {
+    if (G_context.bip32_path_len < 2 || G_context.bip32_path_len > 5) {
         return io_send_sw(SW_WRONG_BIP32_PATH_LEN);
     }
 
@@ -61,11 +61,6 @@ int handler_get_public_key(buffer_t *cdata, bool display) {
 
     if (G_context.bip32_path[1] != (uint32_t) 0x8001b207) {
         return io_send_sw(SW_WRONG_BIP32_COIN_TYPE);
-    }
-
-    if (G_context.bip32_path[3] != (uint32_t) RECEIVE &&
-        G_context.bip32_path[3] != (uint32_t) CHANGE) {
-        return io_send_sw(SW_WRONG_BIP32_TYPE);
     }
 
     int error = bip32_derive_get_pubkey_256(CX_CURVE_256K1,
