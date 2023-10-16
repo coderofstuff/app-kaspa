@@ -97,7 +97,7 @@ static void continue_message_review(void) {
 
     // Info long press
     infoLongPress.icon = &C_stax_app_kaspa_64px;
-    infoLongPress.text = "Sign message";
+    infoLongPress.text = "Sign message?";
     infoLongPress.longPressText = "Hold to sign";
 
     nbgl_useCaseStaticReview(&pairList, &infoLongPress, "Reject message", review_message_choice);
@@ -124,7 +124,7 @@ int ui_display_message() {
                            G_context.msg_info.message_len);
 
     nbgl_useCaseReviewStart(&C_stax_app_kaspa_64px,
-                            "Sign Message",
+                            "Review Message",
                             NULL,
                             "Reject message",
                             continue_message_review,

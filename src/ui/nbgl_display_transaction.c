@@ -87,10 +87,10 @@ static void review_continue(void) {
     // Setup data to display
     pairs[0].item = "Amount";
     pairs[0].value = g_amount;
-    pairs[1].item = "Fees";
-    pairs[1].value = g_fees;
-    pairs[2].item = "To";
-    pairs[2].value = g_address;
+    pairs[1].item = "To";
+    pairs[1].value = g_address;
+    pairs[2].item = "Fees";
+    pairs[2].value = g_fees;
 
     // Setup list
     pairList.nbMaxLinesForValue = 0;
