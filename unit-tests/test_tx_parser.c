@@ -76,8 +76,6 @@ static int run_test_tx_serialize(uint8_t* raw_tx, size_t raw_tx_len) {
 
 static void test_tx_deserialization_fail(void **state) {
     (void) state;
-
-    transaction_t tx;
     
     // clang-format off
     uint8_t invalid_version[] = {
@@ -299,8 +297,6 @@ static int run_test_tx_output_serialize(uint8_t* raw_tx, size_t raw_tx_len) {
 static void test_tx_output_deserialization_fail(void **state) {
         (void) state;
 
-    transaction_output_t txout;
-
     // clang-format off
     uint8_t invalid_value[] = {
         // Value is only 7 bytes
@@ -360,22 +356,24 @@ static void test_tx_output_deserialization_fail(void **state) {
         0x00, OP_CHECKSIG
     };
 
-    uint8_t raw_tx[] = {
+    uint8_t invalid_p2sh_script_hash_len[] = {
         // Output
         0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x86, 0xa0,
-        0x21,
+        OP_BLAKE2B, 0x21,
         0xe1, 0x19, 0xd5, 0x35, 0x14, 0xc1, 0xb0, 0xe2,
         0xef, 0xce, 0x7a, 0x89, 0xe3, 0xd1, 0xd5, 0xd6,
         0xcd, 0x73, 0x58, 0x2e, 0xa2, 0x06, 0x87, 0x64,
         0x1c, 0x8f, 0xdc, 0xcb, 0x60, 0x60, 0xa9, 0xad,
-        0x00, OP_CHECKSIGECDSA
+        0x00, OP_EQUAL
     };
 
     assert_int_equal(run_test_tx_output_serialize(invalid_value, sizeof(invalid_value)), OUTPUT_VALUE_PARSING_ERROR);
     assert_int_equal(run_test_tx_output_serialize(invalid_script_start, sizeof(invalid_script_start)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
+    assert_int_equal(run_test_tx_output_serialize(invalid_script_end_schnorr, sizeof(invalid_script_end_ecdsa)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
     assert_int_equal(run_test_tx_output_serialize(invalid_script_end_ecdsa, sizeof(invalid_script_end_ecdsa)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
     assert_int_equal(run_test_tx_output_serialize(invalid_script_len, sizeof(invalid_script_len)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
     assert_int_equal(run_test_tx_output_serialize(invalid_p2sh_opcode, sizeof(invalid_p2sh_opcode)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
+    assert_int_equal(run_test_tx_output_serialize(invalid_p2sh_script_hash_len, sizeof(invalid_p2sh_script_hash_len)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
 }
 
 static void test_serialization_fail(void **state) {
