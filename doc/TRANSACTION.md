@@ -54,7 +54,7 @@ Total bytes: 43 (max)
 | Field | Size (bytes) | Description |
 | --- | --- | --- |
 | `value` | 8 | The amount of KAS in sompi that will go send to the address |
-| `script_public_key` | 35 | Schnorr: `20` + public_key (32 bytes) + `ac` <br/> ECDSA: `20` + public_key (33 bytes) + `ab` <br/> P2SH: `aa20` + public_key (32 bytes) + `87` |
+| `script_public_key` | 35 | Schnorr: `0x20` + public_key (32 bytes) + `0xac` <br/> ECDSA: `0x20` + public_key (33 bytes) + `0xab` <br/> P2SH: `0xaa, 0x20` + script_hash (32 bytes) + `0x87` |
 
 ### Transaction Requirements
 - Fee = (total inputs amount) - (total outputs amount)
