@@ -36,7 +36,7 @@ parser_status_e transaction_output_deserialize(buffer_t *buf, transaction_output
     size_t script_len = (size_t) * (buf->ptr + buf->offset);
 
     if (script_len == OP_BLAKE2B) {
-        // P2SH = 0xaa + 0x20 + (pubkey) + 0x87
+        // P2SH = 0xaa + 0x20 + (script hash) + 0x87
         // Total length = 35
         // script len is actually the second byte if the first one is 0xaa
         script_len = (size_t) * (buf->ptr + buf->offset + 1);
