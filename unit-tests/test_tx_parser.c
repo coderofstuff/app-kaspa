@@ -303,6 +303,11 @@ static void test_tx_output_deserialization_fail(void **state) {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x86
     };
 
+    uint8_t invalid_script_missing[] = {
+        // Value only, no script
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x86, 0x00
+    };
+
     uint8_t invalid_script_start[] = {
         // Start is not 0x20 or 0x21
         0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x86, 0xa0,
@@ -368,6 +373,7 @@ static void test_tx_output_deserialization_fail(void **state) {
     };
 
     assert_int_equal(run_test_tx_output_serialize(invalid_value, sizeof(invalid_value)), OUTPUT_VALUE_PARSING_ERROR);
+    assert_int_equal(run_test_tx_output_serialize(invalid_script_missing, sizeof(invalid_script_missing)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
     assert_int_equal(run_test_tx_output_serialize(invalid_script_start, sizeof(invalid_script_start)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
     assert_int_equal(run_test_tx_output_serialize(invalid_script_end_schnorr, sizeof(invalid_script_end_ecdsa)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
     assert_int_equal(run_test_tx_output_serialize(invalid_script_end_ecdsa, sizeof(invalid_script_end_ecdsa)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
