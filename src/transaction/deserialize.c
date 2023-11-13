@@ -33,13 +33,21 @@ parser_status_e transaction_output_deserialize(buffer_t *buf, transaction_output
         return OUTPUT_VALUE_PARSING_ERROR;
     }
 
-    size_t script_len = (size_t) * (buf->ptr + buf->offset);
+    if (!buffer_can_read(buf, 1)) {
+        return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
+    }
+
+    uint8_t script_len = (uint8_t) * (buf->ptr + buf->offset);
 
     if (script_len == OP_BLAKE2B) {
         // P2SH = 0xaa + 0x20 + (script hash) + 0x87
         // Total length = 35
         // script len is actually the second byte if the first one is 0xaa
-        script_len = (size_t) * (buf->ptr + buf->offset + 1);
+        if (!buffer_can_read(buf, 2)) {
+            return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
+        }
+
+        script_len = (uint8_t) * (buf->ptr + buf->offset + 1);
 
         // For P2SH, we expect len to always be 0x20
         if (script_len != 0x20) {

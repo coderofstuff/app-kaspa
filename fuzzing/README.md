@@ -5,14 +5,7 @@
 Change `~/ledger/app-kaspa` to wherever you actual `app-kaspa` folder is.
 
 ```
-docker run --rm -it -v ~/ledger/app-kaspa:/app ghcr.io/ledgerhq/ledger-app-builder/ledger-app-dev-tools:latest bash
-apk add build-base libc-dev linux-headers libexecinfo-dev compiler-rt
-apk del llvm15
-
-mkdir -p /usr/lib/clang/12.0.1/lib/linux/
-
-cp /app/fuzzing/llvm-headers/libclang_rt.asan-x86_64.a /usr/lib/clang/12.0.1/lib/linux/libclang_rt.asan-x86_64.a
-cp /app/fuzzing/llvm-headers/libclang_rt.fuzzer-x86_64.a /usr/lib/clang/12.0.1/lib/linux/libclang_rt.fuzzer-x86_64.a
+docker run --rm -it -v ~/ledger/app-kaspa:/app ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder-legacy:latest bash
 ```
 
 ## Compilation
@@ -40,13 +33,15 @@ make -C build
 
 ## LLVM Compile
 
-Use this if you want to build the LLVM from scratch.
+Use this if you want to build the LLVM from scratch and use it
 
 A pre-compiled version of the ones this fuzzing needs is in `llvm-headers`.
 
 Update your docker run to:
 ```
 docker run -it -v ~/ledger/app-kaspa:/app -v ~/llvm-project:/tmp/llvm-project ghcr.io/ledgerhq/ledger-app-builder/ledger-app-dev-tools:latest bash
+apk add build-base libc-dev linux-headers libexecinfo-dev compiler-rt
+apk del llvm15
 ```
 
 Clone the LLVM project from: https://github.com/llvm/llvm-project
