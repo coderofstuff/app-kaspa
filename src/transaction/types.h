@@ -77,7 +77,8 @@ typedef struct {
 
 typedef struct {
     uint64_t value;
-    uint8_t script_public_key[40];  // In hex: 20 + public_key_hex + ac (34/35 bytes total)
+    uint8_t script_public_key[SCRIPT_PUBLIC_KEY_BUFFER_LEN];  // In hex: 20 + public_key_hex + ac
+                                                              // (34/35 bytes total)
 } transaction_output_t;
 
 typedef struct {
