@@ -34,9 +34,6 @@
 #include "globals.h"
 #include "./constants.h"
 
-uint8_t outer_buffer[32] = {0};
-uint8_t inner_buffer[32] = {0};
-
 static bool hash_init(blake2b_state* hash, size_t size, uint8_t* key, size_t key_len) {
     if (key == NULL && key_len != 0) {
         goto err;
@@ -63,13 +60,17 @@ static bool hash_update(blake2b_state* hash, uint8_t* data, size_t len) {
     return blake2b_update(hash, data, len) == 0;
 }
 
-static bool hash_finalize(blake2b_state* hash, uint8_t* out) {
+static bool hash_finalize(blake2b_state* hash, uint8_t* out, size_t out_len) {
+    if (out_len < 32) {
+        return false;
+    }
     // blake2b_final returns 0 for success and -1 for any error
     return blake2b_final(hash, out, 32) == 0;
 }
 
-static bool calc_prev_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
+static bool calc_prev_outputs_hash(transaction_t* tx, uint8_t* out_hash, size_t out_len) {
     blake2b_state inner_hash_writer;
+    uint8_t inner_buffer[32] = {0};
     if (!hash_init(&inner_hash_writer, 256, (uint8_t*) SIGNING_KEY, 22)) {
         return false;
     }
@@ -85,11 +86,12 @@ static bool calc_prev_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
         }
     }
 
-    return hash_finalize(&inner_hash_writer, out_hash);
+    return hash_finalize(&inner_hash_writer, out_hash, out_len);
 }
 
-static bool calc_sequences_hash(transaction_t* tx, uint8_t* out_hash) {
+static bool calc_sequences_hash(transaction_t* tx, uint8_t* out_hash, size_t out_len) {
     blake2b_state inner_hash_writer;
+    uint8_t inner_buffer[32] = {0};
     if (!hash_init(&inner_hash_writer, 256, (uint8_t*) SIGNING_KEY, 22)) {
         return false;
     }
@@ -103,11 +105,12 @@ static bool calc_sequences_hash(transaction_t* tx, uint8_t* out_hash) {
         memset(inner_buffer, 0, sizeof(inner_buffer));
     }
 
-    return hash_finalize(&inner_hash_writer, out_hash);
+    return hash_finalize(&inner_hash_writer, out_hash, out_len);
 }
 
-static bool calc_sig_op_count_hash(transaction_t* tx, uint8_t* out_hash) {
+static bool calc_sig_op_count_hash(transaction_t* tx, uint8_t* out_hash, size_t out_len) {
     blake2b_state inner_hash_writer;
+    uint8_t inner_buffer[32] = {0};
     if (!hash_init(&inner_hash_writer, 256, (uint8_t*) SIGNING_KEY, 22)) {
         return false;
     }
@@ -120,11 +123,12 @@ static bool calc_sig_op_count_hash(transaction_t* tx, uint8_t* out_hash) {
         memset(inner_buffer, 0, sizeof(inner_buffer));
     }
 
-    return hash_finalize(&inner_hash_writer, out_hash);
+    return hash_finalize(&inner_hash_writer, out_hash, out_len);
 }
 
-static bool calc_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
+static bool calc_outputs_hash(transaction_t* tx, uint8_t* out_hash, size_t out_len) {
     blake2b_state inner_hash_writer;
+    uint8_t inner_buffer[32] = {0};
     if (!hash_init(&inner_hash_writer, 256, (uint8_t*) SIGNING_KEY, 22)) {
         return false;
     }
@@ -169,10 +173,13 @@ static bool calc_outputs_hash(transaction_t* tx, uint8_t* out_hash) {
         }
     }
 
-    return hash_finalize(&inner_hash_writer, out_hash);
+    return hash_finalize(&inner_hash_writer, out_hash, out_len);
 }
 
-static bool calc_txin_script_public_key(uint8_t* public_key, uint8_t* out_hash) {
+static bool calc_txin_script_public_key(uint8_t* public_key, uint8_t* out_hash, size_t out_len) {
+    if (out_len < 34) {
+        return false;
+    }
     // Assume schnorr
     out_hash[0] = 0x20;
     memmove(out_hash + 1, public_key, 32);
@@ -185,10 +192,10 @@ bool calc_sighash(transaction_t* tx,
                   transaction_input_t* txin,
                   uint8_t* public_key,
                   uint8_t* out_hash) {
+    uint8_t outer_buffer[36] = {0};
     blake2b_state sighash;
 
     memset(outer_buffer, 0, sizeof(outer_buffer));
-    memset(inner_buffer, 0, sizeof(inner_buffer));
 
     if (!hash_init(&sighash, 256, (uint8_t*) SIGNING_KEY, 22)) {
         return false;
@@ -202,7 +209,7 @@ bool calc_sighash(transaction_t* tx,
     memset(outer_buffer, 0, sizeof(outer_buffer));
 
     // Write previous outputs hash
-    if (!calc_prev_outputs_hash(tx, outer_buffer)) {
+    if (!calc_prev_outputs_hash(tx, outer_buffer, sizeof(outer_buffer))) {
         return false;
     }
     if (!hash_update(&sighash, outer_buffer, 32)) {
@@ -211,7 +218,7 @@ bool calc_sighash(transaction_t* tx,
     memset(outer_buffer, 0, sizeof(outer_buffer));
 
     // Write sequence hash
-    if (!calc_sequences_hash(tx, outer_buffer)) {
+    if (!calc_sequences_hash(tx, outer_buffer, sizeof(outer_buffer))) {
         return false;
     }
     if (!hash_update(&sighash, outer_buffer, 32)) {
@@ -220,7 +227,7 @@ bool calc_sighash(transaction_t* tx,
     memset(outer_buffer, 0, sizeof(outer_buffer));
 
     // Write sig op count hash
-    if (!calc_sig_op_count_hash(tx, outer_buffer)) {
+    if (!calc_sig_op_count_hash(tx, outer_buffer, sizeof(outer_buffer))) {
         return false;
     }
     if (!hash_update(&sighash, outer_buffer, 32)) {
@@ -251,7 +258,7 @@ bool calc_sighash(transaction_t* tx,
         return false;
     }
 
-    if (!calc_txin_script_public_key(public_key, outer_buffer)) {
+    if (!calc_txin_script_public_key(public_key, outer_buffer, sizeof(outer_buffer))) {
         return false;
     }
     if (!hash_update(&sighash, outer_buffer, script_len)) {
@@ -281,7 +288,7 @@ bool calc_sighash(transaction_t* tx,
     memset(outer_buffer, 0, sizeof(outer_buffer));
 
     // Write outputs hash
-    if (!calc_outputs_hash(tx, outer_buffer)) {
+    if (!calc_outputs_hash(tx, outer_buffer, sizeof(outer_buffer))) {
         return false;
     }
     if (!hash_update(&sighash, outer_buffer, 32)) {
@@ -313,5 +320,5 @@ bool calc_sighash(transaction_t* tx,
         return false;
     }
 
-    return hash_finalize(&sighash, out_hash);
+    return hash_finalize(&sighash, out_hash, sizeof(outer_buffer));
 }
