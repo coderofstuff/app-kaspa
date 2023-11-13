@@ -93,9 +93,9 @@ int crypto_sign_transaction(void) {
             }
 
             if (!calc_sighash(&G_context.tx_info.transaction,
-                         txin,
-                         public_key.W + 1,
-                         G_context.tx_info.sighash)) {
+                              txin,
+                              public_key.W + 1,
+                              G_context.tx_info.sighash)) {
                 return -1;
             }
 

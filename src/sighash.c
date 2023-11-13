@@ -143,9 +143,7 @@ static bool calc_outputs_hash(transaction_t* tx, uint8_t* out_hash, size_t out_l
         }
         memset(inner_buffer, 0, sizeof(inner_buffer));
 
-        if (!hash_update(&inner_hash_writer,
-                          inner_buffer,
-                          2)) {
+        if (!hash_update(&inner_hash_writer, inner_buffer, 2)) {
             // Write the output script version, assume 0
             return false;
         }

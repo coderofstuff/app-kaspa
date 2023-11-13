@@ -38,7 +38,10 @@ bool transaction_utils_check_encoding(const uint8_t* memo, uint64_t memo_len) {
     return true;
 }
 
-bool script_public_key_to_address(uint8_t* out_address, size_t out_len, uint8_t* in_script_public_key, size_t script_len) {
+bool script_public_key_to_address(uint8_t* out_address,
+                                  size_t out_len,
+                                  uint8_t* in_script_public_key,
+                                  size_t script_len) {
     uint8_t public_key[64] = {0};
 
     // script public keys are always at least 32 bytes. We'll check this again
@@ -46,7 +49,7 @@ bool script_public_key_to_address(uint8_t* out_address, size_t out_len, uint8_t*
     if (script_len < 32) {
         return false;
     }
-    
+
     // public script keys begin with the length, followed by the amount of data
     size_t first_byte = (size_t) in_script_public_key[0];
     address_type_e type = SCHNORR;

@@ -88,8 +88,10 @@ bool address_from_pubkey(const uint8_t public_key[static 64],
     // For schnorr, compressed public key we care about is the X coordinate
     // For ecdsa, compress public key is 1 byte (y-coord: 0x02 if even, 0x03 if odd) then X
     // coordinate
-    size_t compressed_pub_size =
-        compress_public_key(public_key, address_type, compressed_public_key, sizeof(compressed_public_key));
+    size_t compressed_pub_size = compress_public_key(public_key,
+                                                     address_type,
+                                                     compressed_public_key,
+                                                     sizeof(compressed_public_key));
 
     if (compressed_pub_size == 0) {
         return false;
