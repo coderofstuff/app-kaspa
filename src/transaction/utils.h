@@ -46,10 +46,12 @@ bool transaction_utils_check_encoding(const uint8_t* memo, uint64_t memo_len);
  *
  * @param[out] out_address
  *   Pointer to the buffer to write the address to
+ * @param[in] out_len length of output buffer
  * @param[in] in_script_public_key
  *   Pointer to the buffer to read script_public_key from
+ * @param[in] script_len length of script output buffer
  */
-void script_public_key_to_address(uint8_t* out_address, uint8_t* in_script_public_key);
+void script_public_key_to_address(uint8_t* out_address, size_t out_len, uint8_t* in_script_public_key, size_t script_len);
 
 /**
  * Calculate the fees by checking the difference between inputs and outputs

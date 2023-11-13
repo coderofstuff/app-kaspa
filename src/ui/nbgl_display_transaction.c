@@ -141,7 +141,9 @@ int ui_display_transaction() {
     uint8_t address[ECDSA_ADDRESS_LEN] = {0};
 
     script_public_key_to_address(address,
-                                 G_context.tx_info.transaction.tx_outputs[0].script_public_key);
+                                 sizeof(address),
+                                 G_context.tx_info.transaction.tx_outputs[0].script_public_key,
+                                 SCRIPT_PUBLIC_KEY_BUFFER_LEN);
     snprintf(g_address, sizeof(g_address), "%.*s", ECDSA_ADDRESS_LEN, address);
 
     // Start review
