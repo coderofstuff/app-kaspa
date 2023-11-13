@@ -33,12 +33,19 @@
 
 size_t compress_public_key(const uint8_t public_key[static 64],
                            address_type_e address_type,
-                           uint8_t *out) {
+                           uint8_t *out,
+                           size_t out_len) {
     size_t compressed_pub_size = 0;
     if (address_type == SCHNORR || address_type == P2SH) {
         compressed_pub_size = 32;
+        if (out_len < 32) {
+            return 0;
+        }
         memmove(out, public_key, 32);
     } else if (address_type == ECDSA) {
+        if (out_len < 33) {
+            return 0;
+        }
         compressed_pub_size = 33;
         // If Y coord is even, first byte is 0x02. if odd then 0x03
         out[0] = public_key[63] % 2 == 0 ? 0x02 : 0x03;
@@ -82,7 +89,7 @@ bool address_from_pubkey(const uint8_t public_key[static 64],
     // For ecdsa, compress public key is 1 byte (y-coord: 0x02 if even, 0x03 if odd) then X
     // coordinate
     size_t compressed_pub_size =
-        compress_public_key(public_key, address_type, compressed_public_key);
+        compress_public_key(public_key, address_type, compressed_public_key, sizeof(compressed_public_key));
 
     if (compressed_pub_size == 0) {
         return false;
