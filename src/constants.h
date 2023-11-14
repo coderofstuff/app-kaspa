@@ -69,3 +69,4 @@
 
 #define MAX_OUTPUT_COUNT             2
 #define SCRIPT_PUBLIC_KEY_BUFFER_LEN 40
+#define KASPA_MAX_BIP32_PATH_LEN     5

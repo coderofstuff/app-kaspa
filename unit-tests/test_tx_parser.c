@@ -41,7 +41,7 @@ static void test_tx_serialization(void **state) {
     tx.tx_output_len = 2;
     tx.tx_input_len = 3;
 
-    uint32_t path[5] = {0};
+    uint32_t path[KASPA_MAX_BIP32_PATH_LEN] = {0};
     
     // clang-format off
     uint8_t raw_tx[] = {
@@ -69,7 +69,7 @@ static int run_test_tx_serialize(uint8_t* raw_tx, size_t raw_tx_len) {
 
     buffer_t buf = {.ptr = raw_tx, .size = raw_tx_len, .offset = 0};
 
-    uint32_t path[5] = {0};
+    uint32_t path[KASPA_MAX_BIP32_PATH_LEN] = {0};
 
     return transaction_deserialize(&buf, &tx, path);
 }
@@ -388,7 +388,7 @@ static void test_serialization_fail(void **state) {
     transaction_input_t txin;
 
     uint8_t buffer[1] = {0};
-    uint32_t path[5] = {0};
+    uint32_t path[KASPA_MAX_BIP32_PATH_LEN] = {0};
 
     assert_int_equal(transaction_serialize(&tx, path, buffer, sizeof(buffer)), -1);
     assert_int_equal(transaction_output_serialize(&txout, buffer, sizeof(buffer)), -1);
