@@ -26,4 +26,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-bool hash_personal_message(uint8_t* message_bytes, size_t message_byte_len, uint8_t* out_hash);
+bool hash_personal_message(uint8_t* message_bytes,
+                           size_t message_byte_len,
+                           uint8_t* out_hash,
+                           size_t out_len);

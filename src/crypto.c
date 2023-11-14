@@ -95,7 +95,8 @@ int crypto_sign_transaction(void) {
             if (!calc_sighash(&G_context.tx_info.transaction,
                               txin,
                               public_key.W + 1,
-                              G_context.tx_info.sighash)) {
+                              G_context.tx_info.sighash,
+                              sizeof(G_context.tx_info.sighash))) {
                 return -1;
             }
 
@@ -122,9 +123,12 @@ int crypto_sign_transaction(void) {
 }
 
 int crypto_sign_personal_message(void) {
-    hash_personal_message(G_context.msg_info.message,
-                          G_context.msg_info.message_len,
-                          G_context.msg_info.message_hash);
+    if (!hash_personal_message(G_context.msg_info.message,
+                               G_context.msg_info.message_len,
+                               G_context.msg_info.message_hash,
+                               sizeof(G_context.msg_info.message_hash))) {
+        return -1;
+    }
 
     cx_ecfp_private_key_t private_key = {0};
     uint8_t chain_code[32] = {0};

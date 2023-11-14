@@ -189,7 +189,11 @@ static bool calc_txin_script_public_key(uint8_t* public_key, uint8_t* out_hash, 
 bool calc_sighash(transaction_t* tx,
                   transaction_input_t* txin,
                   uint8_t* public_key,
-                  uint8_t* out_hash) {
+                  uint8_t* out_hash,
+                  size_t out_len) {
+    if (out_len < 32) {
+        return false;
+    }
     uint8_t outer_buffer[36] = {0};
     blake2b_state sighash;
 
@@ -318,5 +322,5 @@ bool calc_sighash(transaction_t* tx,
         return false;
     }
 
-    return hash_finalize(&sighash, out_hash, sizeof(outer_buffer));
+    return hash_finalize(&sighash, out_hash, out_len);
 }

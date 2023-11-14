@@ -135,6 +135,10 @@ parser_status_e transaction_input_deserialize(buffer_t *buf, transaction_input_t
 }
 
 parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx, uint32_t *bip32_path) {
+    if (KASPA_MAX_BIP32_PATH_LEN < 5) {
+        return HEADER_PARSING_ERROR;
+    }
+
     uint8_t n_output = 0;
     uint8_t n_input = 0;
     uint8_t change_address_type = 0;

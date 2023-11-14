@@ -99,7 +99,7 @@ static void test_sighash(void **state) {
     tx.tx_output_len = 1;
 
     uint8_t out_hash[32] = {0};
-    bool success = calc_sighash(&tx, &txin, input_public_key_data, out_hash);
+    bool success = calc_sighash(&tx, &txin, input_public_key_data, out_hash, sizeof(out_hash));
 
     uint8_t res[32] = {0x7c, 0xcd, 0xa6, 0xc6, 0x4a, 0x18, 0x1e, 0x62,
                        0x63, 0xf0, 0xee, 0xe2, 0xed, 0xc8, 0x59, 0xdb,
@@ -152,7 +152,7 @@ static void test_sighash_zeros(void **state) {
     tx.tx_output_len = 1;
 
     uint8_t out_hash[32] = {0};
-    bool success = calc_sighash(&tx, &txin, input_public_key_data, out_hash);
+    bool success = calc_sighash(&tx, &txin, input_public_key_data, out_hash, sizeof(out_hash));
 
     uint8_t res[32] = {0x61, 0x2d, 0x56, 0xe6, 0x33, 0xee, 0x5d, 0xa1,
                        0xca, 0xa4, 0x56, 0x3c, 0x6a, 0xce, 0x0c, 0x98,
