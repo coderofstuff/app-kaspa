@@ -31,7 +31,7 @@
 #include <cmocka.h>
 
 #include "types.h"
-#include "apdu/parser.h"
+#include "parser.h"
 
 static void test_apdu_parser(void **state) {
     (void) state;
@@ -42,10 +42,11 @@ static void test_apdu_parser(void **state) {
     command_t cmd;
 
     memset(&cmd, 0, sizeof(cmd));
-    assert_false(apdu_parser(&cmd, apdu_bad_min_len, sizeof(apdu_bad_min_len)));
+    assert_true(apdu_parser(&cmd, apdu_bad_min_len, sizeof(apdu_bad_min_len)));
+    assert_int_equal(cmd.lc, 0);
 
     memset(&cmd, 0, sizeof(cmd));
-    assert_false(apdu_parser(&cmd, apdu_bad_lc, sizeof(apdu_bad_min_len)));
+    assert_false(apdu_parser(&cmd, apdu_bad_lc, sizeof(apdu_bad_lc)));
 
     memset(&cmd, 0, sizeof(cmd));
     assert_true(apdu_parser(&cmd, apdu, sizeof(apdu)));
