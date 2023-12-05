@@ -8,6 +8,7 @@
 | `GET_APP_NAME` | 0x04 | Get ASCII encoded application name |
 | `GET_PUBLIC_KEY` | 0x05 | Get public key given BIP32 path |
 | `SIGN_TX` | 0x06 | Sign transaction given transaction info, utxos and outputs |
+| `SIGN_MESSAGE` | 0x07 | Sign the personal message |
 
 ## GET_VERSION
 
@@ -55,11 +56,11 @@ Keys for kaspa normally use the derivation path `m/44'/111111'/<account>'/<type>
 
 | CData Part | Description |
 | --- | --- |
-| `purpose` | Must be `44'` or `80000002c` |
-| `coin_type` | Must be `111111'` or `8001b207` |
-| `account` | Current wallets all use `80000000` (aka. `0'`) for default account but any value from `00000000` to `11111111` is accepted if passed |
-| `type` | Current wallets use either `00000000` for Receive Address or `00000001` for Change Address, but any value from `00000000` to `11111111` is accepted if passed |
-| `index` | Any value from `00000000` to `11111111` if passed |
+| `purpose` | Must be `44'` or `0x80000002c` |
+| `coin_type` | Must be `111111'` or `0x8001b207` |
+| `account` | Current wallets all use `0x80000000` (aka. `0'`) for default account but any value from `0x80000000` to `0xFFFFFFFF` is accepted if passed |
+| `type` | Current wallets use either `0x00000000` for Receive Address or `0x00000001` for Change Address, but any value from `0x00000000` to `0xFFFFFFFF` is accepted if passed |
+| `index` | Any value from `0x00000000` to `0xFFFFFFFF` if passed |
 
 If you want to generate addresses using a root public key,
 
@@ -88,7 +89,7 @@ Transactions signed with ECDSA are currently not supported.
 
 | P1 Value | Usage | CData |
 | --- | --- | --- |
-| 0x00 | Sending transaction metadata | `version (2)` \|\| `output_len (1)` \|\| `input_len (1)` |
+| 0x00 | Sending transaction metadata | `version (2)` \|\| `output_len (1)` \|\| `input_len (1)` \|\| `change_address_type (1)` \|\| `change_address_index (4)` \|\| `account (4)` |
 | 0x01 | Sending a tx output | `value (8)` \|\| `script_public_key (34/35)` |
 | 0x02 | Sending a tx input | `value (8)` \|\| `tx_id (32)` \|\| `address_type (1)` \|\| `address_index (4)` \|\| `outpoint_index (1)` |
 | 0x03 | Requesting for next signature | - |
@@ -102,7 +103,7 @@ Transactions signed with ECDSA are currently not supported.
 `P2` value is used only if `P1 in {0x00, 0x01, 0x02}`. If `P1 = 0x03`, `P2` is ignored.
 
 #### Flow
-1. Send the first APDU `P1 = 0x00` with the version, output length and input length
+1. Send the first APDU `P1 = 0x00` with the version, output length and input length, change address type and index, and account (for UTXOs and change)
 2. For each output (up to 2), send `P1 = 0x01` with the output CData
 3. For each UTXO input send `P1 = 0x02` with the input CData. When sending the last UTXO input set `P2 = 0x00` to indicate that it is the last APDU. The signatures will later be sent back to you in the same order these inputs come in.
 4. [Display] User will be able to view the transaction info and choose to `Approve` or `Reject`.

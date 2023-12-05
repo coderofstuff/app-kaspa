@@ -25,12 +25,16 @@ For ECDSA-signed addresses (supported by this app only as a send address), it be
 | `n_outputs` | 1 | The number of outputs. Exactly 1 or 2.
 | `change_address_type` | 1 | `0` if `RECEIVE` or `1` if `CHANGE`* |
 | `change_address_index` | 4 | `0x00000000` to `0xFFFFFFFF`**|
+| `account` | 4 | `0x80000000` to `0xFFFFFFFF`, normally should use `0x80000000` (the default account)***|
 
 \* While this will be used for the change, the path may be either `RECEIVE` or `CHANGE`.
 This is necessary in case the user wants to send the change back to the same address.
 In this case, the `change_address_type` has to be set to `RECEIVE`.
 
 \*\* `change_address_type` and `change_address_index` are ignored if `n_outputs == 1`. If `n_outputs == 2` then the path defined here must resolve to the same `script_public_key` in `outputs[1]`.
+
+\*\*\* `account` is the BIP44 account. A transaction can only come from a single account. Current Kaspa ecosystem only uses `0'` (or `0x80000000`) but support this is in anticipation of wider account-based support.
+
 ### Transaction Input
 
 Total bytes: 46
