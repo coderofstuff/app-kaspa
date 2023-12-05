@@ -46,6 +46,9 @@ int transaction_serialize(const transaction_t *tx, uint32_t *path, uint8_t *out,
     write_u32_be(out, offset, path[4]);
     offset += 4;
 
+    write_u32_be(out, offset, path[2]);
+    offset += 4;
+
     return (int) offset;
 }
 

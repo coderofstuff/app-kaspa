@@ -48,7 +48,8 @@ static void test_tx_serialization(void **state) {
         // header
         0x00, 0x01, 0x02, 0x03,
         0x01,
-        0x04, 0x05, 0x06, 0xFF
+        0x04, 0x05, 0x06, 0xFF,
+        0x80, 0x00, 0x00, 0x00
     };
 
     buffer_t buf = {.ptr = raw_tx, .size = sizeof(raw_tx), .offset = 0};
@@ -103,12 +104,27 @@ static void test_tx_deserialization_fail(void **state) {
         0x00, 0x01, 0x02, 0x03, 0x02
     };
 
+    uint8_t invalid_change_index[] = {
+        0x00, 0x01, 0x02, 0x03, 0x01, 0x00, 0x00, 0x00
+    };
+
+    uint8_t invalid_account[] = {
+        0x00, 0x01, 0x02, 0x03, 0x01, 0x7F, 0xFF, 0xFF
+    };
+
+    uint8_t invalid_account_too_low[] = {
+        0x00, 0x01, 0x02, 0x03, 0x01, 0x7F, 0xFF, 0xFF, 0xFF
+    };
+
     assert_int_equal(run_test_tx_serialize(invalid_version, sizeof(invalid_version)), VERSION_PARSING_ERROR);
     assert_int_equal(run_test_tx_serialize(missing_outlen, sizeof(missing_outlen)), OUTPUTS_LENGTH_PARSING_ERROR);
     assert_int_equal(run_test_tx_serialize(invalid_outlen, sizeof(invalid_outlen)), OUTPUTS_LENGTH_PARSING_ERROR);
     assert_int_equal(run_test_tx_serialize(missing_inlen, sizeof(missing_inlen)), INPUTS_LENGTH_PARSING_ERROR);
     assert_int_equal(run_test_tx_serialize(invalid_inlen, sizeof(invalid_inlen)), INPUTS_LENGTH_PARSING_ERROR);
     assert_int_equal(run_test_tx_serialize(invalid_change_type, sizeof(invalid_change_type)), HEADER_PARSING_ERROR);
+    assert_int_equal(run_test_tx_serialize(invalid_change_index, sizeof(invalid_change_type)), HEADER_PARSING_ERROR);
+    assert_int_equal(run_test_tx_serialize(invalid_account, sizeof(invalid_change_type)), HEADER_PARSING_ERROR);
+    assert_int_equal(run_test_tx_serialize(invalid_account_too_low, sizeof(invalid_change_type)), HEADER_PARSING_ERROR);
 }
 
 static void test_tx_input_serialization(void **state) {
