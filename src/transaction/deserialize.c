@@ -183,9 +183,18 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx, uint32
         return HEADER_PARSING_ERROR;
     }
 
+    if (!buffer_read_u32(buf, &tx->account, BE)) {
+        return HEADER_PARSING_ERROR;
+    }
+
+    // Account must be hardened
+    if (tx->account < 0x80000000) {
+        return HEADER_PARSING_ERROR;
+    }
+
     bip32_path[0] = 0x8000002C;
     bip32_path[1] = 0x8001b207;
-    bip32_path[2] = 0x80000000;
+    bip32_path[2] = tx->account;
     bip32_path[3] = (uint32_t)(change_address_type);
     bip32_path[4] = change_address_index;
 
