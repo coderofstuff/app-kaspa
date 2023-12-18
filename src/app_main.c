@@ -32,7 +32,7 @@
 #include "io.h"
 #include "sw.h"
 #include "ui/menu.h"
-#include "apdu/parser.h"
+#include "parser.h"
 #include "apdu/dispatcher.h"
 
 global_ctx_t G_context;
