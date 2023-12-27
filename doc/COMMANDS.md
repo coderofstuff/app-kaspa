@@ -134,12 +134,13 @@ Transactions signed with ECDSA are currently not supported.
 
 | CLA | INS | P1 | P2 | Lc | CData |
 | --- | --- | --- | --- | --- | --- |
-| 0xE0 | 0x07 | 0x00 | 0x00 | var | `address_type (1)` \|\| `address_index (4)` \|\|<br>`message_len (1 bytes)` \|\| `message (var bytes)` |
+| 0xE0 | 0x07 | 0x00 | 0x00 | var | `address_type (1)` \|\| `address_index (4)` \|\|<br>`account (4)` \|\|<br>`message_len (1 bytes)` \|\| `message (var bytes)` |
 
 | CData Part | Description |
 | --- | --- |
 | `address_type` | Either `00` for Receive Address or `01` for Change Address |
-| `address_index` | Any value from `00000000` to `11111111` |
+| `address_index` | Any value from `00000000` to `FFFFFFFF` |
+| `account` | Any value from `80000000` to `FFFFFFFF` |
 | `message_len` | How long the message is. Must be a value from `1` to `128`, inclusive |
 | `message` | The message to sign |
 
