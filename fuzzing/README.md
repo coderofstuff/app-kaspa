@@ -5,7 +5,7 @@
 Change `~/ledger/app-kaspa` to wherever you actual `app-kaspa` folder is.
 
 ```
-docker run --rm -it -v ~/ledger/app-kaspa:/app ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder-legacy:latest bash
+docker run --rm -it -v ~/kaspa/ledger/app-kaspa:/app ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder-legacy:latest bash
 ```
 
 ## Compilation

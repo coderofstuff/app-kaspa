@@ -85,6 +85,7 @@ typedef struct {
     // For signature purposes:
     // Based on: https://kaspa-mdbook.aspectron.com/transactions/constraints/size.html
     uint16_t version;
+    uint32_t account;     // The BIP44 account used for inputs in this transaction
     size_t tx_input_len;  // check
     size_t tx_output_len;
 

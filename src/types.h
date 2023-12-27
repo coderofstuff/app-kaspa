@@ -96,6 +96,7 @@ typedef struct {
     uint8_t message[128];                /// message bytes
     uint8_t message_hash[32];            /// message hash
     uint8_t signature[MAX_DER_SIG_LEN];  /// signature of the message
+    uint32_t account;                    /// The account this message will be signed with
     uint8_t address_type;                /// address type to use for bip32 path
     uint32_t address_index;              /// address index to use for bip32 path
 } message_sign_ctx_t;
