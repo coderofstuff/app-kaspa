@@ -41,14 +41,15 @@ static void test_tx_serialization(void **state) {
     tx.tx_output_len = 2;
     tx.tx_input_len = 3;
 
-    uint32_t path[5] = {0};
+    uint32_t path[KASPA_MAX_BIP32_PATH_LEN] = {0};
     
     // clang-format off
     uint8_t raw_tx[] = {
         // header
         0x00, 0x01, 0x02, 0x03,
         0x01,
-        0x04, 0x05, 0x06, 0xFF
+        0x04, 0x05, 0x06, 0xFF,
+        0x80, 0x00, 0x00, 0x00
     };
 
     buffer_t buf = {.ptr = raw_tx, .size = sizeof(raw_tx), .offset = 0};
@@ -69,15 +70,13 @@ static int run_test_tx_serialize(uint8_t* raw_tx, size_t raw_tx_len) {
 
     buffer_t buf = {.ptr = raw_tx, .size = raw_tx_len, .offset = 0};
 
-    uint32_t path[5] = {0};
+    uint32_t path[KASPA_MAX_BIP32_PATH_LEN] = {0};
 
     return transaction_deserialize(&buf, &tx, path);
 }
 
 static void test_tx_deserialization_fail(void **state) {
     (void) state;
-
-    transaction_t tx;
     
     // clang-format off
     uint8_t invalid_version[] = {
@@ -105,12 +104,27 @@ static void test_tx_deserialization_fail(void **state) {
         0x00, 0x01, 0x02, 0x03, 0x02
     };
 
+    uint8_t invalid_change_index[] = {
+        0x00, 0x01, 0x02, 0x03, 0x01, 0x00, 0x00, 0x00
+    };
+
+    uint8_t invalid_account[] = {
+        0x00, 0x01, 0x02, 0x03, 0x01, 0x7F, 0xFF, 0xFF
+    };
+
+    uint8_t invalid_account_too_low[] = {
+        0x00, 0x01, 0x02, 0x03, 0x01, 0x7F, 0xFF, 0xFF, 0xFF
+    };
+
     assert_int_equal(run_test_tx_serialize(invalid_version, sizeof(invalid_version)), VERSION_PARSING_ERROR);
     assert_int_equal(run_test_tx_serialize(missing_outlen, sizeof(missing_outlen)), OUTPUTS_LENGTH_PARSING_ERROR);
     assert_int_equal(run_test_tx_serialize(invalid_outlen, sizeof(invalid_outlen)), OUTPUTS_LENGTH_PARSING_ERROR);
     assert_int_equal(run_test_tx_serialize(missing_inlen, sizeof(missing_inlen)), INPUTS_LENGTH_PARSING_ERROR);
     assert_int_equal(run_test_tx_serialize(invalid_inlen, sizeof(invalid_inlen)), INPUTS_LENGTH_PARSING_ERROR);
     assert_int_equal(run_test_tx_serialize(invalid_change_type, sizeof(invalid_change_type)), HEADER_PARSING_ERROR);
+    assert_int_equal(run_test_tx_serialize(invalid_change_index, sizeof(invalid_change_type)), HEADER_PARSING_ERROR);
+    assert_int_equal(run_test_tx_serialize(invalid_account, sizeof(invalid_change_type)), HEADER_PARSING_ERROR);
+    assert_int_equal(run_test_tx_serialize(invalid_account_too_low, sizeof(invalid_change_type)), HEADER_PARSING_ERROR);
 }
 
 static void test_tx_input_serialization(void **state) {
@@ -299,12 +313,15 @@ static int run_test_tx_output_serialize(uint8_t* raw_tx, size_t raw_tx_len) {
 static void test_tx_output_deserialization_fail(void **state) {
         (void) state;
 
-    transaction_output_t txout;
-
     // clang-format off
     uint8_t invalid_value[] = {
         // Value is only 7 bytes
         0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x86
+    };
+
+    uint8_t invalid_script_missing[] = {
+        // Value only, no script
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x86, 0x00
     };
 
     uint8_t invalid_script_start[] = {
@@ -360,22 +377,25 @@ static void test_tx_output_deserialization_fail(void **state) {
         0x00, OP_CHECKSIG
     };
 
-    uint8_t raw_tx[] = {
+    uint8_t invalid_p2sh_script_hash_len[] = {
         // Output
         0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x86, 0xa0,
-        0x21,
+        OP_BLAKE2B, 0x21,
         0xe1, 0x19, 0xd5, 0x35, 0x14, 0xc1, 0xb0, 0xe2,
         0xef, 0xce, 0x7a, 0x89, 0xe3, 0xd1, 0xd5, 0xd6,
         0xcd, 0x73, 0x58, 0x2e, 0xa2, 0x06, 0x87, 0x64,
         0x1c, 0x8f, 0xdc, 0xcb, 0x60, 0x60, 0xa9, 0xad,
-        0x00, OP_CHECKSIGECDSA
+        0x00, OP_EQUAL
     };
 
     assert_int_equal(run_test_tx_output_serialize(invalid_value, sizeof(invalid_value)), OUTPUT_VALUE_PARSING_ERROR);
+    assert_int_equal(run_test_tx_output_serialize(invalid_script_missing, sizeof(invalid_script_missing)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
     assert_int_equal(run_test_tx_output_serialize(invalid_script_start, sizeof(invalid_script_start)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
+    assert_int_equal(run_test_tx_output_serialize(invalid_script_end_schnorr, sizeof(invalid_script_end_ecdsa)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
     assert_int_equal(run_test_tx_output_serialize(invalid_script_end_ecdsa, sizeof(invalid_script_end_ecdsa)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
     assert_int_equal(run_test_tx_output_serialize(invalid_script_len, sizeof(invalid_script_len)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
     assert_int_equal(run_test_tx_output_serialize(invalid_p2sh_opcode, sizeof(invalid_p2sh_opcode)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
+    assert_int_equal(run_test_tx_output_serialize(invalid_p2sh_script_hash_len, sizeof(invalid_p2sh_script_hash_len)), OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR);
 }
 
 static void test_serialization_fail(void **state) {
@@ -384,7 +404,7 @@ static void test_serialization_fail(void **state) {
     transaction_input_t txin;
 
     uint8_t buffer[1] = {0};
-    uint32_t path[5] = {0};
+    uint32_t path[KASPA_MAX_BIP32_PATH_LEN] = {0};
 
     assert_int_equal(transaction_serialize(&tx, path, buffer, sizeof(buffer)), -1);
     assert_int_equal(transaction_output_serialize(&txout, buffer, sizeof(buffer)), -1);

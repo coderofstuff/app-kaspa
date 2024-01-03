@@ -26,14 +26,12 @@
 #include <string.h>
 #include <sys/types.h>
 
-extern "C" {
 #include "buffer.h"
-#include "common/format_local.h"
+#include "format.h"
 #include "transaction/deserialize.h"
 #include "transaction/types.h"
-}
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     buffer_t buf = {.ptr = data, .size = size, .offset = 0};
     transaction_output_t txout;
     parser_status_e status;

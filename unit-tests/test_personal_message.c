@@ -59,7 +59,7 @@ static void test_hash_personal_message_vector0(void **state) {
 
     uint8_t out_hash[32] = {0};
 
-    bool result = hash_personal_message((uint8_t*) message, 12, out_hash);
+    bool result = hash_personal_message((uint8_t*) message, 12, out_hash, sizeof(out_hash));
 
     assert_true(result);
 

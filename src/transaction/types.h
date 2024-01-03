@@ -77,13 +77,15 @@ typedef struct {
 
 typedef struct {
     uint64_t value;
-    uint8_t script_public_key[40];  // In hex: 20 + public_key_hex + ac (34/35 bytes total)
+    uint8_t script_public_key[SCRIPT_PUBLIC_KEY_BUFFER_LEN];  // In hex: 20 + public_key_hex + ac
+                                                              // (34/35 bytes total)
 } transaction_output_t;
 
 typedef struct {
     // For signature purposes:
     // Based on: https://kaspa-mdbook.aspectron.com/transactions/constraints/size.html
     uint16_t version;
+    uint32_t account;     // The BIP44 account used for inputs in this transaction
     size_t tx_input_len;  // check
     size_t tx_output_len;
 

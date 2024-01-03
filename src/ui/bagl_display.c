@@ -23,9 +23,6 @@
  *****************************************************************************/
 #ifdef HAVE_BAGL
 
-#pragma GCC diagnostic ignored "-Wformat-invalid-specifier"  // snprintf
-#pragma GCC diagnostic ignored "-Wformat-extra-args"         // snprintf
-
 #include <stdbool.h>  // bool
 #include <string.h>   // memset
 
@@ -218,8 +215,11 @@ int ui_display_transaction() {
 
     uint8_t address[ECDSA_ADDRESS_LEN] = {0};
 
-    script_public_key_to_address(address,
-                                 G_context.tx_info.transaction.tx_outputs[0].script_public_key);
+    script_public_key_to_address(
+        address,
+        sizeof(address),
+        G_context.tx_info.transaction.tx_outputs[0].script_public_key,
+        sizeof(G_context.tx_info.transaction.tx_outputs[0].script_public_key));
     snprintf(g_address, sizeof(g_address), "%.*s", ECDSA_ADDRESS_LEN, address);
 
     g_validate_callback = &ui_action_validate_transaction;

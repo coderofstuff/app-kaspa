@@ -39,7 +39,8 @@
  */
 size_t compress_public_key(const uint8_t public_key[static 64],
                            address_type_e address_type,
-                           uint8_t *out);
+                           uint8_t *out,
+                           size_t out_len);
 
 /**
  * Convert public key to address.

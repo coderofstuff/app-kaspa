@@ -63,10 +63,10 @@ int crypto_sign_transaction(void) {
     transaction_input_t *txin =
         &G_context.tx_info.transaction.tx_inputs[G_context.tx_info.signing_input_index];
 
-    // 44'/111111'/0'/ address_type / address_index
+    // 44'/111111'/account'/ address_type / address_index
     G_context.bip32_path[0] = 0x8000002C;
     G_context.bip32_path[1] = 0x8001b207;
-    G_context.bip32_path[2] = 0x80000000;
+    G_context.bip32_path[2] = G_context.tx_info.transaction.account;
     G_context.bip32_path[3] = (uint32_t)(txin->address_type);
     G_context.bip32_path[4] = txin->address_index;
 
@@ -92,10 +92,13 @@ int crypto_sign_transaction(void) {
                 return error;
             }
 
-            calc_sighash(&G_context.tx_info.transaction,
-                         txin,
-                         public_key.W + 1,
-                         G_context.tx_info.sighash);
+            if (!calc_sighash(&G_context.tx_info.transaction,
+                              txin,
+                              public_key.W + 1,
+                              G_context.tx_info.sighash,
+                              sizeof(G_context.tx_info.sighash))) {
+                return -1;
+            }
 
             size_t sig_len = sizeof(G_context.tx_info.signature);
             error = cx_ecschnorr_sign_no_throw(&private_key,
@@ -120,9 +123,12 @@ int crypto_sign_transaction(void) {
 }
 
 int crypto_sign_personal_message(void) {
-    hash_personal_message(G_context.msg_info.message,
-                          G_context.msg_info.message_len,
-                          G_context.msg_info.message_hash);
+    if (!hash_personal_message(G_context.msg_info.message,
+                               G_context.msg_info.message_len,
+                               G_context.msg_info.message_hash,
+                               sizeof(G_context.msg_info.message_hash))) {
+        return -1;
+    }
 
     cx_ecfp_private_key_t private_key = {0};
     uint8_t chain_code[32] = {0};
