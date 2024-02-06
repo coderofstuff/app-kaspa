@@ -61,6 +61,14 @@ int handler_sign_msg(buffer_t *cdata) {
         return io_send_sw(SW_MESSAGE_ADDRESS_TYPE_FAIL);
     }
 
+    if (!buffer_read_u32(cdata, &G_context.msg_info.account, BE)) {
+        return io_send_sw(SW_MESSAGE_ADDRESS_TYPE_FAIL);
+    }
+
+    if (G_context.msg_info.account < 0x80000000) {
+        return io_send_sw(SW_MESSAGE_ADDRESS_TYPE_FAIL);
+    }
+
     uint8_t message_len = 0;
     if (!buffer_read_u8(cdata, &message_len)) {
         return io_send_sw(SW_MESSAGE_LEN_PARSING_FAIL);
@@ -88,7 +96,7 @@ int handler_sign_msg(buffer_t *cdata) {
 
     G_context.bip32_path[0] = 0x8000002C;
     G_context.bip32_path[1] = 0x8001b207;
-    G_context.bip32_path[2] = 0x80000000;
+    G_context.bip32_path[2] = G_context.msg_info.account;
     G_context.bip32_path[3] = (uint32_t)(G_context.msg_info.address_type);
     G_context.bip32_path[4] = G_context.msg_info.address_index;
 

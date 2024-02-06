@@ -55,9 +55,9 @@ bool tx_validate_parsed_transaction(transaction_t* tx) {
 
         // Forcing these values. path[3] and path[4]
         // would've been set by transaction_deserialize
-        G_context.bip32_path[0] = 0x8000002C;
-        G_context.bip32_path[1] = 0x8001b207;
-        G_context.bip32_path[2] = 0x80000000;
+        G_context.bip32_path[0] = 0x8000002C;   // 44'
+        G_context.bip32_path[1] = 0x8001b207;   // 111111'
+        G_context.bip32_path[2] = tx->account;  // the account
 
         G_context.bip32_path_len = 5;
 

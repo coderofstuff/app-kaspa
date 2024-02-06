@@ -24,6 +24,7 @@
 #pragma once
 
 #include "../types.h"
+#include "parser.h"
 
 /**
  * Parameter 2 for last APDU to receive.

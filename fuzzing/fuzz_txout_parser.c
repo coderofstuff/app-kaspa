@@ -21,26 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *****************************************************************************/
-#include <stddef.h>   // size_t
-#include <stdint.h>   // uint*_t
-#include <stdbool.h>  // bool
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <sys/types.h>
 
-#include "parser.h"
-#include "../types.h"
-#include "../offsets.h"
+#include "buffer.h"
+#include "format.h"
+#include "transaction/deserialize.h"
+#include "transaction/types.h"
 
-bool apdu_parser(command_t *cmd, uint8_t *buf, size_t buf_len) {
-    // Check minimum length and Lc field of APDU command
-    if (buf_len < OFFSET_CDATA || buf_len - OFFSET_CDATA != buf[OFFSET_LC]) {
-        return false;
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    buffer_t buf = {.ptr = data, .size = size, .offset = 0};
+    transaction_output_t txout;
+    parser_status_e status;
+    char value[9] = {0};
+    char script_public_key[36] = {0};
+
+    memset(&txout, 0, sizeof(txout));
+
+    status = transaction_output_deserialize(&buf, &txout);
+
+    if (status == PARSING_OK) {
+        format_u64(value, sizeof(value), txout.value);
+        // printf("value: %s\n", value);
+        format_hex(txout.script_public_key, 35, script_public_key, sizeof(script_public_key));
+        // printf("script_public_key: %s\n", script_public_key);
     }
 
-    cmd->cla = buf[OFFSET_CLA];
-    cmd->ins = (command_e) buf[OFFSET_INS];
-    cmd->p1 = buf[OFFSET_P1];
-    cmd->p2 = buf[OFFSET_P2];
-    cmd->lc = buf[OFFSET_LC];
-    cmd->data = (buf[OFFSET_LC] > 0) ? buf + OFFSET_CDATA : NULL;
-
-    return true;
+    return 0;
 }

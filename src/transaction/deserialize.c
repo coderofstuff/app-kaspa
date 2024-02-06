@@ -33,12 +33,26 @@ parser_status_e transaction_output_deserialize(buffer_t *buf, transaction_output
         return OUTPUT_VALUE_PARSING_ERROR;
     }
 
-    size_t script_len = (size_t) * (buf->ptr + buf->offset);
+    if (!buffer_can_read(buf, 1)) {
+        return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
+    }
+
+    uint8_t script_len = (uint8_t) * (buf->ptr + buf->offset);
 
     if (script_len == OP_BLAKE2B) {
-        // P2SH = 0xaa + 0x20 + (pubkey) + 0x87
+        // P2SH = 0xaa + 0x20 + (script hash) + 0x87
+        // Total length = 35
         // script len is actually the second byte if the first one is 0xaa
-        script_len = (size_t) * (buf->ptr + buf->offset + 1);
+        if (!buffer_can_read(buf, 2)) {
+            return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
+        }
+
+        script_len = (uint8_t) * (buf->ptr + buf->offset + 1);
+
+        // For P2SH, we expect len to always be 0x20
+        if (script_len != 0x20) {
+            return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
+        }
 
         if (!buffer_can_read(buf, script_len + 3)) {
             return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
@@ -46,7 +60,8 @@ parser_status_e transaction_output_deserialize(buffer_t *buf, transaction_output
 
         uint8_t sig_op_code = *(buf->ptr + buf->offset + script_len + 2);
 
-        if (script_len == 0x20 && sig_op_code != OP_EQUAL) {
+        // We expect the end to always be 0x87 for P2SH
+        if (sig_op_code != OP_EQUAL) {
             return OUTPUT_SCRIPT_PUBKEY_PARSING_ERROR;
         }
 
@@ -120,6 +135,10 @@ parser_status_e transaction_input_deserialize(buffer_t *buf, transaction_input_t
 }
 
 parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx, uint32_t *bip32_path) {
+    if (KASPA_MAX_BIP32_PATH_LEN < 5) {
+        return HEADER_PARSING_ERROR;
+    }
+
     uint8_t n_output = 0;
     uint8_t n_input = 0;
     uint8_t change_address_type = 0;
@@ -164,9 +183,18 @@ parser_status_e transaction_deserialize(buffer_t *buf, transaction_t *tx, uint32
         return HEADER_PARSING_ERROR;
     }
 
+    if (!buffer_read_u32(buf, &tx->account, BE)) {
+        return HEADER_PARSING_ERROR;
+    }
+
+    // Account must be hardened
+    if (tx->account < 0x80000000) {
+        return HEADER_PARSING_ERROR;
+    }
+
     bip32_path[0] = 0x8000002C;
     bip32_path[1] = 0x8001b207;
-    bip32_path[2] = 0x80000000;
+    bip32_path[2] = tx->account;
     bip32_path[3] = (uint32_t)(change_address_type);
     bip32_path[4] = change_address_index;
 

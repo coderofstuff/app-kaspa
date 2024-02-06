@@ -32,7 +32,7 @@
 int transaction_serialize(const transaction_t *tx, uint32_t *path, uint8_t *out, size_t out_len) {
     size_t offset = 0;
 
-    if (out_len < 4) {
+    if (out_len < 9) {
         return -1;
     }
 
@@ -44,6 +44,9 @@ int transaction_serialize(const transaction_t *tx, uint32_t *path, uint8_t *out,
     out[offset++] = (uint8_t) path[3];
 
     write_u32_be(out, offset, path[4]);
+    offset += 4;
+
+    write_u32_be(out, offset, path[2]);
     offset += 4;
 
     return (int) offset;

@@ -45,18 +45,6 @@ typedef enum {
 } command_e;
 
 /**
- * Structure with fields of APDU command.
- */
-typedef struct {
-    uint8_t cla;    /// Instruction class
-    command_e ins;  /// Instruction code
-    uint8_t p1;     /// Instruction parameter 1
-    uint8_t p2;     /// Instruction parameter 2
-    uint8_t lc;     /// Length of command data
-    uint8_t *data;  /// Command data
-} command_t;
-
-/**
  * Enumeration with parsing state.
  */
 typedef enum {
@@ -108,6 +96,7 @@ typedef struct {
     uint8_t message[128];                /// message bytes
     uint8_t message_hash[32];            /// message hash
     uint8_t signature[MAX_DER_SIG_LEN];  /// signature of the message
+    uint32_t account;                    /// The account this message will be signed with
     uint8_t address_type;                /// address type to use for bip32 path
     uint32_t address_index;              /// address index to use for bip32 path
 } message_sign_ctx_t;
@@ -122,7 +111,7 @@ typedef struct {
         transaction_ctx_t tx_info;    /// transaction context
         message_sign_ctx_t msg_info;  /// message sign context
     };
-    request_type_e req_type;              /// user request
-    uint32_t bip32_path[MAX_BIP32_PATH];  /// BIP32 path
-    uint8_t bip32_path_len;               /// length of BIP32 path
+    request_type_e req_type;                        /// user request
+    uint32_t bip32_path[KASPA_MAX_BIP32_PATH_LEN];  /// BIP32 path
+    uint8_t bip32_path_len;                         /// length of BIP32 path
 } global_ctx_t;
