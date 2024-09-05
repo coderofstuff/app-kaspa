@@ -1,7 +1,10 @@
+import pytest
+
 from application_client.kaspa_command_sender import KaspaCommandSender, Errors, InsType, P1, P2
 from application_client.kaspa_message import PersonalMessage
 from application_client.kaspa_response_unpacker import unpack_get_public_key_response, unpack_sign_message_response
 from ragger.backend import RaisePolicy
+from ragger.error import ExceptionRAPDU
 from ragger.navigator import NavInsID
 from utils import ROOT_SCREENSHOT_PATH, check_signature_validity
 
@@ -10,7 +13,7 @@ from utils import ROOT_SCREENSHOT_PATH, check_signature_validity
 
 # In this test se send to the device a transaction to sign and validate it on screen
 # We will ensure that the displayed information is correct by using screenshots comparison
-def test_sign_message_simple(firmware, backend, navigator, test_name):
+def test_sign_message_simple(firmware, backend, scenario_navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     # The path used for this entire test
@@ -31,19 +34,7 @@ def test_sign_message_simple(firmware, backend, navigator, test_name):
     # It will yield the result when the navigation is done
     with client.sign_message(message_data=message_data):
         # Validate the on-screen request by performing the navigation appropriate for this device
-        if firmware.device.startswith("nano"):
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Approve",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
-        else:
-            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_REVIEW_TAP,
-                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
-                                                       NavInsID.USE_CASE_STATUS_DISMISS],
-                                                      "Hold to sign",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+        scenario_navigator.review_approve()
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
@@ -52,7 +43,7 @@ def test_sign_message_simple(firmware, backend, navigator, test_name):
     assert message_hash == message_data.to_hash()
     assert check_signature_validity(public_key, der_sig, message_hash)
 
-def test_sign_message_simple_different_account(firmware, backend, navigator, test_name):
+def test_sign_message_simple_different_account(firmware, backend, scenario_navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     # The path used for this entire test
@@ -74,19 +65,7 @@ def test_sign_message_simple_different_account(firmware, backend, navigator, tes
     # It will yield the result when the navigation is done
     with client.sign_message(message_data=message_data):
         # Validate the on-screen request by performing the navigation appropriate for this device
-        if firmware.device.startswith("nano"):
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Approve",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
-        else:
-            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_REVIEW_TAP,
-                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
-                                                       NavInsID.USE_CASE_STATUS_DISMISS],
-                                                      "Hold to sign",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+        scenario_navigator.review_approve()
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
@@ -95,7 +74,7 @@ def test_sign_message_simple_different_account(firmware, backend, navigator, tes
     assert message_hash == message_data.to_hash()
     assert check_signature_validity(public_key, der_sig, message_hash)
 
-def test_sign_message_kanji(firmware, backend, navigator, test_name):
+def test_sign_message_kanji(firmware, backend, scenario_navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     # The path used for this entire test
@@ -116,19 +95,7 @@ def test_sign_message_kanji(firmware, backend, navigator, test_name):
     # It will yield the result when the navigation is done
     with client.sign_message(message_data=message_data):
         # Validate the on-screen request by performing the navigation appropriate for this device
-        if firmware.device.startswith("nano"):
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Approve",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
-        else:
-            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_REVIEW_TAP,
-                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
-                                                       NavInsID.USE_CASE_STATUS_DISMISS],
-                                                      "Hold to sign",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+        scenario_navigator.review_approve()
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
@@ -152,7 +119,7 @@ def test_sign_message_too_long(firmware, backend, navigator, test_name):
 
     assert last_response.status == Errors.SW_MESSAGE_TOO_LONG
 
-def test_sign_message_refused(firmware, backend, navigator, test_name):
+def test_sign_message_refused(firmware, backend, scenario_navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
 
@@ -162,26 +129,10 @@ def test_sign_message_refused(firmware, backend, navigator, test_name):
 
     message_data = PersonalMessage(message, address_type, address_index)
 
-    if firmware.device.startswith("nano"):
+    with pytest.raises(ExceptionRAPDU) as e:
         with client.sign_message(message_data=message_data):
-            # Disable raising when trying to unpack an error APDU
-            backend.raise_policy = RaisePolicy.RAISE_NOTHING
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Reject",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+            scenario_navigator.review_reject()
 
-        assert client.get_async_response().status == Errors.SW_DENY
-    else:
-        for i in range(3):
-            instructions = [NavInsID.USE_CASE_REVIEW_TAP] * i
-            instructions += [NavInsID.USE_CASE_REVIEW_REJECT,
-                             NavInsID.USE_CASE_CHOICE_CONFIRM,
-                             NavInsID.USE_CASE_STATUS_DISMISS]
-            with client.sign_message(message_data=message_data):
-                backend.raise_policy = RaisePolicy.RAISE_NOTHING
-                navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
-                                               test_name + f"/part{i}",
-                                               instructions)
-            assert client.get_async_response().status == Errors.SW_DENY
+    # Assert that we have received a refusal
+    assert e.value.status == Errors.SW_DENY
+    assert len(e.value.data) == 0
