@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *****************************************************************************/
+
 #ifdef HAVE_NBGL
 
 #include <stdbool.h>  // bool
@@ -30,18 +31,18 @@
 #include "glyphs.h"
 #include "os_io_seproxyhal.h"
 #include "nbgl_use_case.h"
+#include "io.h"
+#include "bip32.h"
+#include "format.h"
 
 #include "display.h"
 #include "constants.h"
 #include "../globals.h"
-#include "io.h"
 #include "../sw.h"
 #include "../address.h"
 #include "action/validate.h"
 #include "../transaction/types.h"
 #include "../transaction/utils.h"
-#include "bip32.h"
-#include "format.h"
 #include "../menu.h"
 
 // Buffer where the transaction amount string is written
@@ -52,54 +53,16 @@ static char g_fees[30];
 
 static nbgl_layoutTagValue_t pairs[3];
 static nbgl_layoutTagValueList_t pairList;
-static nbgl_pageInfoLongPress_t infoLongPress;
-
-static void confirm_transaction_rejection(void) {
-    // display a status page and go back to main
-    validate_transaction(false);
-    nbgl_useCaseStatus("Transaction rejected", false, ui_menu_main);
-}
-
-static void ask_transaction_rejection_confirmation(void) {
-    // display a choice to confirm/cancel rejection
-    nbgl_useCaseConfirm("Reject transaction?",
-                        NULL,
-                        "Yes, Reject",
-                        "Go back to transaction",
-                        confirm_transaction_rejection);
-}
 
 // called when long press button on 3rd page is long-touched or when reject footer is touched
 static void review_choice(bool confirm) {
+    // Answer, display a status page and go back to main
+    validate_transaction(confirm);
     if (confirm) {
-        // display a status page and go back to main
-        validate_transaction(true);
-        nbgl_useCaseStatus("TRANSACTION\nSIGNED", true, ui_menu_main);
+        nbgl_useCaseReviewStatus(STATUS_TYPE_TRANSACTION_SIGNED, ui_menu_main);
     } else {
-        ask_transaction_rejection_confirmation();
+        nbgl_useCaseReviewStatus(STATUS_TYPE_TRANSACTION_REJECTED, ui_menu_main);
     }
-}
-
-static void review_continue(void) {
-    // Setup data to display
-    pairs[0].item = "Amount";
-    pairs[0].value = g_amount;
-    pairs[1].item = "To";
-    pairs[1].value = g_address;
-    pairs[2].item = "Fees";
-    pairs[2].value = g_fees;
-
-    // Setup list
-    pairList.nbMaxLinesForValue = 0;
-    pairList.nbPairs = 3;
-    pairList.pairs = pairs;
-
-    // Info long press
-    infoLongPress.icon = &C_stax_app_kaspa_64px;
-    infoLongPress.text = "Sign transaction\nto send KAS";
-    infoLongPress.longPressText = "Hold to sign";
-
-    nbgl_useCaseStaticReview(&pairList, &infoLongPress, "Reject transaction", review_choice);
 }
 
 // Public function to start the transaction review
@@ -122,8 +85,8 @@ int ui_display_transaction() {
         return io_send_sw(SW_DISPLAY_AMOUNT_FAIL);
     }
     snprintf(g_amount, sizeof(g_amount), "KAS %.*s", sizeof(amount), amount);
-
     memset(g_fees, 0, sizeof(g_fees));
+
     char fees[30] = {0};
     if (!format_fpu64_trimmed(fees,
                               sizeof(fees),
@@ -135,7 +98,6 @@ int ui_display_transaction() {
         return io_send_sw(SW_DISPLAY_AMOUNT_FAIL);
     }
     snprintf(g_fees, sizeof(g_fees), "KAS %.*s", sizeof(fees), fees);
-
     memset(g_address, 0, sizeof(g_address));
 
     uint8_t address[ECDSA_ADDRESS_LEN] = {0};
@@ -147,13 +109,27 @@ int ui_display_transaction() {
         sizeof(G_context.tx_info.transaction.tx_outputs[0].script_public_key));
     snprintf(g_address, sizeof(g_address), "%.*s", ECDSA_ADDRESS_LEN, address);
 
-    // Start review
-    nbgl_useCaseReviewStart(&C_stax_app_kaspa_64px,
-                            "Review transaction\nto send KAS",
-                            NULL,
-                            "Reject transaction",
-                            review_continue,
-                            ask_transaction_rejection_confirmation);
+    // Setup data to display
+    pairs[0].item = "Amount";
+    pairs[0].value = g_amount;
+    pairs[1].item = "To";
+    pairs[1].value = g_address;
+    pairs[2].item = "Fees";
+    pairs[2].value = g_fees;
+
+    // Setup list
+    pairList.nbMaxLinesForValue = 0;
+    pairList.nbPairs = 3;
+    pairList.pairs = pairs;
+
+    // Start review flow
+    nbgl_useCaseReview(TYPE_TRANSACTION,
+                       &pairList,
+                       &C_stax_app_kaspa_64px,
+                       "Review transaction\nto send KAS",
+                       NULL,
+                       "Sign transaction\nto send KAS",
+                       review_choice);
     return 0;
 }
 
