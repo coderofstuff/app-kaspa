@@ -30,31 +30,37 @@
 #include "../globals.h"
 #include "menu.h"
 
+//  -----------------------------------------------------------
+//  ----------------------- HOME PAGE -------------------------
+//  -----------------------------------------------------------
+
 void app_quit(void) {
     // exit app here
     os_sched_exit(-1);
 }
 
+//  -----------------------------------------------------------
+//  --------------------- SETTINGS MENU -----------------------
+//  -----------------------------------------------------------
+#define SETTING_INFO_NB 2
+static const char* const INFO_TYPES[SETTING_INFO_NB] = {"Version", "Developer"};
+static const char* const INFO_CONTENTS[SETTING_INFO_NB] = {APPVERSION, "coderofstuff"};
+
+static const nbgl_contentInfoList_t infoList = {
+    .nbInfos = SETTING_INFO_NB,
+    .infoTypes = INFO_TYPES,
+    .infoContents = INFO_CONTENTS,
+};
+
 void ui_menu_main(void) {
-    nbgl_useCaseHome(APPNAME, &C_stax_app_kaspa_64px, NULL, false, ui_menu_about, app_quit);
-}
-
-// 'About' menu
-
-static const char* const INFO_TYPES[] = {"Version", "Developer"};
-static const char* const INFO_CONTENTS[] = {APPVERSION, "coderofstuff"};
-
-static bool nav_callback(uint8_t page, nbgl_pageContent_t* content) {
-    UNUSED(page);
-    content->type = INFOS_LIST;
-    content->infosList.nbInfos = 2;
-    content->infosList.infoTypes = (const char**) INFO_TYPES;
-    content->infosList.infoContents = (const char**) INFO_CONTENTS;
-    return true;
-}
-
-void ui_menu_about() {
-    nbgl_useCaseSettings(APPNAME, 0, 1, false, ui_menu_main, nav_callback, NULL);
+    nbgl_useCaseHomeAndSettings(APPNAME,
+                                &C_stax_app_kaspa_64px,
+                                NULL,
+                                INIT_HOME_PAGE,
+                                NULL,
+                                &infoList,
+                                NULL,
+                                app_quit);
 }
 
 #endif

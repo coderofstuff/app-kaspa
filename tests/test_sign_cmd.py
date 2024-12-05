@@ -1,7 +1,10 @@
+import pytest
+
 from application_client.kaspa_transaction import Transaction, TransactionInput, TransactionOutput
 from application_client.kaspa_command_sender import KaspaCommandSender, Errors, InsType, P1, P2
 from application_client.kaspa_response_unpacker import unpack_get_public_key_response, unpack_sign_tx_response
 from ragger.backend import RaisePolicy
+from ragger.error import ExceptionRAPDU
 from ragger.navigator import NavInsID
 from utils import ROOT_SCREENSHOT_PATH, check_signature_validity
 
@@ -10,7 +13,7 @@ from utils import ROOT_SCREENSHOT_PATH, check_signature_validity
 
 # In this test se send to the device a transaction to sign and validate it on screen
 # We will ensure that the displayed information is correct by using screenshots comparison
-def test_sign_tx_simple(firmware, backend, navigator, test_name):
+def test_sign_tx_simple(firmware, backend, scenario_navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     # The path used for this entire test
@@ -46,19 +49,7 @@ def test_sign_tx_simple(firmware, backend, navigator, test_name):
     # It will yield the result when the navigation is done
     with client.sign_tx(transaction=transaction):
         # Validate the on-screen request by performing the navigation appropriate for this device
-        if firmware.device.startswith("nano"):
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Approve",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
-        else:
-            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_REVIEW_TAP,
-                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
-                                                       NavInsID.USE_CASE_STATUS_DISMISS],
-                                                      "Hold to sign",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+        scenario_navigator.review_approve()
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
@@ -66,7 +57,7 @@ def test_sign_tx_simple(firmware, backend, navigator, test_name):
     assert transaction.get_sighash(0) == sighash
     assert check_signature_validity(public_key, der_sig, sighash)
 
-def test_sign_tx_different_account(firmware, backend, navigator, test_name):
+def test_sign_tx_different_account(firmware, backend, scenario_navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     # The path used for this entire test
@@ -103,19 +94,7 @@ def test_sign_tx_different_account(firmware, backend, navigator, test_name):
     # It will yield the result when the navigation is done
     with client.sign_tx(transaction=transaction):
         # Validate the on-screen request by performing the navigation appropriate for this device
-        if firmware.device.startswith("nano"):
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Approve",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
-        else:
-            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_REVIEW_TAP,
-                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
-                                                       NavInsID.USE_CASE_STATUS_DISMISS],
-                                                      "Hold to sign",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+        scenario_navigator.review_approve()
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
@@ -123,7 +102,7 @@ def test_sign_tx_different_account(firmware, backend, navigator, test_name):
     assert transaction.get_sighash(0) == sighash
     assert check_signature_validity(public_key, der_sig, sighash)
 
-def test_sign_tx_simple_ecdsa(firmware, backend, navigator, test_name):
+def test_sign_tx_simple_ecdsa(firmware, backend, scenario_navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     # The path used for this entire test
@@ -159,19 +138,7 @@ def test_sign_tx_simple_ecdsa(firmware, backend, navigator, test_name):
     # It will yield the result when the navigation is done
     with client.sign_tx(transaction=transaction):
         # Validate the on-screen request by performing the navigation appropriate for this device
-        if firmware.device.startswith("nano"):
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Approve",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
-        else:
-            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_REVIEW_TAP,
-                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
-                                                       NavInsID.USE_CASE_STATUS_DISMISS],
-                                                      "Hold to sign",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+        scenario_navigator.review_approve()
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
@@ -180,7 +147,7 @@ def test_sign_tx_simple_ecdsa(firmware, backend, navigator, test_name):
     assert check_signature_validity(public_key, der_sig, sighash)
 
 
-def test_sign_tx_p2sh(firmware, backend, navigator, test_name):
+def test_sign_tx_p2sh(firmware, backend, scenario_navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     # The path used for this entire test
@@ -216,19 +183,7 @@ def test_sign_tx_p2sh(firmware, backend, navigator, test_name):
     # It will yield the result when the navigation is done
     with client.sign_tx(transaction=transaction):
         # Validate the on-screen request by performing the navigation appropriate for this device
-        if firmware.device.startswith("nano"):
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Approve",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
-        else:
-            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_REVIEW_TAP,
-                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
-                                                       NavInsID.USE_CASE_STATUS_DISMISS],
-                                                      "Hold to sign",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+        scenario_navigator.review_approve()
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
@@ -236,7 +191,7 @@ def test_sign_tx_p2sh(firmware, backend, navigator, test_name):
     assert transaction.get_sighash(0) == sighash
     assert check_signature_validity(public_key, der_sig, sighash)
 
-def test_sign_tx_simple_sendint(firmware, backend, navigator, test_name):
+def test_sign_tx_simple_sendint(firmware, backend, scenario_navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     # The path used for this entire test
@@ -272,19 +227,7 @@ def test_sign_tx_simple_sendint(firmware, backend, navigator, test_name):
     # It will yield the result when the navigation is done
     with client.sign_tx(transaction=transaction):
         # Validate the on-screen request by performing the navigation appropriate for this device
-        if firmware.device.startswith("nano"):
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Approve",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
-        else:
-            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_REVIEW_TAP,
-                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
-                                                       NavInsID.USE_CASE_STATUS_DISMISS],
-                                                      "Hold to sign",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+        scenario_navigator.review_approve()
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
@@ -292,7 +235,7 @@ def test_sign_tx_simple_sendint(firmware, backend, navigator, test_name):
     assert transaction.get_sighash(0) == sighash
     assert check_signature_validity(public_key, der_sig, sighash)
 
-def test_sign_tx_simple_sendmaxu64(firmware, backend, navigator, test_name):
+def test_sign_tx_simple_sendmaxu64(firmware, backend, scenario_navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     # The path used for this entire test
@@ -328,19 +271,7 @@ def test_sign_tx_simple_sendmaxu64(firmware, backend, navigator, test_name):
     # It will yield the result when the navigation is done
     with client.sign_tx(transaction=transaction):
         # Validate the on-screen request by performing the navigation appropriate for this device
-        if firmware.device.startswith("nano"):
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Approve",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
-        else:
-            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_REVIEW_TAP,
-                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
-                                                       NavInsID.USE_CASE_STATUS_DISMISS],
-                                                      "Hold to sign",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+        scenario_navigator.review_approve()
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
@@ -348,7 +279,7 @@ def test_sign_tx_simple_sendmaxu64(firmware, backend, navigator, test_name):
     assert transaction.get_sighash(0) == sighash
     assert check_signature_validity(public_key, der_sig, sighash)
 
-def test_sign_tx_simple_change_idx1(firmware, backend, navigator, test_name):
+def test_sign_tx_simple_change_idx1(firmware, backend, scenario_navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     # The path used for this entire test
@@ -397,19 +328,7 @@ def test_sign_tx_simple_change_idx1(firmware, backend, navigator, test_name):
     # It will yield the result when the navigation is done
     with client.sign_tx(transaction=transaction):
         # Validate the on-screen request by performing the navigation appropriate for this device
-        if firmware.device.startswith("nano"):
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Approve",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
-        else:
-            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_REVIEW_TAP,
-                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
-                                                       NavInsID.USE_CASE_STATUS_DISMISS],
-                                                      "Hold to sign",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+        scenario_navigator.review_approve()
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
@@ -417,7 +336,7 @@ def test_sign_tx_simple_change_idx1(firmware, backend, navigator, test_name):
     assert transaction.get_sighash(0) == sighash
     assert check_signature_validity(public_key, der_sig, sighash)
 
-def test_sign_tx_with_change(firmware, backend, navigator, test_name):
+def test_sign_tx_with_change(firmware, backend, scenario_navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     # The path used for this entire test
@@ -462,19 +381,7 @@ def test_sign_tx_with_change(firmware, backend, navigator, test_name):
     # It will yield the result when the navigation is done
     with client.sign_tx(transaction=transaction):
         # Validate the on-screen request by performing the navigation appropriate for this device
-        if firmware.device.startswith("nano"):
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Approve",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
-        else:
-            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_REVIEW_TAP,
-                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
-                                                       NavInsID.USE_CASE_STATUS_DISMISS],
-                                                      "Hold to sign",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+        scenario_navigator.review_approve()
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
@@ -673,7 +580,7 @@ def test_sign_tx_inconsistent_output_length_and_data(backend):
 
 # In this test se send to the device a transaction to sign and validate it on screen
 # This test uses the maximum supported number of inputs per device type
-def test_sign_tx_max(firmware, backend, navigator, test_name):
+def test_sign_tx_max(firmware, backend, scenario_navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
     path: str = "m/44'/111111'/0'/0/0"
@@ -705,19 +612,7 @@ def test_sign_tx_max(firmware, backend, navigator, test_name):
     )
 
     with client.sign_tx(transaction=transaction):
-        if firmware.device.startswith("nano"):
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Approve",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
-        else:
-            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_REVIEW_TAP,
-                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
-                                                       NavInsID.USE_CASE_STATUS_DISMISS],
-                                                      "Hold to sign",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+        scenario_navigator.review_approve()
     
     idx = 0
     response = client.get_async_response().data
@@ -738,7 +633,7 @@ def test_sign_tx_max(firmware, backend, navigator, test_name):
 
 # Transaction signature refused test
 # The test will ask for a transaction signature that will be refused on screen
-def test_sign_tx_refused(firmware, backend, navigator, test_name):
+def test_sign_tx_refused(firmware, backend, scenario_navigator, test_name):
     # Use the app interface instead of raw interface
     client = KaspaCommandSender(backend)
 
@@ -762,26 +657,10 @@ def test_sign_tx_refused(firmware, backend, navigator, test_name):
         ]
     )
 
-    if firmware.device.startswith("nano"):
+    with pytest.raises(ExceptionRAPDU) as e:
         with client.sign_tx(transaction=transaction):
-            # Disable raising when trying to unpack an error APDU
-            backend.raise_policy = RaisePolicy.RAISE_NOTHING
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Reject",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+            scenario_navigator.review_reject()
 
-        assert client.get_async_response().status == Errors.SW_DENY
-    else:
-        for i in range(3):
-            instructions = [NavInsID.USE_CASE_REVIEW_TAP] * i
-            instructions += [NavInsID.USE_CASE_REVIEW_REJECT,
-                             NavInsID.USE_CASE_CHOICE_CONFIRM,
-                             NavInsID.USE_CASE_STATUS_DISMISS]
-            with client.sign_tx(transaction=transaction):
-                backend.raise_policy = RaisePolicy.RAISE_NOTHING
-                navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
-                                               test_name + f"/part{i}",
-                                               instructions)
-            assert client.get_async_response().status == Errors.SW_DENY
+    # Assert that we have received a refusal
+    assert e.value.status == Errors.SW_DENY
+    assert len(e.value.data) == 0

@@ -11,6 +11,7 @@ class TransactionError(Exception):
     pass
 
 class TransactionInput:
+    # pylint: disable=too-many-positional-arguments
     def __init__(self,
                 value: int,
                 tx_id: str,
@@ -77,6 +78,7 @@ class TransactionOutput:
         return cls(value=value, script_public_key=script_public_key)
 
 class Transaction:
+    # pylint: disable=too-many-positional-arguments
     def __init__(self,
                  version: int,
                  inputs: list[TransactionInput],

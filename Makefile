@@ -30,7 +30,7 @@ APPNAME = "Kaspa"
 # Application version
 APPVERSION_M = 1
 APPVERSION_N = 0
-APPVERSION_P = 2
+APPVERSION_P = 3
 APPVERSION = "$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)"
 
 ifeq ($(TARGET_NAME),TARGET_NANOS)
@@ -53,6 +53,7 @@ ICON_NANOS = icons/nanos_kaspa_logo.gif
 ICON_NANOX = icons/nanox_kaspa_logo.gif
 ICON_NANOSP = icons/nanox_kaspa_logo.gif
 ICON_STAX = icons/stax_kaspa_logo_32px.gif
+ICON_FLEX = icons/stax_kaspa_logo_40px.gif
 
 # Application allowed derivation curves.
 # Possibles curves are: secp256k1, secp256r1, ed25519 and bls12381g1
