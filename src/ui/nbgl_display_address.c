@@ -29,18 +29,17 @@
 #include "os.h"
 #include "glyphs.h"
 #include "nbgl_use_case.h"
+#include "io.h"
+#include "bip32.h"
+#include "format.h"
 
 #include "display.h"
 #include "constants.h"
 #include "../globals.h"
-#include "io.h"
 #include "../sw.h"
 #include "../address.h"
 #include "action/validate.h"
-#include "../types.h"
 #include "../transaction/types.h"
-#include "bip32.h"
-#include "format.h"
 #include "../menu.h"
 
 static char g_address[ECDSA_ADDRESS_LEN + 6];
@@ -49,35 +48,14 @@ static char g_bip32_path[60];
 static nbgl_layoutTagValue_t pairs[1];
 static nbgl_layoutTagValueList_t pairList;
 
-static void confirm_address_rejection(void) {
-    // display a status page and go back to main
-    validate_pubkey(false);
-    nbgl_useCaseStatus("Address verification\ncancelled", false, ui_menu_main);
-}
-
-static void confirm_address_approval(void) {
-    // display a success status page and go back to main
-    validate_pubkey(true);
-    nbgl_useCaseStatus("ADDRESS\nVERIFIED", true, ui_menu_main);
-}
-
 static void review_choice(bool confirm) {
+    // Answer, display a status page and go back to main
+    validate_pubkey(confirm);
     if (confirm) {
-        confirm_address_approval();
+        nbgl_useCaseReviewStatus(STATUS_TYPE_ADDRESS_VERIFIED, ui_menu_main);
     } else {
-        confirm_address_rejection();
+        nbgl_useCaseReviewStatus(STATUS_TYPE_ADDRESS_REJECTED, ui_menu_main);
     }
-}
-
-static void continue_review(void) {
-    // Fill pairs
-    pairs[0].item = "BIP32 Path";
-    pairs[0].value = g_bip32_path;
-
-    pairList.nbMaxLinesForValue = 0;
-    pairList.nbPairs = 1;
-    pairList.pairs = pairs;
-    nbgl_useCaseAddressConfirmationExt(g_address, review_choice, &pairList);
 }
 
 int ui_display_address() {
@@ -101,12 +79,20 @@ int ui_display_address() {
     }
     snprintf(g_address, sizeof(g_address), "%.*s", sizeof(address), address);
 
-    nbgl_useCaseReviewStart(&C_stax_app_kaspa_64px,
-                            "Verify KAS address",
-                            NULL,
-                            "Cancel",
-                            continue_review,
-                            confirm_address_rejection);
+    // Fill pairs
+    pairs[0].item = "BIP32 Path";
+    pairs[0].value = g_bip32_path;
+
+    pairList.nbMaxLinesForValue = 0;
+    pairList.nbPairs = 1;
+    pairList.pairs = pairs;
+
+    nbgl_useCaseAddressReview(g_address,
+                              &pairList,
+                              &C_stax_app_kaspa_64px,
+                              "Verify KAS address",
+                              NULL,
+                              review_choice);
     return 0;
 }
 

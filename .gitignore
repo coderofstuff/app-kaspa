@@ -30,3 +30,5 @@ doc/latex
 
 .DS_Store
 zz-*
+
+output-scan-build/

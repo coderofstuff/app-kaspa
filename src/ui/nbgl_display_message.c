@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *****************************************************************************/
+
 #ifdef HAVE_NBGL
 
 #include <stdbool.h>  // bool
@@ -28,20 +29,20 @@
 
 #include "os.h"
 #include "glyphs.h"
+#include "os_io_seproxyhal.h"
 #include "nbgl_use_case.h"
+#include "io.h"
+#include "bip32.h"
+#include "format.h"
 
 #include "display.h"
 #include "constants.h"
 #include "../globals.h"
-#include "io.h"
 #include "../sw.h"
 #include "../address.h"
 #include "action/validate.h"
-#include "../types.h"
 #include "../transaction/types.h"
-#include "bip32.h"
 #include "../common/format_local.h"
-#include "format.h"
 #include "../menu.h"
 
 static char g_message[MAX_MESSAGE_LEN];
@@ -49,55 +50,14 @@ static char g_bip32_path[60];
 
 static nbgl_layoutTagValue_t pairs[2];
 static nbgl_layoutTagValueList_t pairList;
-static nbgl_pageInfoLongPress_t infoLongPress;
-
-static void confirm_message_rejection(void) {
-    // display a status page and go back to main
-    validate_message(false);
-    nbgl_useCaseStatus("Message signing\ncancelled", false, ui_menu_main);
-}
-
-static void ask_message_rejection_confirmation(void) {
-    // display a choice to confirm/cancel rejection
-    nbgl_useCaseConfirm("Reject message?",
-                        NULL,
-                        "Yes, Reject",
-                        "Go back to message",
-                        confirm_message_rejection);
-}
-
-static void confirm_message_approval(void) {
-    // display a success status page and go back to main
-    validate_message(true);
-    nbgl_useCaseStatus("MESSAGE\nSIGNED", true, ui_menu_main);
-}
 
 static void review_message_choice(bool confirm) {
+    validate_message(confirm);
     if (confirm) {
-        confirm_message_approval();
+        nbgl_useCaseReviewStatus(STATUS_TYPE_MESSAGE_SIGNED, ui_menu_main);
     } else {
-        ask_message_rejection_confirmation();
+        nbgl_useCaseReviewStatus(STATUS_TYPE_MESSAGE_REJECTED, ui_menu_main);
     }
-}
-
-static void continue_message_review(void) {
-    // Fill pairs
-    pairs[0].item = "BIP32 Path";
-    pairs[0].value = g_bip32_path;
-    pairs[1].item = "Message";
-    pairs[1].value = g_message;
-
-    // Setup list
-    pairList.nbMaxLinesForValue = 0;
-    pairList.nbPairs = 2;
-    pairList.pairs = pairs;
-
-    // Info long press
-    infoLongPress.icon = &C_stax_app_kaspa_64px;
-    infoLongPress.text = "Sign message?";
-    infoLongPress.longPressText = "Hold to sign";
-
-    nbgl_useCaseStaticReview(&pairList, &infoLongPress, "Reject message", review_message_choice);
 }
 
 int ui_display_message() {
@@ -120,12 +80,25 @@ int ui_display_message() {
                            (char *) G_context.msg_info.message,
                            G_context.msg_info.message_len);
 
-    nbgl_useCaseReviewStart(&C_stax_app_kaspa_64px,
-                            "Review Message",
-                            NULL,
-                            "Reject message",
-                            continue_message_review,
-                            ask_message_rejection_confirmation);
+    // Fill pairs
+    pairs[0].item = "BIP32 Path";
+    pairs[0].value = g_bip32_path;
+    pairs[1].item = "Message";
+    pairs[1].value = g_message;
+
+    // Setup list
+    pairList.nbMaxLinesForValue = 0;
+    pairList.nbPairs = 2;
+    pairList.pairs = pairs;
+
+    // Start review flow
+    nbgl_useCaseReview(TYPE_MESSAGE,
+                       &pairList,
+                       &C_stax_app_kaspa_64px,
+                       "Review message",
+                       NULL,
+                       "Sign message?",
+                       review_message_choice);
     return 0;
 }
 
