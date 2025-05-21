@@ -94,3 +94,12 @@
 #define SW_MESSAGE_ADDRESS_INDEX_FAIL 0xB014
 #define SW_MESSAGE_LEN_PARSING_FAIL   0xB015
 #define SW_MESSAGE_UNEXPECTED         0xB016
+
+/**
+ * Status word for swap failure
+ */
+#define SW_SWAP_FAIL 0xC000
+/**
+ * Application specific swap error code
+ */
+#define SWAP_ERROR_CODE 0x00

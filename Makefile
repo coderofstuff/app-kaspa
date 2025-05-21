@@ -95,6 +95,7 @@ VARIANT_VALUES = KAS
 # Application communication interfaces #
 ########################################
 ENABLE_BLUETOOTH = 1
+ENABLE_SWAP = 1
 #ENABLE_NFC = 1
 
 ########################################
