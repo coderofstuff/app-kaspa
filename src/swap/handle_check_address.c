@@ -127,7 +127,10 @@ void swap_handle_check_address(check_address_parameters_t *params) {
     }
 
     uint8_t address[SCHNORR_ADDRESS_LEN] = {0};
-    address_from_pubkey(pk_info.raw_public_key, SCHNORR, address, sizeof(address));
+    if (!address_from_pubkey(pk_info.raw_public_key, SCHNORR, address, sizeof(address))) {
+        PRINTF("Failed to convert public key to address\n");
+        return;
+    }
 
     char derived_address[SCHNORR_ADDRESS_LEN + 1];
     memset(derived_address, 0, sizeof(derived_address));

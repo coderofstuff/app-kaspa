@@ -101,7 +101,13 @@ bool address_from_pubkey(const uint8_t public_key[static 64],
     memmove(address, hrp, sizeof(hrp));
     address[5] = ':';
 
-    cashaddr_encode(compressed_public_key, compressed_pub_size, address + 6, address_len, version);
+    if (cashaddr_encode(compressed_public_key,
+                        compressed_pub_size,
+                        address + 6,
+                        address_len,
+                        version) == 0) {
+        return false;
+    }
 
     memmove(out, address, address_len);
 

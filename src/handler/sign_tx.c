@@ -69,6 +69,8 @@ static int check_and_sign_swap_tx(transaction_t *tx) {
                                       sizeof(to),
                                       tx->tx_outputs[0].script_public_key,
                                       sizeof(tx->tx_outputs[0].script_public_key))) {
+        // No need to exit here early since `to` would be all zeros if this failed
+        // and will never match any valid kaspa address
         PRINTF("Failed to convert script public key to address\n");
     }
 
