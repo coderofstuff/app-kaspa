@@ -28,19 +28,61 @@
 
 #include "os.h"
 #include "cx.h"
+#include "buffer.h"
+#include "swap.h"  // G_swap_response_ready, G_called_from_swap
 
 #include "sign_tx.h"
+#include "sw.h"
+#include "globals.h"
+#include "display.h"
 #include "constants.h"
-#include "../apdu/dispatcher.h"
-#include "../sw.h"
-#include "../globals.h"
-#include "../crypto.h"
-#include "../ui/display.h"
-#include "buffer.h"
+#include "dispatcher.h"
+
+#include "crypto.h"
 #include "../transaction/types.h"
 #include "../transaction/deserialize.h"
 #include "../transaction/tx_validate.h"
+#include "../transaction/utils.h"
 #include "../helper/send_response.h"
+#include "handle_swap.h"
+#include "validate.h"
+
+#ifdef HAVE_SWAP
+static int check_and_sign_swap_tx(transaction_t *tx) {
+    if (G_swap_response_ready) {
+        // Safety against trying to make the app sign multiple TX
+        // This code should never be triggered as the app is supposed to exit after
+        // sending the signed transaction
+        PRINTF("Safety against double signing triggered\n");
+        os_sched_exit(-1);
+    } else {
+        // We will quit the app after this transaction, whether it succeeds or fails
+        PRINTF("Swap response is ready, the app will quit after the next send\n");
+        // This boolean will make the io_send_sw family instant reply +
+        // return to exchange
+        G_swap_response_ready = true;
+    }
+    uint64_t value = tx->tx_outputs[0].value;
+    uint64_t fees = calc_fees(tx->tx_inputs, tx->tx_input_len, tx->tx_outputs, tx->tx_output_len);
+    uint8_t to[ECDSA_ADDRESS_LEN + 1] = {0};
+    if (!script_public_key_to_address(to,
+                                      sizeof(to),
+                                      tx->tx_outputs[0].script_public_key,
+                                      sizeof(tx->tx_outputs[0].script_public_key))) {
+        // No need to exit here early since `to` would be all zeros if this failed
+        // and will never match any valid kaspa address
+        PRINTF("Failed to convert script public key to address\n");
+    }
+
+    if (swap_check_validity(value, fees, to)) {
+        PRINTF("Swap response validated\n");
+        validate_transaction(true);
+    }
+    // Unreachable because swap_check_validity() returns an error to exchange app OR
+    // validate_transaction() returns a success to exchange
+    return 0;
+}
+#endif  // HAVE_SWAP
 
 static int sign_input_and_send() {
     int error = crypto_sign_transaction();
@@ -138,6 +180,14 @@ int handler_sign_tx(buffer_t *cdata, uint8_t type, bool more) {
 
             // last APDU for this transaction, let's parse, display and request a sign confirmation
             G_context.state = STATE_PARSED;
+
+#ifdef HAVE_SWAP
+            // If we are in swap context, do not redisplay the message data
+            // Instead, ensure they are identical with what was previously displayed
+            if (G_called_from_swap) {
+                return check_and_sign_swap_tx(&G_context.tx_info.transaction);
+            }
+#endif  // HAVE_SWAP
 
             return ui_display_transaction();
         }

@@ -29,8 +29,8 @@ APPNAME = "Kaspa"
 
 # Application version
 APPVERSION_M = 1
-APPVERSION_N = 0
-APPVERSION_P = 3
+APPVERSION_N = 1
+APPVERSION_P = 0
 APPVERSION = "$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)"
 
 ifeq ($(TARGET_NAME),TARGET_NANOS)
@@ -95,6 +95,7 @@ VARIANT_VALUES = KAS
 # Application communication interfaces #
 ########################################
 ENABLE_BLUETOOTH = 1
+ENABLE_SWAP = 1
 #ENABLE_NFC = 1
 
 ########################################

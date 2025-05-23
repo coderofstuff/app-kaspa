@@ -102,11 +102,13 @@ int ui_display_transaction() {
 
     uint8_t address[ECDSA_ADDRESS_LEN] = {0};
 
-    script_public_key_to_address(
-        address,
-        sizeof(address),
-        G_context.tx_info.transaction.tx_outputs[0].script_public_key,
-        sizeof(G_context.tx_info.transaction.tx_outputs[0].script_public_key));
+    if (!script_public_key_to_address(
+            address,
+            sizeof(address),
+            G_context.tx_info.transaction.tx_outputs[0].script_public_key,
+            sizeof(G_context.tx_info.transaction.tx_outputs[0].script_public_key))) {
+        return io_send_sw(SW_DISPLAY_ADDRESS_FAIL);
+    }
     snprintf(g_address, sizeof(g_address), "%.*s", ECDSA_ADDRESS_LEN, address);
 
     // Setup data to display

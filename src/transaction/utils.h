@@ -51,7 +51,7 @@ bool transaction_utils_check_encoding(const uint8_t* memo, uint64_t memo_len);
  *   Pointer to the buffer to read script_public_key from
  * @param[in] script_len length of script output buffer
  */
-void script_public_key_to_address(uint8_t* out_address,
+bool script_public_key_to_address(uint8_t* out_address,
                                   size_t out_len,
                                   uint8_t* in_script_public_key,
                                   size_t script_len);
