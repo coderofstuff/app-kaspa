@@ -29,20 +29,14 @@ APPNAME = "Kaspa"
 
 # Application version
 APPVERSION_M = 1
-APPVERSION_N = 1
+APPVERSION_N = 2
 APPVERSION_P = 0
 APPVERSION = "$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)"
 
-ifeq ($(TARGET_NAME),TARGET_NANOS)
-    DEFINES += MAX_INPUT_COUNT=15
-    DEFINES += MAX_MESSAGE_LEN=120
-else ifeq ($(TARGET_NAME),TARGET_STAX)
-    DEFINES += MAX_INPUT_COUNT=128
-    DEFINES += MAX_MESSAGE_LEN=200
-else
-    DEFINES += MAX_INPUT_COUNT=128
-    DEFINES += MAX_MESSAGE_LEN=200
-endif
+
+DEFINES += MAX_INPUT_COUNT=128
+DEFINES += MAX_MESSAGE_LEN=200
+
 
 # Application source files
 APP_SOURCE_PATH += src
@@ -54,6 +48,7 @@ ICON_NANOX = icons/nanox_kaspa_logo.gif
 ICON_NANOSP = icons/nanox_kaspa_logo.gif
 ICON_STAX = icons/stax_kaspa_logo_32px.gif
 ICON_FLEX = icons/stax_kaspa_logo_40px.gif
+ICON_APEX_P = icons/apex_kaspa_logo_32px.png
 
 # Application allowed derivation curves.
 # Possibles curves are: secp256k1, secp256r1, ed25519 and bls12381g1

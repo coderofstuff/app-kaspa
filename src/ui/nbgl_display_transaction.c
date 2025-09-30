@@ -127,7 +127,7 @@ int ui_display_transaction() {
     // Start review flow
     nbgl_useCaseReview(TYPE_TRANSACTION,
                        &pairList,
-                       &C_stax_app_kaspa_64px,
+                       &ICON_APP_HOME,
                        "Review transaction\nto send KAS",
                        NULL,
                        "Sign transaction\nto send KAS",

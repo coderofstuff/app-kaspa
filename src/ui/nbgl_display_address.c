@@ -89,7 +89,7 @@ int ui_display_address() {
 
     nbgl_useCaseAddressReview(g_address,
                               &pairList,
-                              &C_stax_app_kaspa_64px,
+                              &ICON_APP_HOME,
                               "Verify KAS address",
                               NULL,
                               review_choice);

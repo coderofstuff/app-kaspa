@@ -54,7 +54,7 @@ static const nbgl_contentInfoList_t infoList = {
 
 void ui_menu_main(void) {
     nbgl_useCaseHomeAndSettings(APPNAME,
-                                &C_stax_app_kaspa_64px,
+                                &ICON_APP_HOME,
                                 NULL,
                                 INIT_HOME_PAGE,
                                 NULL,

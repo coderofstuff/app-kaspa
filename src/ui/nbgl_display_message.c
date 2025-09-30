@@ -94,7 +94,7 @@ int ui_display_message() {
     // Start review flow
     nbgl_useCaseReview(TYPE_MESSAGE,
                        &pairList,
-                       &C_stax_app_kaspa_64px,
+                       &ICON_APP_HOME,
                        "Review message",
                        NULL,
                        "Sign message?",

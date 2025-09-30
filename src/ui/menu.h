@@ -32,3 +32,9 @@ void ui_menu_main(void);
  * Show about submenu (copyright, date).
  */
 void ui_menu_about(void);
+
+#if defined(TARGET_STAX) || defined(TARGET_FLEX)
+#define ICON_APP_HOME C_stax_app_kaspa_64px
+#elif defined(TARGET_APEX_P)
+#define ICON_APP_HOME C_apex_app_kaspa_48px
+#endif
