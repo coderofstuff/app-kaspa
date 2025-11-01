@@ -55,11 +55,11 @@ static int check_and_sign_swap_tx(transaction_t *tx) {
         // sending the signed transaction
         PRINTF("Safety against double signing triggered\n");
         os_sched_exit(-1);
-    } else {
-        // We will quit the app after this transaction, whether it succeeds or fails
-        PRINTF("Swap response is ready, the app will quit after the next send\n");
-        // This boolean will make the io_send_sw family instant reply +
-        // return to exchange
+    } else if (G_context.tx_info.transaction.tx_input_len <= 1) {
+        // Special case where we set G_swap_response_ready after since this is the only time
+        // if the transaction only has one input or less
+        // a response will be sent and no more request for signing will be made.
+        PRINTF("All inputs signed, setting G_swap_response_ready to true\n");
         G_swap_response_ready = true;
     }
     uint64_t value = tx->tx_outputs[0].value;
@@ -88,8 +88,35 @@ static int sign_input_and_send() {
     int error = crypto_sign_transaction();
     if (error != 0) {
         G_context.state = STATE_NONE;
+#ifdef HAVE_SWAP
+        // If we are in swap context, and there was an error
+        // G_swap_response_ready to true to signal that the app must exit after
+        // sending the response
+        if (G_called_from_swap) {
+            PRINTF("Error in signing while in swap context. Ensure to terminate.\n");
+            G_swap_response_ready = true;
+        }
+#endif  // HAVE_SWAP
         io_send_sw(error);
     } else {
+#ifdef HAVE_SWAP
+        // If we are in swap context, and we have signed all inputs, we set the
+        // G_swap_response_ready to true to signal that the app must exit after
+        // sending the response
+        uint8_t last_input_index = G_context.tx_info.transaction.tx_input_len - 1;
+        if (G_called_from_swap && G_context.tx_info.signing_input_index >= last_input_index) {
+            if (G_swap_response_ready) {
+                // Safety against trying to make the app sign multiple TX
+                // This code should never be triggered as the app is supposed to exit after
+                // sending the signed transaction
+                PRINTF("Safety against double signing triggered\n");
+                os_sched_exit(-1);
+            } else {
+                PRINTF("All inputs signed, setting G_swap_response_ready to true\n");
+                G_swap_response_ready = true;
+            }
+        }
+#endif  // HAVE_SWAP
         helper_send_response_sig();
         G_context.tx_info.signing_input_index++;
     }
