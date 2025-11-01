@@ -116,7 +116,7 @@ void swap_handle_check_address(check_address_parameters_t *params) {
     cx_err_t ret = bip32_derive_get_pubkey_256(CX_CURVE_256K1,
                                                bip32_path,
                                                bip32_path_len,
-                                               raw_pubkey + 1,
+                                               raw_pubkey,
                                                pk_info.chain_code,
                                                CX_SHA512);
     memmove(pk_info.raw_public_key, raw_pubkey + 1, 64);
